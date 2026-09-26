@@ -330,7 +330,7 @@ namespace Engine
         /// <summary>World-space union of every owned brush's at-rest (compile-time) bounds.</summary>
         public BoundingBox GetBrushSetWorldBounds()
         {
-            var brushBounds = GlobalMapData.activeMap.brushBounds;
+            var brushBounds = GlobalMapData.ActiveMap.BrushBounds;
             if (brushSet.Length == 0 || brushBounds == null) return new BoundingBox();
 
             BoundingBox result = brushBounds[brushSet[0]];
@@ -611,7 +611,7 @@ namespace Engine
             if (leafBitsValid && Position == leafBitsPosition && leafBits != null)
                 return leafBits;
 
-            leafBits ??= Bitset.Create(BSPRoot.nodes.Length);
+            leafBits ??= Bitset.Create(BSPRoot.Nodes.Length);
             Array.Clear(leafBits);
             Collision.GatherLeaves(0, Bounds, leafBits);
 
@@ -1006,16 +1006,16 @@ namespace Engine
             float brushDist = float.MaxValue;
 
             var leaf = BSPRoot.Traverse(contactPoint);
-            var brushID = BSPRoot.nodes[leaf].brush;
-            if (brushID > 0 && brushID < GlobalMapData.activeMap.brushes.Length)
+            var brushID = BSPRoot.Nodes[leaf].brush;
+            if (brushID > 0 && brushID < GlobalMapData.ActiveMap.Brushes.Length)
             {
-                var brush = GlobalMapData.activeMap.brushes[brushID];
-                foreach (var face in brush.faces)
+                var brush = GlobalMapData.ActiveMap.Brushes[brushID];
+                foreach (var face in brush.Faces)
                 {
-                    if (face.plane.HasValue && face.plane.Value.DotCoordinate(contactPoint) > 0)
+                    if (face.Plane.HasValue && face.Plane.Value.DotCoordinate(contactPoint) > 0)
                     {
-                        brushSurface = GlobalMapData.loadedMaterials[face.surface];
-                        brushDist = MathF.Abs(face.plane.Value.DotCoordinate(contactPoint));
+                        brushSurface = GlobalMapData.LoadedMaterials[face.Surface];
+                        brushDist = MathF.Abs(face.Plane.Value.DotCoordinate(contactPoint));
                         break;
                     }
                 }
@@ -1023,22 +1023,22 @@ namespace Engine
             Material? terrainSurface = null;
             float terrainDist = float.MaxValue;
 
-            if (GlobalMapData.activeMap.terrains != null)
+            if (GlobalMapData.ActiveMap.Terrains != null)
             {
-                for (int i = 0; i < GlobalMapData.activeMap.terrains.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Terrains.Length; i++)
                 {
-                    var terrain = GlobalMapData.activeMap.terrains[i];
+                    var terrain = GlobalMapData.ActiveMap.Terrains[i];
 
-                    var expanded = terrain.bounds;
+                    var expanded = terrain.Bounds;
                     expanded.Min -= new Vector3(0.5f);
                     expanded.Max += new Vector3(0.5f);
                     if (expanded.Contains(contactPoint) == ContainmentType.Disjoint) continue;
 
-                    for (int t = 0; t < terrain.triangles.Length; t += 3)
+                    for (int t = 0; t < terrain.Triangles.Length; t += 3)
                     {
-                        Vector3 A = terrain.vertices[terrain.triangles[t + 0]].Position;
-                        Vector3 B = terrain.vertices[terrain.triangles[t + 1]].Position;
-                        Vector3 C = terrain.vertices[terrain.triangles[t + 2]].Position;
+                        Vector3 A = terrain.Vertices[terrain.Triangles[t + 0]].Position;
+                        Vector3 B = terrain.Vertices[terrain.Triangles[t + 1]].Position;
+                        Vector3 C = terrain.Vertices[terrain.Triangles[t + 2]].Position;
 
                         var triMin = Vector3.Min(Vector3.Min(A, B), C);
                         var triMax = Vector3.Max(Vector3.Max(A, B), C);
@@ -1052,7 +1052,7 @@ namespace Engine
                         if (dist < terrainDist)
                         {
                             terrainDist = dist;
-                            terrainSurface = GlobalMapData.loadedMaterials[terrain.surface];
+                            terrainSurface = GlobalMapData.LoadedMaterials[terrain.Surface];
                         }
                     }
                 }
@@ -1378,15 +1378,15 @@ namespace Engine
 
         public static void TryParseOutputScript(string key, ref EntityOutput output)
         {
-            if (output.scriptSource == null) return;
+            if (output.ScriptSource == null) return;
             try
             {
-                output.script = new EXParser().Parse(new EXScriptTokenizer().Tokenize(output.scriptSource));
+                output.Script = new EXParser().Parse(new EXScriptTokenizer().Tokenize(output.ScriptSource));
             }
             catch (Exception ex)
             {
                 Logger.AppendError($"Failed to parse output {key} script: {ex}");
-                output.script = null;
+                output.Script = null;
             }
         }
 
@@ -1394,12 +1394,12 @@ namespace Engine
         {
             try
             {
-                if (output.delay > 0) await new QueuedDelay(this, output.delay);
+                if (output.Delay > 0) await new QueuedDelay(this, output.Delay);
                 vars.Value = await CastStep(output, from, vars.Value);
 
-                for (int i = 0; i < output.refire; i++)
+                for (int i = 0; i < output.Refire; i++)
                 {
-                    if (output.delay > 0) await new QueuedDelay(this, output.delay);
+                    if (output.Delay > 0) await new QueuedDelay(this, output.Delay);
                     vars.Value = await CastStep(output, from, vars.Value);
                 }
             }
@@ -1411,8 +1411,8 @@ namespace Engine
 
         private static string[] CastOnce(EntityOutput output, WorldEntity from, string[] currentVars)
         {
-            var targets = EntityManager.FindEntityIndexByName(output.entityTarget);
-            if (output.entityTarget == "_activator")
+            var targets = EntityManager.FindEntityIndexByName(output.EntityTarget);
+            if (output.EntityTarget == "_activator")
                 targets = new[] { EntityManager.entities.FindIndex(e => e == from) };
             if (targets == null) return currentVars;
 
@@ -1422,7 +1422,7 @@ namespace Engine
             {
                 if (index < 0) continue;
 
-                var parameter = output.inputParameters;
+                var parameter = output.InputParameters;
                 if (!string.IsNullOrEmpty(parameter) && parameter.Contains('!'))
                 {
                     bool missingVar = false;
@@ -1442,7 +1442,7 @@ namespace Engine
                     if (missingVar) continue;
                 }
 
-                var contributed = EntityManager.entities[index].CallInput(output.entityInputTarget, parameter, from, currentVars);
+                var contributed = EntityManager.entities[index].CallInput(output.EntityInputTarget, parameter, from, currentVars);
                 accumulated = MergePassVariables(accumulated, contributed);
             }
 
@@ -1450,7 +1450,7 @@ namespace Engine
         }
         private Task<string[]> CastStep(EntityOutput output, WorldEntity from, string[] currentVars)
         {
-            if (output.script != null)
+            if (output.Script != null)
                 return RunScriptStep(output, from, currentVars);
 
             return Task.FromResult(CastOnce(output, from, currentVars));
@@ -1460,7 +1460,7 @@ namespace Engine
         {
             var chainBox = new Box<string[]> { Value = currentVars };
             var host = new WorldEntityHost(this, from, chainBox);
-            var handle = EXRuntime.Run(output.script, host);
+            var handle = EXRuntime.Run(output.Script, host);
 
             liveIOScripts.Add(handle);
             await handle.Completion;

@@ -304,8 +304,8 @@ public partial class ParticleEditor : UserControl
         if (spawner?.system?.particleSubsystems == null) return;
 
         var newB = new ParticleSubsystemBehavior();
-        if (GlobalMapData.loadedMaterials?.Length > 0)
-            newB.material = GlobalMapData.loadedMaterials[0].name;
+        if (GlobalMapData.LoadedMaterials?.Length > 0)
+            newB.material = GlobalMapData.LoadedMaterials[0].Name;
         var newSub = new ParticleSubsystem(newB) { parent = spawner.system };
 
         spawner.system.particleSubsystems =
@@ -395,7 +395,7 @@ public partial class ParticleEditor : UserControl
         int result = await MaterialPicker.PickAsync(MainWindow.Instance);
         if (result >= 0)
         {
-            b.material = GlobalMapData.loadedMaterials[result].name;
+            b.material = GlobalMapData.LoadedMaterials[result].Name;
             subMaterialName.Text = b.material;
 
             int idx = ParticleView.Instance.SelectedSubsystem;

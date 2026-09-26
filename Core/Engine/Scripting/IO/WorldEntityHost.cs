@@ -275,9 +275,9 @@ public class WorldEntityHost : IEXHost
         else
         {
             var hit = BSPRoot.TraceRay(ray, maxDist);
-            data.Hit = hit.hit;
-            data.Point = hit.point;
-            data.Normal = hit.normal;
+            data.Hit = hit.Hit;
+            data.Point = hit.Point;
+            data.Normal = hit.Normal;
         }
 
         return EXValue.Of(new EXObject { Type = TraceResultTypeInstance, Instance = data });

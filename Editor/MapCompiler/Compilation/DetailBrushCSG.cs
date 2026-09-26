@@ -25,10 +25,10 @@ public static class DetailBrushCSG
 
         foreach (var entity in entities)
         {
-            if (entity?.entityName != "FuncDetail") continue;
-            if (entity.brushIndices == null || entity.brushIndices.Count < 2) continue;
+            if (entity?.EntityName != "FuncDetail") continue;
+            if (entity.BrushIndices == null || entity.BrushIndices.Count < 2) continue;
 
-            var group = entity.brushIndices.Where(i => i >= 0 && i < brushes.Length).ToList();
+            var group = entity.BrushIndices.Where(i => i >= 0 && i < brushes.Length).ToList();
             if (group.Count < 2) continue;
 
             MergeGroup(brushes, group);
@@ -40,7 +40,7 @@ public static class DetailBrushCSG
 
         for (int i = 0; i < subset.Length; i++)
         {
-            subset[i].isEntity = false;
+            subset[i].IsEntity = false;
             SanitizeForReconstruction(ref subset[i]);
         }
 
@@ -54,24 +54,24 @@ public static class DetailBrushCSG
         {
             int idx = group[i];
             var original = brushes[idx];
-            original.faces = reconstructed[i].faces;
-            original.vertices = reconstructed[i].vertices;
-            original.uvs = reconstructed[i].uvs;
-            original.lightmapUvs = reconstructed[i].lightmapUvs;
-            original.abnormal = reconstructed[i].abnormal;
+            original.Faces = reconstructed[i].Faces;
+            original.Vertices = reconstructed[i].Vertices;
+            original.UVs = reconstructed[i].UVs;
+            original.LightmapUVs = reconstructed[i].LightmapUVs;
+            original.Abnormal = reconstructed[i].Abnormal;
             brushes[idx] = original;
         }
     }
 
     static void SanitizeForReconstruction(ref Brush b)
     {
-        int vertCount = b.vertices?.Length ?? 0;
+        int vertCount = b.Vertices?.Length ?? 0;
 
-        if (b.uvs == null || b.uvs.Length != vertCount)
-            b.uvs = new Vector2[vertCount];
+        if (b.UVs == null || b.UVs.Length != vertCount)
+            b.UVs = new Vector2[vertCount];
 
-        if (b.lightmapUvs == null || b.lightmapUvs.Length != vertCount)
-            b.lightmapUvs = new Vector2[vertCount];
+        if (b.LightmapUVs == null || b.LightmapUVs.Length != vertCount)
+            b.LightmapUVs = new Vector2[vertCount];
     }
     static Brush[] ReconstructGroupViaLocalBSP(Brush[] subset)
     {
@@ -84,10 +84,10 @@ public static class DetailBrushCSG
         for (int i = 0; i < subset.Length; i++)
         {
             Vector3 min = new(float.MaxValue), max = new(float.MinValue);
-            foreach (var f in subset[i].faces)
-                foreach (var vi in f.indices)
+            foreach (var f in subset[i].Faces)
+                foreach (var vi in f.Indices)
                 {
-                    var v = subset[i].vertices[vi] + subset[i].position;
+                    var v = subset[i].Vertices[vi] + subset[i].Position;
                     min = Vector3.Min(min, v);
                     max = Vector3.Max(max, v);
                 }
@@ -106,11 +106,11 @@ public static class DetailBrushCSG
         for (int i = 0; i < subset.Length; i++)
         {
             brushIDs[i] = (ushort)i;
-            for (int f = 0; f < subset[i].faces.Length; f++)
+            for (int f = 0; f < subset[i].Faces.Length; f++)
             {
-                var face = subset[i].faces[f];
-                var plane = new Plane(subset[i].vertices[face.indices[0]] + subset[i].position,
-                                     Vector3.Normalize(face.normal));
+                var face = subset[i].Faces[f];
+                var plane = new Plane(subset[i].Vertices[face.Indices[0]] + subset[i].Position,
+                                     Vector3.Normalize(face.Normal));
                 Portalizer.FindPlane(ref plane, out _);
                 splits.Add((i, f, plane));
             }
@@ -118,8 +118,8 @@ public static class DetailBrushCSG
 
         splits.Sort((a, b) =>
         {
-            float sA = MapCompileOrchestrator.FaceSize(subset[a.brush].faces[a.face], subset[a.brush].vertices);
-            float sB = MapCompileOrchestrator.FaceSize(subset[b.brush].faces[b.face], subset[b.brush].vertices);
+            float sA = MapCompileOrchestrator.FaceSize(subset[a.brush].Faces[a.face], subset[a.brush].Vertices);
+            float sB = MapCompileOrchestrator.FaceSize(subset[b.brush].Faces[b.face], subset[b.brush].Vertices);
             return sB.CompareTo(sA);
         });
 
@@ -128,20 +128,20 @@ public static class DetailBrushCSG
         foreach (var s in splits)
             BSPRoot.Cut(s.plane, subset, subsetBounds, s.brush, s.face, 0);
         BSPRoot.DoubleCheck(subset);
-        BSPRoot.nodes = BSPRoot.tempNodes.ToArray();
+        BSPRoot.Nodes = BSPRoot.tempNodes.ToArray();
 
         Portalizer.MakeHeadnodePortals(localBounds);
         Portalizer.CutNodePortals();
         Portalizer.MergePortals();
         Portalizer.MarkBrushesOnPortals(subset, subsetBounds);
 
-        var nodesList = BSPRoot.nodes.ToList();
+        var nodesList = BSPRoot.Nodes.ToList();
 
         int outsideIndex = nodesList.Count;
 
         nodesList.Add(new BSPNode { solid = false, split = false, id = (uint)outsideIndex });
 
-        BSPRoot.nodes = nodesList.ToArray();
+        BSPRoot.Nodes = nodesList.ToArray();
 
         var portalsArr = Portalizer.GetPortals().ToArray();
         foreach (var portal in portalsArr)

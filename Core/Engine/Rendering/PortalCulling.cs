@@ -422,7 +422,7 @@ internal class PortalCulling
 
     public static void FloodFillFrustumLeaves(int startLeaf, bool isSkybox)
     {
-        EnsureLeafCapacity(VisRoot.visLeaves.Length);
+        EnsureLeafCapacity(VisRoot.VisLeaves.Length);
         currentGeneration++;
 
         var visibleLeaves = isSkybox ? SkyVisibleLeaves : MainVisibleLeaves;
@@ -468,22 +468,22 @@ internal class PortalCulling
 
             if (!RenderEngine.IsLeafInMainPVS((uint)leaf)) continue;
 
-            var portals = VisRoot.visLeaves[leaf].portals;
+            var portals = VisRoot.VisLeaves[leaf].Portals;
             for (int pi = 0; pi < portals.Length; pi++)
             {
                 int pID = portals[pi];
                 if (pID == -1) continue;
-                var portal = VisRoot.visPortals[pID];
+                var portal = VisRoot.VisPortals[pID];
                 int other = portal.LeafFront == leaf ? portal.LeafBack : portal.LeafFront;
 
-                int otherBspNode = VisRoot.visLeaves[other].bspLeafID;
+                int otherBspNode = VisRoot.VisLeaves[other].BspLeafID;
 
-                if (BSPRoot.nodes[otherBspNode].split) continue;
+                if (BSPRoot.Nodes[otherBspNode].split) continue;
 
-                if (BSPRoot.nodes[otherBspNode].solid)
+                if (BSPRoot.Nodes[otherBspNode].solid)
                 {
                     // If this leaf has a skybox, we need to possibly use the "other" side
-                    if (VisRoot.visLeaves[leaf].HasSkybox && BSPRoot.nodes[otherBspNode].nodeFlag == BSPNode.SkyboxNode)
+                    if (VisRoot.VisLeaves[leaf].HasSkybox && BSPRoot.Nodes[otherBspNode].nodeFlag == BSPNode.SkyboxNode)
                     {
                         if (!skyboxEntryBounds.HasValue || !Contains(skyboxEntryBounds.Value, parentBounds))
                         {

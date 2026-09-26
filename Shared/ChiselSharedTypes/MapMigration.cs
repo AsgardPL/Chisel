@@ -15,13 +15,13 @@ namespace Chisel.Formatter
         {
             var map = JsonConvert.DeserializeObject<RawMap>(json);
 
-            if (map.formatVersion < CurrentFormatVersion)
+            if (map.FormatVersion < CurrentFormatVersion)
             {
                 var legacy = ExtractLegacyBrushEntities(json);
                 if (legacy.Count > 0)
                     MergeLegacyEntities(ref map, legacy);
 
-                map.formatVersion = CurrentFormatVersion;
+                map.FormatVersion = CurrentFormatVersion;
             }
 
             return map;
@@ -69,16 +69,16 @@ namespace Chisel.Formatter
                 else
                 {
                     entity = legacyEntity.ToObject<EntityReference>();
-                    entity.brushIndices = new List<int>();
+                    entity.BrushIndices = new List<int>();
                     migrated.Add(entity);
                     if (!string.IsNullOrEmpty(name)) byName[name] = entity;
                 }
 
-                entity.brushIndices.Add(brushIndex);
+                entity.BrushIndices.Add(brushIndex);
             }
 
-            var existingRefs = map.entityReferences ?? Array.Empty<EntityReference>();
-            map.entityReferences = existingRefs.Concat(migrated).ToArray();
+            var existingRefs = map.EntityReferences ?? Array.Empty<EntityReference>();
+            map.EntityReferences = existingRefs.Concat(migrated).ToArray();
         }
     }
 }

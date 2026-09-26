@@ -46,21 +46,21 @@ internal class StairBuilder : BrushBuilder
     static (Vector3 startPoint, Vector3 travelDir, float width, float bottomY, float topY) AnalyzeFace(int brushIdx, int faceIdx)
     {
         var brush = MapTools.Brushes[brushIdx];
-        var face = brush.faces[faceIdx];
-        var uniqueVerts = face.indices.Distinct().ToArray();
+        var face = brush.Faces[faceIdx];
+        var uniqueVerts = face.Indices.Distinct().ToArray();
 
         Vector3 sum = Vector3.Zero;
         float minY = float.MaxValue, maxY = float.MinValue;
         foreach (var vi in uniqueVerts)
         {
-            Vector3 wp = brush.vertices[vi] + brush.position;
+            Vector3 wp = brush.Vertices[vi] + brush.Position;
             sum += wp;
             minY = MathF.Min(minY, wp.Y);
             maxY = MathF.Max(maxY, wp.Y);
         }
         Vector3 center = sum / uniqueVerts.Length;
 
-        Vector3 normalHoriz = new Vector3(face.normal.X, 0, face.normal.Z);
+        Vector3 normalHoriz = new Vector3(face.Normal.X, 0, face.Normal.Z);
         Vector3 travelDir;
         if (normalHoriz.LengthSquared() < 0.0001f)
         {
@@ -75,7 +75,7 @@ internal class StairBuilder : BrushBuilder
         float minW = float.MaxValue, maxW = float.MinValue;
         foreach (var vi in uniqueVerts)
         {
-            Vector3 wp = brush.vertices[vi] + brush.position;
+            Vector3 wp = brush.Vertices[vi] + brush.Position;
             float proj = Vector3.Dot(wp, widthAxis);
             minW = MathF.Min(minW, proj);
             maxW = MathF.Max(maxW, proj);
@@ -161,7 +161,7 @@ internal class StairBuilder : BrushBuilder
         };
 
         return BrushOperations.CreateBrushFromPlanes(
-            planes, Toolbelt.ActiveTexture, GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]);
+            planes, Toolbelt.ActiveTexture, GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]);
     }
     static Vector3 OrientOutward(Vector3 normal, Vector3 pointOnPlane, Vector3 insidePoint)
     {
@@ -200,19 +200,19 @@ internal class StairBuilder : BrushBuilder
 
         var entity = new EntityReference
         {
-            entityName = "FuncDetail",
-            properties = Array.Empty<EntityProperty>(),
-            brushIndices = new List<int>(ids),
+            EntityName = "FuncDetail",
+            Properties = Array.Empty<EntityProperty>(),
+            BrushIndices = new List<int>(ids),
             brushOwnerGUIDs = MapTools.GuidsForBrushIndices(ids),
-            position = (unionBounds ?? default).Min,
+            Position = (unionBounds ?? default).Min,
         };
 
         var eid = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == "FuncDetail");
         if (eid != -1)
         {
             var src = GlobalEditorData.EditorOverrides.overrides[eid].defaultProperties;
-            entity.properties = new EntityProperty[src.Length];
-            Array.Copy(src, entity.properties, src.Length);
+            entity.Properties = new EntityProperty[src.Length];
+            Array.Copy(src, entity.Properties, src.Length);
         }
 
         MapTools.AddEntity(entity);
@@ -228,9 +228,9 @@ internal class StairBuilder : BrushBuilder
         Vector3 lo = new(float.MaxValue), hi = new(float.MinValue);
         foreach (var b in previewBrushes)
         {
-            foreach (var v in b.vertices)
+            foreach (var v in b.Vertices)
             {
-                Vector3 wp = v + b.position;
+                Vector3 wp = v + b.Position;
                 lo = Vector3.Min(lo, wp);
                 hi = Vector3.Max(hi, wp);
             }
@@ -283,18 +283,18 @@ internal class StairBuilder : BrushBuilder
     {
         var verts = new List<VertexPositionColor>();
 
-        foreach (var face in brush.faces)
+        foreach (var face in brush.Faces)
         {
-            if (face.indices == null || face.indices.Length < 3) continue;
+            if (face.Indices == null || face.Indices.Length < 3) continue;
 
-            var ring = face.indices.Distinct().ToList();
+            var ring = face.Indices.Distinct().ToList();
             if (ring.Count < 3) continue;
 
             Vector3 center = Vector3.Zero;
-            foreach (var idx in ring) center += brush.vertices[idx];
+            foreach (var idx in ring) center += brush.Vertices[idx];
             center /= ring.Count;
 
-            Vector3 normal = face.normal;
+            Vector3 normal = face.Normal;
             Vector3 refAxis = Vector3.Cross(normal, Vector3.UnitZ);
             if (refAxis.LengthSquared() < 1e-6f)
                 refAxis = Vector3.Cross(normal, Vector3.UnitX);
@@ -303,8 +303,8 @@ internal class StairBuilder : BrushBuilder
 
             ring.Sort((a, b) =>
             {
-                Vector3 da = brush.vertices[a] - center;
-                Vector3 db = brush.vertices[b] - center;
+                Vector3 da = brush.Vertices[a] - center;
+                Vector3 db = brush.Vertices[b] - center;
                 float angA = MathF.Atan2(Vector3.Dot(da, perpAxis), Vector3.Dot(da, refAxis));
                 float angB = MathF.Atan2(Vector3.Dot(db, perpAxis), Vector3.Dot(db, refAxis));
                 return angA.CompareTo(angB);
@@ -312,8 +312,8 @@ internal class StairBuilder : BrushBuilder
 
             for (int i = 0; i < ring.Count; i++)
             {
-                Vector3 p0 = brush.vertices[ring[i]] + brush.position;
-                Vector3 p1 = brush.vertices[ring[(i + 1) % ring.Count]] + brush.position;
+                Vector3 p0 = brush.Vertices[ring[i]] + brush.Position;
+                Vector3 p1 = brush.Vertices[ring[(i + 1) % ring.Count]] + brush.Position;
                 verts.Add(new VertexPositionColor(p0, color));
                 verts.Add(new VertexPositionColor(p1, color));
             }

@@ -293,8 +293,8 @@ namespace Engine.Rendering
 
         public static void GenRuntimeCubemapAssociation()
         {
-            var polys = GlobalMapData.activeMap.leafPolygons;
-            var verts = GlobalMapData.activeMap.staticGeomVertices;
+            var polys = GlobalMapData.ActiveMap.LeafPolygons;
+            var verts = GlobalMapData.ActiveMap.StaticGeomVertices;
             if (polys == null || verts == null) return;
 
             for (int i = 0; i < polys.Length; i++)
@@ -521,19 +521,19 @@ namespace Engine.Rendering
         public static void OnMaterialsMounted()
         {
             List<ShaderHandle> shaders = new List<ShaderHandle>() { Instance.WorldShader };
-            for (int i = 0; i < GlobalMapData.loadedMaterials.Length; i++)
+            for (int i = 0; i < GlobalMapData.LoadedMaterials.Length; i++)
             {
-                string shaderName = GlobalMapData.loadedMaterials[i].shaderName;
+                string shaderName = GlobalMapData.LoadedMaterials[i].ShaderName;
 
                 if (string.IsNullOrEmpty(shaderName))
                 {
-                    GlobalMapData.loadedMaterials[i].Shader = Instance.WorldShader;
+                    GlobalMapData.LoadedMaterials[i].Shader = Instance.WorldShader;
                 }
                 else
                 {
                     // GLSL preferred, falls back to the legacy .fx path - see AssetManager.LoadMaterialShader.
                     ShaderHandle materialShader = AssetManager.LoadMaterialShader(shaderName);
-                    GlobalMapData.loadedMaterials[i].Shader = materialShader;
+                    GlobalMapData.LoadedMaterials[i].Shader = materialShader;
                     if (!shaders.Contains(materialShader)) shaders.Add(materialShader);
                 }
             }
@@ -543,7 +543,7 @@ namespace Engine.Rendering
 
         public static void ApplyMaterialTechnique(Material material, ShaderHandle shader)
         {
-            shader.SetTechnique(techniqueNames[(int)ShaderQuality * 2 + (material.alphaClip ? 1 : 0)]);
+            shader.SetTechnique(techniqueNames[(int)ShaderQuality * 2 + (material.AlphaClip ? 1 : 0)]);
         }
 
         /// <summary>
@@ -752,14 +752,14 @@ namespace Engine.Rendering
                 var world = Collision.CastBSPWorld(ref ray, 128f);
                 //var ent = Collision.CastEntity(ref ray, Vector3.Distance(world.point, ray.Position), out _);
 
-                bool brush = world.hit;
+                bool brush = world.Hit;
 
                 ImGui.Begin("Looking At", ImGuiWindowFlags.AlwaysAutoResize);
 
                 if (brush)
                 {
-                    ImGui.Text($"BSP Hit Position (int):{Vector3.Floor(world.point)}");
-                    ImGui.Text($"BSP Hit info: [brush={BSPRoot.nodes[world.node].brush}] [sky={BSPRoot.nodes[world.node].nodeFlag == BSPNode.SkyboxNode}]");
+                    ImGui.Text($"BSP Hit Position (int):{Vector3.Floor(world.Point)}");
+                    ImGui.Text($"BSP Hit info: [brush={BSPRoot.Nodes[world.Node].brush}] [sky={BSPRoot.Nodes[world.Node].nodeFlag == BSPNode.SkyboxNode}]");
                 }
 
                 ImGui.End();
@@ -787,7 +787,7 @@ namespace Engine.Rendering
                     return;
                 }
 
-                int local = Array.FindIndex(VisRoot.visLeaves, l => l.bspLeafID == node);
+                int local = Array.FindIndex(VisRoot.VisLeaves, l => l.BspLeafID == node);
 
                 if (local == -1)
                 {
@@ -797,15 +797,15 @@ namespace Engine.Rendering
                     return;
                 }
 
-                ImGui.Text($"Solid?:{BSPRoot.nodes[node].solid}");
+                ImGui.Text($"Solid?:{BSPRoot.Nodes[node].solid}");
                 ImGui.Text($"Visleaf (int):{local}");
 
-                foreach (var pID in VisRoot.visLeaves[local].portals)
+                foreach (var pID in VisRoot.VisLeaves[local].Portals)
                 {
                     if (pID == -1) continue;
-                    if (!(currentPortalView == -1 || pID == VisRoot.visLeaves[local].portals[int.Min(currentPortalView, VisRoot.visLeaves[local].portals.Length - 1)])) continue;
+                    if (!(currentPortalView == -1 || pID == VisRoot.VisLeaves[local].Portals[int.Min(currentPortalView, VisRoot.VisLeaves[local].Portals.Length - 1)])) continue;
 
-                    var portal = VisRoot.visPortals[pID];
+                    var portal = VisRoot.VisPortals[pID];
                     ImGui.Text($"Portal: front leaf {portal.LeafFront}, back leaf {portal.LeafBack}");
                 }
 
@@ -852,25 +852,25 @@ namespace Engine.Rendering
                 bool needsDeferredRender = false; 
                 foreach (var brushIndex in brushEntity.brushSet)
                 {
-                    ref var brush = ref GlobalMapData.activeMap.brushes[brushIndex];
+                    ref var brush = ref GlobalMapData.ActiveMap.Brushes[brushIndex];
 
-                    var offset = Vector3.Transform(brush.position - brushEntity.SpawnAnchor, brushEntity.WorldRotation);
+                    var offset = Vector3.Transform(brush.Position - brushEntity.SpawnAnchor, brushEntity.WorldRotation);
                     Matrix brushTranslation = Matrix.CreateTranslation(brushEntity.WorldPosition + offset);
 
                     BoundingBox localSpaceBounds = new BoundingBox(
-                        GlobalMapData.activeMap.brushBounds[brushIndex].Min - brush.position,
-                        GlobalMapData.activeMap.brushBounds[brushIndex].Max - brush.position);
+                        GlobalMapData.ActiveMap.BrushBounds[brushIndex].Min - brush.Position,
+                        GlobalMapData.ActiveMap.BrushBounds[brushIndex].Max - brush.Position);
 
-                    for (int f = 0; f < brush.faces.Length; f++)
+                    for (int f = 0; f < brush.Faces.Length; f++)
                     {
-                        ref var face = ref brush.faces[f];
+                        ref var face = ref brush.Faces[f];
 
-                        if (face.surface >= GlobalMapData.loadedMaterials.Length)
+                        if (face.Surface >= GlobalMapData.LoadedMaterials.Length)
                         {
                             continue;
                         }
 
-                        var material = GlobalMapData.loadedMaterials[face.surface];
+                        var material = GlobalMapData.LoadedMaterials[face.Surface];
                         bool wantsReflection = material.GetFlag("receivePlanarReflection");
                         bool wantsRefraction = material.GetFlag("receiveRefractionTexture");
 
@@ -880,8 +880,8 @@ namespace Engine.Rendering
                         }
                         if (wantsReflection)
                         {
-                            Vector3 worldPoint = Vector3.Transform(brush.vertices[face.indices[0]], brushTranslation);
-                            Vector3 worldNormal = face.normal;
+                            Vector3 worldPoint = Vector3.Transform(brush.Vertices[face.Indices[0]], brushTranslation);
+                            Vector3 worldNormal = face.Normal;
                             Plane worldPlane = new Plane(worldPoint, worldNormal);
                             BoundingBox worldBounds = TransformBoundingBox(localSpaceBounds, brushTranslation);
 
@@ -1088,7 +1088,7 @@ namespace Engine.Rendering
             Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Instance.GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
-            if (Instance.IsMapLoaded && GlobalMapData.activeMap.brushes?.Length > 0)
+            if (Instance.IsMapLoaded && GlobalMapData.ActiveMap.Brushes?.Length > 0)
             {
                 Instance.GraphicsDevice.BlendState = nonPremultiplied;
                
@@ -1157,11 +1157,11 @@ namespace Engine.Rendering
                     Instance.WorldShader.Param("BrushTex").SetValue(WhiteTexture);
                 }
                 Instance.GraphicsDevice.SetVertexBuffer(null);
-                if (GlobalMapData.activeMap.terrains != null)
+                if (GlobalMapData.ActiveMap.Terrains != null)
                 {
-                    for (int t = 0; t < GlobalMapData.activeMap.terrains.Length; t++)
+                    for (int t = 0; t < GlobalMapData.ActiveMap.Terrains.Length; t++)
                     {
-                        DrawBox(GlobalMapData.activeMap.terrains[t].bounds);
+                        DrawBox(GlobalMapData.ActiveMap.Terrains[t].Bounds);
                     }
                 }
             }
@@ -1175,14 +1175,14 @@ namespace Engine.Rendering
                 var hit = BSPRoot.TraceRay(new Ray(CameraPosition, CameraForward), 50f);
 
                 Stack<BSPNode> stack = new Stack<BSPNode>();
-                stack.Push(BSPRoot.nodes[hit.node]);
+                stack.Push(BSPRoot.Nodes[hit.Node]);
 
-                vertices.Add(new VertexPosition(hit.point - Vector3.Up * 0.1f));
-                vertices.Add(new VertexPosition(hit.point + Vector3.Up * 0.1f));
-                vertices.Add(new VertexPosition(hit.point - Vector3.Right * 0.1f));
-                vertices.Add(new VertexPosition(hit.point + Vector3.Right * 0.1f));
-                vertices.Add(new VertexPosition(hit.point - Vector3.Forward * 0.1f));
-                vertices.Add(new VertexPosition(hit.point + Vector3.Forward * 0.1f));
+                vertices.Add(new VertexPosition(hit.Point - Vector3.Up * 0.1f));
+                vertices.Add(new VertexPosition(hit.Point + Vector3.Up * 0.1f));
+                vertices.Add(new VertexPosition(hit.Point - Vector3.Right * 0.1f));
+                vertices.Add(new VertexPosition(hit.Point + Vector3.Right * 0.1f));
+                vertices.Add(new VertexPosition(hit.Point - Vector3.Forward * 0.1f));
+                vertices.Add(new VertexPosition(hit.Point + Vector3.Forward * 0.1f));
 
                 //while (stack.Count > 0)
                 //{
@@ -1220,12 +1220,12 @@ namespace Engine.Rendering
                 Instance.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
                 //Instance.WorldShader.Param("DisableLighting").SetValue(true);
                 var nodeBundle = LightNodeTraversal.GetClosestNodeBundle(CameraPosition);
-                LightNodeBundle.LightNode currentNode = nodeBundle.Traverse(CMath.ClampToBoundingBox(CameraPosition, nodeBundle.box));
-                foreach (LightNodeBundle.LightNode node in nodeBundle.children)
+                LightNodeBundle.LightNode currentNode = nodeBundle.Traverse(CMath.ClampToBoundingBox(CameraPosition, nodeBundle.Box));
+                foreach (LightNodeBundle.LightNode node in nodeBundle.Children)
                 {
-                    float expansion = node.pos == currentNode.pos ? 0.2f : 0.05f;
+                    float expansion = node.Pos == currentNode.Pos ? 0.2f : 0.05f;
 
-                    sphericalHarmonicsVisualizer?.DrawSphere(node.pos);
+                    sphericalHarmonicsVisualizer?.DrawSphere(node.Pos);
 
                     //var verts = Collision.GetDebugEdges(new BoundingBox(node.pos - Vector3.One * expansion, node.pos + Vector3.One * expansion));
                     //debugBuffer = new VertexBuffer(Instance.GraphicsDevice, typeof(VertexPosition), verts.Length, BufferUsage.WriteOnly);
@@ -1250,15 +1250,15 @@ namespace Engine.Rendering
 
                 Instance.WorldShader.Param("BrushTex").SetValue(BlackTexture);
 
-                for (int i = 0; i < GlobalMapData.activeMap.nodegraph.nodes.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Nodegraph.Nodes.Length; i++)
                 {
-                    var nodepos = GlobalMapData.activeMap.nodegraph.nodes[i].position;
+                    var nodepos = GlobalMapData.ActiveMap.Nodegraph.Nodes[i].Position;
                     var verts = CMath.GetDebugEdges(new BoundingBox(nodepos - Vector3.One * 0.05f, nodepos + Vector3.One * 0.05f));
                     vertices.AddRange(verts);
-                    for (int j = 0; j < GlobalMapData.activeMap.nodegraph.nodes[i].connections.Length; j++)
+                    for (int j = 0; j < GlobalMapData.ActiveMap.Nodegraph.Nodes[i].Connections.Length; j++)
                     {
-                        vertices.Add(new VertexPosition(GlobalMapData.activeMap.nodegraph.nodes[i].position + Vector3.Up * 0.01f));
-                        vertices.Add(new VertexPosition(GlobalMapData.activeMap.nodegraph.nodes[GlobalMapData.activeMap.nodegraph.nodes[i].connections[j]].position + Vector3.Up * 0.01f));
+                        vertices.Add(new VertexPosition(GlobalMapData.ActiveMap.Nodegraph.Nodes[i].Position + Vector3.Up * 0.01f));
+                        vertices.Add(new VertexPosition(GlobalMapData.ActiveMap.Nodegraph.Nodes[GlobalMapData.ActiveMap.Nodegraph.Nodes[i].Connections[j]].Position + Vector3.Up * 0.01f));
                     }
                 }
                 if(vertices.Count > 0)
@@ -1269,7 +1269,7 @@ namespace Engine.Rendering
             }
             if (ShowOctree)
             {
-                var camnode = OctreeRoot.allNodes[GlobalMapData.activeMap.root.Traverse(CameraPosition)];
+                var camnode = OctreeRoot.AllNodes[GlobalMapData.ActiveMap.Root.Traverse(CameraPosition)];
 
                 Instance.WorldShader.Param("DisableLighting").SetValue(true);
 
@@ -1277,10 +1277,10 @@ namespace Engine.Rendering
                 Instance.WorldShader.Param("BrushTex").SetValue(WhiteTexture);
 
                 List<VertexPosition> allNodes = new List<VertexPosition>();
-                foreach (var node in OctreeRoot.allNodes)
+                foreach (var node in OctreeRoot.AllNodes)
                 {
                     if (node == camnode) continue;
-                    allNodes.AddRange(CMath.GetDebugEdges(node.box));
+                    allNodes.AddRange(CMath.GetDebugEdges(node.Box));
                 }
 
                 Instance.WorldShader.RenderEachPass(() =>
@@ -1288,7 +1288,7 @@ namespace Engine.Rendering
 
 
                 //Render camera node
-                var verts = CMath.GetDebugEdges(camnode.box);
+                var verts = CMath.GetDebugEdges(camnode.Box);
 
                 Instance.WorldShader.Param("BrushTex").SetValue(GreenTexture);
 
@@ -1422,16 +1422,16 @@ namespace Engine.Rendering
 
                         Instance.GraphicsDevice.RasterizerState = flipWinding ? cullCounterClockwiseSky : cullClockwiseSky;
                         Instance.GraphicsDevice.DepthStencilState = brushDepthEquals;
-                        if (GlobalMapData.activeMap.brushes?.Length > 0)
+                        if (GlobalMapData.ActiveMap.Brushes?.Length > 0)
                         {
                             RenderMap(true, Matrix.Invert(skyCameraMatrix).Translation);
 
                             Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-                            if (GlobalMapData.activeMap.terrains != null)
+                            if (GlobalMapData.ActiveMap.Terrains != null)
                             {
-                                for (int t = 0; t < GlobalMapData.activeMap.terrains.Length; t++)
+                                for (int t = 0; t < GlobalMapData.ActiveMap.Terrains.Length; t++)
                                 {
-                                    if (!IsAnyLeafInSkyPVS(GlobalMapData.activeMap.terrains[t].leafBits)) continue;
+                                    if (!IsAnyLeafInSkyPVS(GlobalMapData.ActiveMap.Terrains[t].LeafBits)) continue;
                                     DrawTerrain(t);
                                 }
                             }
@@ -1496,13 +1496,13 @@ namespace Engine.Rendering
 
             Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            if (GlobalMapData.activeMap.terrains != null)
+            if (GlobalMapData.ActiveMap.Terrains != null)
             {
                 using (RenderTimings.Section(TimingSection.Terrain))
                 {
-                    for (int t = 0; t < GlobalMapData.activeMap.terrains.Length; t++)
+                    for (int t = 0; t < GlobalMapData.ActiveMap.Terrains.Length; t++)
                     {
-                        if (!IsAnyLeafInMainPVS(GlobalMapData.activeMap.terrains[t].leafBits)) continue;
+                        if (!IsAnyLeafInMainPVS(GlobalMapData.ActiveMap.Terrains[t].LeafBits)) continue;
                         DrawTerrain(t);
                     }
                 }
@@ -1744,16 +1744,16 @@ namespace Engine.Rendering
 
         private static CachedLeafGeometry BuildLeafGeometry(int local)
         {
-            var polys = GlobalMapData.activeMap.leafPolygons;
+            var polys = GlobalMapData.ActiveMap.LeafPolygons;
             var runs = new List<GeomRun>();
             bool skyboxVisible = false;
 
-            foreach (var visible in VisRoot.visLeaves[local].pvs)
+            foreach (var visible in VisRoot.VisLeaves[local].PVS)
             {
-                skyboxVisible |= VisRoot.visLeaves[visible].HasSkybox;
+                skyboxVisible |= VisRoot.VisLeaves[visible].HasSkybox;
 
-                int start = GlobalMapData.activeMap.leafPolyStart[visible];
-                int count = GlobalMapData.activeMap.leafPolyCount[visible];
+                int start = GlobalMapData.ActiveMap.LeafPolyStart[visible];
+                int count = GlobalMapData.ActiveMap.LeafPolyCount[visible];
 
                 for (int i = start; i < start + count;)
                 {
@@ -1876,7 +1876,7 @@ namespace Engine.Rendering
 
             // >> 6 is / 64, so this is computing the number of longs needed to store this bitset.
             // same thing happens in the actual bitset class, but ain nobody reading that
-            int neededWords = (VisRoot.visLeaves.Length + 63) >> 6;
+            int neededWords = (VisRoot.VisLeaves.Length + 63) >> 6;
 
             if (mainPvsBits.Length < neededWords) mainPvsBits = new ulong[neededWords];
             if (skyPvsBits.Length < neededWords) skyPvsBits = new ulong[neededWords];
@@ -1889,7 +1889,7 @@ namespace Engine.Rendering
                 Array.Clear(bits);
                 Bitset.Set(bits, (int)node);
 
-                foreach (var visible in VisRoot.visLeaves[node].pvs)
+                foreach (var visible in VisRoot.VisLeaves[node].PVS)
                     Bitset.Set(bits, (int)visible);
 
                 prevLeaf = (uint)node;
@@ -1898,13 +1898,13 @@ namespace Engine.Rendering
         public static void RenderMapDepth(bool isSkybox, Vector3? pvsOrigin = null)
         {
             Instance.GraphicsDevice.BlendState = alphaPrePass;
-            if (LoadedMapHasVis && GlobalMapData.activeMap.leafPolyStart != null && GlobalMapData.activeMap.leafPolyCount != null)
+            if (LoadedMapHasVis && GlobalMapData.ActiveMap.LeafPolyStart != null && GlobalMapData.ActiveMap.LeafPolyCount != null)
             {
                 var node = BSPRoot.Traverse(pvsOrigin ?? CameraPosition);
 
                 ref uint local = ref isSkybox ? ref previousSkyLeaf : ref previousCameraLeaf;
 
-                if (VisRoot.visLeaves[local].pvs.Length == 0)
+                if (VisRoot.VisLeaves[local].PVS.Length == 0)
                 {
                     return;
                 }
@@ -1951,7 +1951,7 @@ namespace Engine.Rendering
 
             skyboxWasVisible = false;
             
-            if (LoadedMapHasVis && GlobalMapData.activeMap.leafPolyStart != null && GlobalMapData.activeMap.leafPolyCount != null)
+            if (LoadedMapHasVis && GlobalMapData.ActiveMap.LeafPolyStart != null && GlobalMapData.ActiveMap.LeafPolyCount != null)
             {
                 var node = BSPRoot.Traverse(pvsOrigin ?? CameraPosition);
 
@@ -1959,15 +1959,15 @@ namespace Engine.Rendering
 
                 if (portalLines != 0) leafStack.Push(local);
 
-                if (VisRoot.visLeaves[local].pvs.Length == 0)
+                if (VisRoot.VisLeaves[local].PVS.Length == 0)
                 {
-                    OctreeMapRender(OctreeRoot.allNodes[0], CameraBoundingFrustum);
+                    OctreeMapRender(OctreeRoot.AllNodes[0], CameraBoundingFrustum);
                     return;
                 }
 
                 CachedLeafGeometry geometry = null;
 
-                foreach (var visible in VisRoot.visLeaves[local].pvs)
+                foreach (var visible in VisRoot.VisLeaves[local].PVS)
                 {
                     DrawPropModelsForLeaf(visible);
                 }
@@ -2009,8 +2009,8 @@ namespace Engine.Rendering
                             else
                             {
                                 ApplyMaterialState(range.MaterialID, cubemapIndex: range.CubemapID);
-                                activeShader = (range.MaterialID >= 0 && range.MaterialID < GlobalMapData.loadedMaterials.Length)
-                                    ? (ShaderHandle)GlobalMapData.loadedMaterials[range.MaterialID].Shader
+                                activeShader = (range.MaterialID >= 0 && range.MaterialID < GlobalMapData.LoadedMaterials.Length)
+                                    ? (ShaderHandle)GlobalMapData.LoadedMaterials[range.MaterialID].Shader
                                     : Instance.WorldShader;
                             }
 
@@ -2058,28 +2058,28 @@ namespace Engine.Rendering
                 while (leafStack.Count != 0)
                 {
                     uint id = leafStack.Pop();
-                    var leaf = VisRoot.visLeaves[id];
+                    var leaf = VisRoot.VisLeaves[id];
                     //if (BSPRoot.nodes[id].parent != id) leafStack.Push(BSPRoot.nodes[id].parent);
 
-                    if (leaf == null || leaf.portals == null || leaf.portals.Length == 0) continue;
+                    if (leaf == null || leaf.Portals == null || leaf.Portals.Length == 0) continue;
 
                     int[] p;
 
                     if(portalLines == 1)
                     {
-                        p = leaf.portals.Where(portal =>
+                        p = leaf.Portals.Where(portal =>
                         {
-                            return !BSPRoot.nodes[VisRoot.visPortals[portal].LeafBack].solid && !BSPRoot.nodes[VisRoot.visPortals[portal].LeafFront].solid &&
-                                   !BSPRoot.nodes[VisRoot.visPortals[portal].LeafBack].split && !BSPRoot.nodes[VisRoot.visPortals[portal].LeafFront].split;
+                            return !BSPRoot.Nodes[VisRoot.VisPortals[portal].LeafBack].solid && !BSPRoot.Nodes[VisRoot.VisPortals[portal].LeafFront].solid &&
+                                   !BSPRoot.Nodes[VisRoot.VisPortals[portal].LeafBack].split && !BSPRoot.Nodes[VisRoot.VisPortals[portal].LeafFront].split;
                         }).ToArray();
                     }
                     else
                     {
-                        p = leaf.portals.Where(portal =>
+                        p = leaf.Portals.Where(portal =>
                         {
-                            int id = VisRoot.visPortals[portal].LeafBack == leaf.bspLeafID ? VisRoot.visPortals[portal].LeafFront : VisRoot.visPortals[portal].LeafBack;
+                            int id = VisRoot.VisPortals[portal].LeafBack == leaf.BspLeafID ? VisRoot.VisPortals[portal].LeafFront : VisRoot.VisPortals[portal].LeafBack;
 
-                            return !BSPRoot.nodes[id].split && BSPRoot.nodes[id].solid && VisRoot.visPortals[portal].Brushes.Length>0;
+                            return !BSPRoot.Nodes[id].split && BSPRoot.Nodes[id].solid && VisRoot.VisPortals[portal].Brushes.Length>0;
                         }).ToArray();
                     }
 
@@ -2096,15 +2096,15 @@ namespace Engine.Rendering
                             Instance.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
                             basicShader.Alpha = 0.1f;
 
-                            bool flip = VisRoot.visPortals[i].LeafBack == leaf.bspLeafID;
-                            if (BSPRoot.nodes[(flip ? VisRoot.visPortals[i].LeafFront : VisRoot.visPortals[i].LeafBack)].split) continue;
+                            bool flip = VisRoot.VisPortals[i].LeafBack == leaf.BspLeafID;
+                            if (BSPRoot.Nodes[(flip ? VisRoot.VisPortals[i].LeafFront : VisRoot.VisPortals[i].LeafBack)].split) continue;
 
                             vertices.Clear();
-                            for (int v = 1; v < VisRoot.visPortals[i].Vertices.Length - 1; v++)
+                            for (int v = 1; v < VisRoot.VisPortals[i].Vertices.Length - 1; v++)
                             {
-                                vertices.Add(new VertexPosition(VisRoot.visPortals[i].Vertices[0]));
-                                vertices.Add(new VertexPosition(VisRoot.visPortals[i].Vertices[v]));
-                                vertices.Add(new VertexPosition(VisRoot.visPortals[i].Vertices[v + 1]));
+                                vertices.Add(new VertexPosition(VisRoot.VisPortals[i].Vertices[0]));
+                                vertices.Add(new VertexPosition(VisRoot.VisPortals[i].Vertices[v]));
+                                vertices.Add(new VertexPosition(VisRoot.VisPortals[i].Vertices[v + 1]));
                             }
                             Vector3[] mids = new Vector3[vertices.Count/3];
 
@@ -2119,7 +2119,7 @@ namespace Engine.Rendering
 
                             if (currentPortalView != -1 && first)
                             {
-                                leafStack.Push((uint)(flip ? VisRoot.visPortals[i].LeafFront : VisRoot.visPortals[i].LeafBack));
+                                leafStack.Push((uint)(flip ? VisRoot.VisPortals[i].LeafFront : VisRoot.VisPortals[i].LeafBack));
                             }
 
                             foreach (var pass in basicShader.CurrentTechnique.Passes)
@@ -2164,7 +2164,7 @@ namespace Engine.Rendering
                             {
                                 vertices.Clear();
                                 vertices.Add(new VertexPosition(mids[t]));
-                                vertices.Add(new VertexPosition(mids[t] + VisRoot.visPortals[i].Plane.Normal));
+                                vertices.Add(new VertexPosition(mids[t] + VisRoot.VisPortals[i].Plane.Normal));
                                 foreach (var pass in basicShader.CurrentTechnique.Passes)
                                 {
                                     pass.Apply();
@@ -2182,15 +2182,15 @@ namespace Engine.Rendering
             }
             else
             {
-                OctreeMapRender(OctreeRoot.allNodes[0], CameraBoundingFrustum);
+                OctreeMapRender(OctreeRoot.AllNodes[0], CameraBoundingFrustum);
             }
         }
         private static void ApplyMaterialState(int materialId, ShaderHandle shaderOverrideForWorld = null, int cubemapIndex = -1)
         {
-            if (GlobalMapData.loadedMaterials == null) return;
+            if (GlobalMapData.LoadedMaterials == null) return;
 
-            bool validMaterial = materialId >= 0 && materialId < GlobalMapData.loadedMaterials.Length;
-            var material = GlobalMapData.loadedMaterials[materialId];
+            bool validMaterial = materialId >= 0 && materialId < GlobalMapData.LoadedMaterials.Length;
+            var material = GlobalMapData.LoadedMaterials[materialId];
 
             var shader = (ShaderHandle)material.Shader ?? Instance.WorldShader;
 
@@ -2231,8 +2231,8 @@ namespace Engine.Rendering
             cameraRenderQueue.Sort((a, b) =>
             {
                 var pos = CameraPosition;
-                Collision.ClosestPointBoxPoint(ref GlobalMapData.activeMap.octreeNodes[a].box, ref pos, out Vector3 pA);
-                Collision.ClosestPointBoxPoint(ref GlobalMapData.activeMap.octreeNodes[b].box, ref pos, out Vector3 pB);
+                Collision.ClosestPointBoxPoint(ref GlobalMapData.ActiveMap.OctreeNodes[a].Box, ref pos, out Vector3 pA);
+                Collision.ClosestPointBoxPoint(ref GlobalMapData.ActiveMap.OctreeNodes[b].Box, ref pos, out Vector3 pB);
 
                 return Vector3.DistanceSquared(pB, CameraPosition).CompareTo(Vector3.DistanceSquared(pA, CameraPosition));
             });
@@ -2251,8 +2251,8 @@ namespace Engine.Rendering
 
             foreach (int nodeId in nodes)
             {
-                var octreeNode = GlobalMapData.activeMap.octreeNodes[nodeId];
-                foreach (var c in octreeNode.contents)
+                var octreeNode = GlobalMapData.ActiveMap.OctreeNodes[nodeId];
+                foreach (var c in octreeNode.Contents)
                 {
                     if (seen.Add(c))
                         brushesToRender.Enqueue(c);
@@ -2263,12 +2263,12 @@ namespace Engine.Rendering
 
         static void OctreeMarkNodes(Octree node, BoundingFrustum frustum, ref List<int> nodes)
         {
-            var containment = frustum.Contains(node.box);
+            var containment = frustum.Contains(node.Box);
             if (containment == ContainmentType.Disjoint) return;
 
-            if (node.isEnd && node.contents.Count > 0)
+            if (node.IsEnd && node.Contents.Count > 0)
             {
-                nodes.Add(node.id);
+                nodes.Add(node.Id);
                 return;
             }
 
@@ -2282,25 +2282,25 @@ namespace Engine.Rendering
             // Otherwise, traverse children
             for (int i = 0; i < 8; i++)
             {
-                if (node.children[i] > 0)
+                if (node.Children[i] > 0)
                 {
-                    OctreeMarkNodes(OctreeRoot.allNodes[node.children[i]], frustum, ref nodes);
+                    OctreeMarkNodes(OctreeRoot.AllNodes[node.Children[i]], frustum, ref nodes);
                 }
             }
         }
 
         static void AddAllLeafNodes(Octree node, ref List<int> nodes)
         {
-            if (node.isEnd && node.contents.Count > 0)
+            if (node.IsEnd && node.Contents.Count > 0)
             {
-                nodes.Add(node.id);
+                nodes.Add(node.Id);
                 return;
             }
             for (int i = 0; i < 8; i++)
             {
-                if (node.children[i] > 0)
+                if (node.Children[i] > 0)
                 {
-                    AddAllLeafNodes(OctreeRoot.allNodes[node.children[i]], ref nodes);
+                    AddAllLeafNodes(OctreeRoot.AllNodes[node.Children[i]], ref nodes);
                 }
             }
         }
@@ -2322,15 +2322,15 @@ namespace Engine.Rendering
 
             foreach (var mdl in models)
             {
-                Instance.PropModelShader.Param("MainTex").SetValue(GlobalMapData.loadedMaterials[mdl.MaterialID].Texture);
+                Instance.PropModelShader.Param("MainTex").SetValue(GlobalMapData.LoadedMaterials[mdl.MaterialID].Texture);
                 Instance.PropModelShader.Param("Transparent").SetValue(false);
 
-                bool ignoreCull = GlobalMapData.loadedMaterials[mdl.MaterialID].noCull;
+                bool ignoreCull = GlobalMapData.LoadedMaterials[mdl.MaterialID].NoCull;
 
                 if (ignoreCull)
                     Instance.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
-                if (!GlobalMapData.loadedMaterials[mdl.MaterialID].transparent)
+                if (!GlobalMapData.LoadedMaterials[mdl.MaterialID].Transparent)
                 {
                     Instance.GraphicsDevice.SetVertexBuffer(mdl.VertexBuffer);
                     Instance.GraphicsDevice.Indices = mdl.IndexBuffer;
@@ -2360,14 +2360,14 @@ namespace Engine.Rendering
         {
             var graphicsDevice = Instance.GraphicsDevice;
             var shader = Instance.PropModelShader;
-            var material = GlobalMapData.loadedMaterials[mdl.MaterialID];
+            var material = GlobalMapData.LoadedMaterials[mdl.MaterialID];
 
             var oldBlendState = graphicsDevice.BlendState;
             var oldDepthState = graphicsDevice.DepthStencilState;
             var oldRasterizerState = graphicsDevice.RasterizerState;
 
             var baseCull = wasWindingFlipped ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
-            graphicsDevice.RasterizerState = material.noCull ? RasterizerState.CullNone : baseCull;
+            graphicsDevice.RasterizerState = material.NoCull ? RasterizerState.CullNone : baseCull;
 
             shader.Param("MainTex").SetValue(material.Texture);
 
@@ -2399,9 +2399,9 @@ namespace Engine.Rendering
         /// <param name="i">The index of the terrain in the map file.</param>
         private static void DrawTerrain(int i)
         {
-            Instance.TerrainShader.Param("mainTexture").SetValue(GlobalMapData.loadedMaterials[GlobalMapData.activeMap.terrains[i].surface].Texture);
-            Instance.TerrainShader.Param("blendTexture").SetValue(GlobalMapData.loadedMaterials[GlobalMapData.activeMap.terrains[i].blendedSurface].Texture);
-            Instance.TerrainShader.Param("normalTexture").SetValue(GlobalMapData.loadedMaterials[GlobalMapData.activeMap.terrains[i].surface].Normal);
+            Instance.TerrainShader.Param("mainTexture").SetValue(GlobalMapData.LoadedMaterials[GlobalMapData.ActiveMap.Terrains[i].Surface].Texture);
+            Instance.TerrainShader.Param("blendTexture").SetValue(GlobalMapData.LoadedMaterials[GlobalMapData.ActiveMap.Terrains[i].BlendedSurface].Texture);
+            Instance.TerrainShader.Param("normalTexture").SetValue(GlobalMapData.LoadedMaterials[GlobalMapData.ActiveMap.Terrains[i].Surface].Normal);
             Instance.TerrainShader.Param("World").SetValue(WorldMatrix);
             Instance.TerrainShader.Param("View").SetValue(ViewMatrix);
             Instance.TerrainShader.Param("Projection").SetValue(ProjectionMatrix);
@@ -2412,15 +2412,15 @@ namespace Engine.Rendering
                 Instance.TerrainShader.Param("blendTexture").SetValue(DimTexture);
             }
 
-            if (CameraBoundingFrustum.Contains(GlobalMapData.activeMap.terrains[i].bounds) == ContainmentType.Disjoint) return;
+            if (CameraBoundingFrustum.Contains(GlobalMapData.ActiveMap.Terrains[i].Bounds) == ContainmentType.Disjoint) return;
 
             if (CurrentWireframeDisplayMode < 3)
             {
                 var old = Instance.GraphicsDevice.DepthStencilState;
                 Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 Instance.TerrainShader.RenderEachPass(() =>
-                    Instance.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, GlobalMapData.activeMap.terrains[i].vertices, 0, GlobalMapData.activeMap.terrains[i].vertices.Length,
-                                                             GlobalMapData.activeMap.terrains[i].triangles, 0, GlobalMapData.activeMap.terrains[i].triangles.Length / 3));
+                    Instance.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, GlobalMapData.ActiveMap.Terrains[i].Vertices, 0, GlobalMapData.ActiveMap.Terrains[i].Vertices.Length,
+                                                             GlobalMapData.ActiveMap.Terrains[i].Triangles, 0, GlobalMapData.ActiveMap.Terrains[i].Triangles.Length / 3));
                 Instance.GraphicsDevice.DepthStencilState = old;
             }
             if (CurrentWireframeDisplayMode != 0)
@@ -2430,8 +2430,8 @@ namespace Engine.Rendering
 
                 Instance.GraphicsDevice.RasterizerState = WireframeRasterizerState;
                 Instance.TerrainShader.RenderEachPass(() =>
-                    Instance.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, GlobalMapData.activeMap.terrains[i].vertices, 0, GlobalMapData.activeMap.terrains[i].vertices.Length,
-                                                             GlobalMapData.activeMap.terrains[i].triangles, 0, GlobalMapData.activeMap.terrains[i].triangles.Length / 3));
+                    Instance.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, GlobalMapData.ActiveMap.Terrains[i].Vertices, 0, GlobalMapData.ActiveMap.Terrains[i].Vertices.Length,
+                                                             GlobalMapData.ActiveMap.Terrains[i].Triangles, 0, GlobalMapData.ActiveMap.Terrains[i].Triangles.Length / 3));
                 Instance.GraphicsDevice.RasterizerState = oldrasterizer;
             }
         }
@@ -2442,26 +2442,26 @@ namespace Engine.Rendering
         /// <param name="brush">Index of the brush in the map file.</param>
         public static void DrawBrush(int brush, bool drawWireframe)
         {
-            if (!DrawBrushes || brush >= GlobalMapData.activeMap.brushes.Length || brush == -1)
+            if (!DrawBrushes || brush >= GlobalMapData.ActiveMap.Brushes.Length || brush == -1)
                 return;
 
-            ref var brushData = ref GlobalMapData.activeMap.brushes[brush];
+            ref var brushData = ref GlobalMapData.ActiveMap.Brushes[brush];
 
             var cullmode = Instance.GraphicsDevice.RasterizerState;
 
-            if (brushData.isSkybox) return;
-            if (!brushData.isEntity &&
-                CameraBoundingFrustum.Contains(GlobalMapData.activeMap.brushBounds[brush]) == ContainmentType.Disjoint)
+            if (brushData.IsSkybox) return;
+            if (!brushData.IsEntity &&
+                CameraBoundingFrustum.Contains(GlobalMapData.ActiveMap.BrushBounds[brush]) == ContainmentType.Disjoint)
                 return;
 
-            var brushTranslation = Matrix.CreateTranslation(GlobalMapData.activeMap.brushes[brush].position);
+            var brushTranslation = Matrix.CreateTranslation(GlobalMapData.ActiveMap.Brushes[brush].Position);
 
-            if (GlobalMapData.activeMap.brushes[brush].isEntity)
+            if (GlobalMapData.ActiveMap.Brushes[brush].IsEntity)
             {
-                var entity = GlobalMapData.activeMap.brushes[brush].entity;
+                var entity = GlobalMapData.ActiveMap.Brushes[brush].Entity;
                 if (entity != null)
                 {
-                    var offset = Vector3.Transform(brushData.position - entity.SpawnAnchor, entity.WorldRotation);
+                    var offset = Vector3.Transform(brushData.Position - entity.SpawnAnchor, entity.WorldRotation);
                     brushTranslation = Matrix.CreateScale(entity.WorldScale) * Matrix.CreateFromQuaternion(entity.WorldRotation) * Matrix.CreateTranslation(entity.WorldPosition + offset);
                 }
             }
@@ -2469,33 +2469,33 @@ namespace Engine.Rendering
             int transparentLeafRank = 0;
             Vector3 transparentSortPosition = brushTranslation.Translation;
 
-            if (brushData.isEntity && brushData.entity != null)
+            if (brushData.IsEntity && brushData.Entity != null)
             {
-                transparentLeafRank = TransparentRenderQueue.RankFromLeafBits(brushData.entity.GetLeafBits());
-                transparentSortPosition = brushData.entity.WorldPosition;
+                transparentLeafRank = TransparentRenderQueue.RankFromLeafBits(brushData.Entity.GetLeafBits());
+                transparentSortPosition = brushData.Entity.WorldPosition;
             }
 
             if (CurrentWireframeDisplayMode < 3 && !drawWireframe)
             {
                 int f = -1;
 
-                Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.activeMap.brushes[brush].brushVertexBuffer);
+                Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.ActiveMap.Brushes[brush].BrushVertexBuffer);
 
-                if (brushData.renderPiecewise)
+                if (brushData.RenderPiecewise)
                 {
-                    foreach (ref readonly Face face in GlobalMapData.activeMap.brushes[brush].faces.AsSpan())
+                    foreach (ref readonly Face face in GlobalMapData.ActiveMap.Brushes[brush].Faces.AsSpan())
                     {
                         f++;
-                        if (face.faceIndices == null) continue;
-                        if (!face.drawn) continue;
+                        if (face.FaceIndices == null) continue;
+                        if (!face.Drawn) continue;
 
-                        var mat = GlobalMapData.loadedMaterials[face.surface];
+                        var mat = GlobalMapData.LoadedMaterials[face.Surface];
 
-                        if (!mat.transparent)
+                        if (!mat.Transparent)
                         {
-                            Instance.GraphicsDevice.Indices = face.faceIndices;
+                            Instance.GraphicsDevice.Indices = face.FaceIndices;
 
-                            var shader = GlobalMapData.loadedMaterials.Length <= face.surface ? Instance.WorldShader : (ShaderHandle)GlobalMapData.loadedMaterials[face.surface].Shader;
+                            var shader = GlobalMapData.LoadedMaterials.Length <= face.Surface ? Instance.WorldShader : (ShaderHandle)GlobalMapData.LoadedMaterials[face.Surface].Shader;
 
                             ApplyMaterialTechnique(mat, shader);
                             shader.Param("DisableLighting").SetValue(false);
@@ -2517,22 +2517,22 @@ namespace Engine.Rendering
 
                             shader.Param("World").SetValue(brushTranslation * WorldMatrix);
 
-                            shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.loadedMaterials.Length <= face.surface ? ErrorTexture : GlobalMapData.loadedMaterials[face.surface].Texture);
-                            shader.Param("BrushNorm").SetValue(GlobalMapData.loadedMaterials.Length <= face.surface ? WhiteTexture : GlobalMapData.loadedMaterials[face.surface].Normal);
-                            shader.Param("BrushSpec").SetValue(GlobalMapData.loadedMaterials.Length <= face.surface ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.loadedMaterials[face.surface].Specular);
+                            shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.LoadedMaterials.Length <= face.Surface ? ErrorTexture : GlobalMapData.LoadedMaterials[face.Surface].Texture);
+                            shader.Param("BrushNorm").SetValue(GlobalMapData.LoadedMaterials.Length <= face.Surface ? WhiteTexture : GlobalMapData.LoadedMaterials[face.Surface].Normal);
+                            shader.Param("BrushSpec").SetValue(GlobalMapData.LoadedMaterials.Length <= face.Surface ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.LoadedMaterials[face.Surface].Specular);
 
-                            foreach (var tex in GlobalMapData.loadedMaterials[face.surface].GetExtraTextures())
+                            foreach (var tex in GlobalMapData.LoadedMaterials[face.Surface].GetExtraTextures())
                             {
                                 shader.Param(tex.Key).SetValue(tex.Value);
                             }
 
-                            if (GlobalMapData.loadedMaterials.Length > face.surface && GlobalMapData.loadedMaterials[face.surface].GetFlag("receiveRefractionTexture"))
+                            if (GlobalMapData.LoadedMaterials.Length > face.Surface && GlobalMapData.LoadedMaterials[face.Surface].GetFlag("receiveRefractionTexture"))
                             {
                                 shader.Param("RefractionTex").SetValue(refractionRenderTexture);
                                 shader.Param("RefractionDepth").SetValue(ScreenRenderTexture.DepthTexture);
                             }
 
-                            if (GlobalMapData.loadedMaterials.Length > face.surface && GlobalMapData.loadedMaterials[face.surface].GetFlag("receivePlanarReflection"))
+                            if (GlobalMapData.LoadedMaterials.Length > face.Surface && GlobalMapData.LoadedMaterials[face.Surface].GetFlag("receivePlanarReflection"))
                             {
                                 if (faceToGroupLookup.TryGetValue(PackFaceKey(brush, f), out int groupIndex))
                                 {
@@ -2543,17 +2543,17 @@ namespace Engine.Rendering
 
                             Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-                            if (mat.noCull && !isWindingFlipped)
+                            if (mat.NoCull && !isWindingFlipped)
                             {
                                 Instance.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
                             }
                             var faceCopy = face;
                             shader.RenderEachPass(() =>
                             {
-                                Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, faceCopy.indices.Length / 3);
+                                Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, faceCopy.Indices.Length / 3);
                             });
 
-                            if (mat.noCull && !isWindingFlipped)
+                            if (mat.NoCull && !isWindingFlipped)
                             {
                                 Instance.GraphicsDevice.RasterizerState = cullmode;
                             }
@@ -2562,15 +2562,15 @@ namespace Engine.Rendering
                         {
                             Face faceCopy = face;
                             int faceIndex = f;
-                            bool isEntityOwned = brushData.isEntity;
+                            bool isEntityOwned = brushData.IsEntity;
                             bool wasWindingFlipped = isWindingFlipped;
 
                             TransparentRenderQueue.RegisterBrushFace(isEntityOwned, transparentLeafRank, transparentSortPosition, () =>
                             {
-                                Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.activeMap.brushes[brush].brushVertexBuffer);
-                                Instance.GraphicsDevice.Indices = faceCopy.faceIndices;
+                                Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.ActiveMap.Brushes[brush].BrushVertexBuffer);
+                                Instance.GraphicsDevice.Indices = faceCopy.FaceIndices;
 
-                                var shader = GlobalMapData.loadedMaterials.Length <= faceCopy.surface ? Instance.WorldShader : (ShaderHandle)GlobalMapData.loadedMaterials[faceCopy.surface].Shader;
+                                var shader = GlobalMapData.LoadedMaterials.Length <= faceCopy.Surface ? Instance.WorldShader : (ShaderHandle)GlobalMapData.LoadedMaterials[faceCopy.Surface].Shader;
 
                                 ApplyMaterialTechnique(mat, shader);
                                 shader.Param("DisableLighting").SetValue(false);
@@ -2592,22 +2592,22 @@ namespace Engine.Rendering
 
                                 shader.Param("World").SetValue(brushTranslation * WorldMatrix);
 
-                                shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.loadedMaterials.Length <= faceCopy.surface ? ErrorTexture : GlobalMapData.loadedMaterials[faceCopy.surface].Texture);
-                                shader.Param("BrushNorm").SetValue(GlobalMapData.loadedMaterials.Length <= faceCopy.surface ? WhiteTexture : GlobalMapData.loadedMaterials[faceCopy.surface].Normal);
-                                shader.Param("BrushSpec").SetValue(GlobalMapData.loadedMaterials.Length <= faceCopy.surface ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.loadedMaterials[faceCopy.surface].Specular);
+                                shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.LoadedMaterials.Length <= faceCopy.Surface ? ErrorTexture : GlobalMapData.LoadedMaterials[faceCopy.Surface].Texture);
+                                shader.Param("BrushNorm").SetValue(GlobalMapData.LoadedMaterials.Length <= faceCopy.Surface ? WhiteTexture : GlobalMapData.LoadedMaterials[faceCopy.Surface].Normal);
+                                shader.Param("BrushSpec").SetValue(GlobalMapData.LoadedMaterials.Length <= faceCopy.Surface ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.LoadedMaterials[faceCopy.Surface].Specular);
 
-                                foreach (var tex in GlobalMapData.loadedMaterials[faceCopy.surface].GetExtraTextures())
+                                foreach (var tex in GlobalMapData.LoadedMaterials[faceCopy.Surface].GetExtraTextures())
                                 {
                                     shader.Param(tex.Key).SetValue(tex.Value);
                                 }
 
-                                if (GlobalMapData.loadedMaterials.Length > faceCopy.surface && GlobalMapData.loadedMaterials[faceCopy.surface].GetFlag("receiveRefractionTexture"))
+                                if (GlobalMapData.LoadedMaterials.Length > faceCopy.Surface && GlobalMapData.LoadedMaterials[faceCopy.Surface].GetFlag("receiveRefractionTexture"))
                                 {
                                     shader.Param("RefractionTex").SetValue(refractionRenderTexture);
                                     shader.Param("RefractionDepth").SetValue(ScreenRenderTexture.DepthTexture);
                                 }
 
-                                if (GlobalMapData.loadedMaterials.Length > faceCopy.surface && GlobalMapData.loadedMaterials[faceCopy.surface].GetFlag("receivePlanarReflection"))
+                                if (GlobalMapData.LoadedMaterials.Length > faceCopy.Surface && GlobalMapData.LoadedMaterials[faceCopy.Surface].GetFlag("receivePlanarReflection"))
                                 {
                                     if (faceToGroupLookup.TryGetValue(PackFaceKey(brush, faceIndex), out int groupIndex))
                                     {
@@ -2619,13 +2619,13 @@ namespace Engine.Rendering
                                 Instance.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
 
                                 var baseCull = wasWindingFlipped ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
-                                bool applyNoCull = mat.noCull && !wasWindingFlipped;
+                                bool applyNoCull = mat.NoCull && !wasWindingFlipped;
 
                                 Instance.GraphicsDevice.RasterizerState = applyNoCull ? RasterizerState.CullNone : baseCull;
 
                                 shader.RenderEachPass(() =>
                                 {
-                                    Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, faceCopy.indices.Length / 3);
+                                    Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, faceCopy.Indices.Length / 3);
                                 });
 
                                 Instance.GraphicsDevice.RasterizerState = baseCull;
@@ -2637,16 +2637,16 @@ namespace Engine.Rendering
                 }
                 else
                 {
-                    foreach (ref readonly MatGroup group in GlobalMapData.activeMap.brushes[brush].matGroups.AsSpan())
+                    foreach (ref readonly MatGroup group in GlobalMapData.ActiveMap.Brushes[brush].MatGroups.AsSpan())
                     {
-                        var mat = GlobalMapData.loadedMaterials[group.MaterialID];
+                        var mat = GlobalMapData.LoadedMaterials[group.MaterialID];
 
-                        if (!mat.transparent)
+                        if (!mat.Transparent)
                         {
                             Instance.GraphicsDevice.Indices = group.IndexBuffer;
 
-                            var shader = GlobalMapData.loadedMaterials.Length <= group.MaterialID ? Instance.WorldShader :
-                                                                        (ShaderHandle)GlobalMapData.loadedMaterials[group.MaterialID].Shader;
+                            var shader = GlobalMapData.LoadedMaterials.Length <= group.MaterialID ? Instance.WorldShader :
+                                                                        (ShaderHandle)GlobalMapData.LoadedMaterials[group.MaterialID].Shader;
 
                             ApplyMaterialTechnique(mat, shader);
                             shader.Param("DisableLighting").SetValue(false);
@@ -2668,17 +2668,17 @@ namespace Engine.Rendering
 
                             shader.Param("World").SetValue(brushTranslation * WorldMatrix);
 
-                            shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.loadedMaterials.Length <= group.MaterialID ? ErrorTexture : GlobalMapData.loadedMaterials[group.MaterialID].Texture);
-                            shader.Param("BrushNorm").SetValue(GlobalMapData.loadedMaterials.Length <= group.MaterialID ? WhiteTexture : GlobalMapData.loadedMaterials[group.MaterialID].Normal);
-                            shader.Param("BrushSpec").SetValue(GlobalMapData.loadedMaterials.Length <= group.MaterialID ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.loadedMaterials[group.MaterialID].Specular);
+                            shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.LoadedMaterials.Length <= group.MaterialID ? ErrorTexture : GlobalMapData.LoadedMaterials[group.MaterialID].Texture);
+                            shader.Param("BrushNorm").SetValue(GlobalMapData.LoadedMaterials.Length <= group.MaterialID ? WhiteTexture : GlobalMapData.LoadedMaterials[group.MaterialID].Normal);
+                            shader.Param("BrushSpec").SetValue(GlobalMapData.LoadedMaterials.Length <= group.MaterialID ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.LoadedMaterials[group.MaterialID].Specular);
 
-                            foreach (var tex in GlobalMapData.loadedMaterials[group.MaterialID].GetExtraTextures())
+                            foreach (var tex in GlobalMapData.LoadedMaterials[group.MaterialID].GetExtraTextures())
                             {
                                 shader.Param(tex.Key).SetValue(tex.Value);
                             }
 
-                            if (GlobalMapData.loadedMaterials.Length > group.MaterialID &&
-                                GlobalMapData.loadedMaterials[group.MaterialID].GetFlag("receiveRefractionTexture"))
+                            if (GlobalMapData.LoadedMaterials.Length > group.MaterialID &&
+                                GlobalMapData.LoadedMaterials[group.MaterialID].GetFlag("receiveRefractionTexture"))
                             {
                                 shader.Param("RefractionTex").SetValue(refractionRenderTexture);
                                 shader.Param("RefractionDepth").SetValue(ScreenRenderTexture.DepthTexture);
@@ -2686,7 +2686,7 @@ namespace Engine.Rendering
 
                             Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-                            if (mat.noCull && !isWindingFlipped)
+                            if (mat.NoCull && !isWindingFlipped)
                             {
                                 Instance.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
                             }
@@ -2696,7 +2696,7 @@ namespace Engine.Rendering
                                 Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, groupCopy.IndexBuffer.IndexCount / 3);
                             });
 
-                            if (mat.noCull && !isWindingFlipped)
+                            if (mat.NoCull && !isWindingFlipped)
                             {
                                 Instance.GraphicsDevice.RasterizerState = cullmode;
                             }
@@ -2706,16 +2706,16 @@ namespace Engine.Rendering
                         else
                         {
                             MatGroup groupCopy = group;
-                            bool isEntityOwned = brushData.isEntity;
+                            bool isEntityOwned = brushData.IsEntity;
                             bool wasWindingFlipped = isWindingFlipped;
 
                             TransparentRenderQueue.RegisterBrushFace(isEntityOwned, transparentLeafRank, transparentSortPosition, () =>
                             {
-                                Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.activeMap.brushes[brush].brushVertexBuffer);
+                                Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.ActiveMap.Brushes[brush].BrushVertexBuffer);
                                 Instance.GraphicsDevice.Indices = groupCopy.IndexBuffer;
 
-                                var shader = GlobalMapData.loadedMaterials.Length <= groupCopy.MaterialID ? Instance.WorldShader :
-                                                                            (ShaderHandle)GlobalMapData.loadedMaterials[groupCopy.MaterialID].Shader;
+                                var shader = GlobalMapData.LoadedMaterials.Length <= groupCopy.MaterialID ? Instance.WorldShader :
+                                                                            (ShaderHandle)GlobalMapData.LoadedMaterials[groupCopy.MaterialID].Shader;
 
                                 ApplyMaterialTechnique(mat, shader);
                                 shader.Param("DisableLighting").SetValue(false);
@@ -2737,17 +2737,17 @@ namespace Engine.Rendering
 
                                 shader.Param("World").SetValue(brushTranslation * WorldMatrix);
 
-                                shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.loadedMaterials.Length <= groupCopy.MaterialID ? ErrorTexture : GlobalMapData.loadedMaterials[groupCopy.MaterialID].Texture);
-                                shader.Param("BrushNorm").SetValue(GlobalMapData.loadedMaterials.Length <= groupCopy.MaterialID ? WhiteTexture : GlobalMapData.loadedMaterials[groupCopy.MaterialID].Normal);
-                                shader.Param("BrushSpec").SetValue(GlobalMapData.loadedMaterials.Length <= groupCopy.MaterialID ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.loadedMaterials[groupCopy.MaterialID].Specular);
+                                shader.Param("BrushTex").SetValue(ShowBlankTexture ? DimTexture : GlobalMapData.LoadedMaterials.Length <= groupCopy.MaterialID ? ErrorTexture : GlobalMapData.LoadedMaterials[groupCopy.MaterialID].Texture);
+                                shader.Param("BrushNorm").SetValue(GlobalMapData.LoadedMaterials.Length <= groupCopy.MaterialID ? WhiteTexture : GlobalMapData.LoadedMaterials[groupCopy.MaterialID].Normal);
+                                shader.Param("BrushSpec").SetValue(GlobalMapData.LoadedMaterials.Length <= groupCopy.MaterialID ? WhiteTexture : ShowMaterialShine ? WhiteTexture : GlobalMapData.LoadedMaterials[groupCopy.MaterialID].Specular);
 
-                                foreach (var tex in GlobalMapData.loadedMaterials[groupCopy.MaterialID].GetExtraTextures())
+                                foreach (var tex in GlobalMapData.LoadedMaterials[groupCopy.MaterialID].GetExtraTextures())
                                 {
                                     shader.Param(tex.Key).SetValue(tex.Value);
                                 }
 
-                                if (GlobalMapData.loadedMaterials.Length > groupCopy.MaterialID &&
-                                    GlobalMapData.loadedMaterials[groupCopy.MaterialID].GetFlag("receiveRefractionTexture"))
+                                if (GlobalMapData.LoadedMaterials.Length > groupCopy.MaterialID &&
+                                    GlobalMapData.LoadedMaterials[groupCopy.MaterialID].GetFlag("receiveRefractionTexture"))
                                 {
                                     shader.Param("RefractionTex").SetValue(refractionRenderTexture);
                                     shader.Param("RefractionDepth").SetValue(ScreenRenderTexture.DepthTexture);
@@ -2756,7 +2756,7 @@ namespace Engine.Rendering
                                 Instance.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
 
                                 var baseCull = wasWindingFlipped ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
-                                bool applyNoCull = mat.noCull && !wasWindingFlipped;
+                                bool applyNoCull = mat.NoCull && !wasWindingFlipped;
 
                                 Instance.GraphicsDevice.RasterizerState = applyNoCull ? RasterizerState.CullNone : baseCull;
 
@@ -2790,22 +2790,22 @@ namespace Engine.Rendering
                     Instance.WorldShader.Param("ExpandWireframe").SetValue(true);
 
                     Instance.GraphicsDevice.RasterizerState = WireframeRasterizerState;
-                    Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.activeMap.brushes[brush].brushVertexBuffer);
-                    foreach (ref readonly Face face in GlobalMapData.activeMap.brushes[brush].faces.AsSpan())
+                    Instance.GraphicsDevice.SetVertexBuffer(GlobalMapData.ActiveMap.Brushes[brush].BrushVertexBuffer);
+                    foreach (ref readonly Face face in GlobalMapData.ActiveMap.Brushes[brush].Faces.AsSpan())
                     {
-                        if (face.faceIndices == null) continue;
+                        if (face.FaceIndices == null) continue;
 
-                        Instance.GraphicsDevice.Indices = face.faceIndices;
+                        Instance.GraphicsDevice.Indices = face.FaceIndices;
 
                         var faceCopy = face;
-                        Instance.WorldShader.RenderEachPass(() => Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, faceCopy.indices.Length / 3));
+                        Instance.WorldShader.RenderEachPass(() => Instance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, faceCopy.Indices.Length / 3));
                     }
                     Instance.GraphicsDevice.RasterizerState = oldrasterizer;
                     Instance.WorldShader.Param("ExpandWireframe").SetValue(false);
                 }
                 else
                 {
-                    var verts = CMath.GetDebugEdges(GlobalMapData.activeMap.brushBounds[brush]);
+                    var verts = CMath.GetDebugEdges(GlobalMapData.ActiveMap.BrushBounds[brush]);
                     debugBuffer = new VertexBuffer(Instance.GraphicsDevice, typeof(VertexPosition), verts.Length, BufferUsage.WriteOnly);
                     debugBuffer.SetData(verts);
                     Instance.WorldShader.RenderEachPass(() =>

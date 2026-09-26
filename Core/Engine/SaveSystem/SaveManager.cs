@@ -85,16 +85,16 @@ namespace Engine.SaveSystem
 
         private static void ApplyCommonSaveFields(WorldEntity ent, Save.EntitySaveData entityRef, Vector3 positionOffset)
         {
-            ent.Position = entityRef.reference.position + positionOffset;
-            ent.Rotation = entityRef.reference.rotation;
+            ent.Position = entityRef.reference.Position + positionOffset;
+            ent.Rotation = entityRef.reference.Rotation;
             ent.Velocity = entityRef.velocity;
 
             ent.EntityOutputs = entityRef.outputs;
             RehydrateOutputScripts(ent.EntityOutputs);
 
-            ent.Scale = entityRef.reference.scale;
-            ent.properties = entityRef.reference.properties;
-            ent.Name = entityRef.reference.name;
+            ent.Scale = entityRef.reference.Scale;
+            ent.properties = entityRef.reference.Properties;
+            ent.Name = entityRef.reference.Name;
             ent.IsSimulated = entityRef.isCurrentlySimulated;
         }
         private static void RehydrateOutputScripts(Dictionary<string, EntityOutput[]>? outputs)
@@ -120,21 +120,21 @@ namespace Engine.SaveSystem
 
             var brushEnt = (BrushEntity)ent;
             brushEnt.brushSet = entityRef.brushes;
-            brushEnt.Position = GlobalMapData.activeMap.brushes[entityRef.brushes[0]].position + positionOffset;
+            brushEnt.Position = GlobalMapData.ActiveMap.Brushes[entityRef.brushes[0]].Position + positionOffset;
 
             foreach (var bi in entityRef.brushes)
             {
-                if (bi < 0 || bi >= GlobalMapData.activeMap.brushes.Length) continue;
-                GlobalMapData.activeMap.brushes[bi].entity = brushEnt;
+                if (bi < 0 || bi >= GlobalMapData.ActiveMap.Brushes.Length) continue;
+                GlobalMapData.ActiveMap.Brushes[bi].Entity = brushEnt;
             }
         }
 
         private static WorldEntity RestoreEntityFromSaveData(Save.EntitySaveData entityRef, Vector3 positionOffset = default)
         {
-            if (entityRef.reference.entityName == null) return null;
-            if (!EntityCompiler.EntityLookupTable.ContainsKey(entityRef.reference.entityName)) return null;
+            if (entityRef.reference.EntityName == null) return null;
+            if (!EntityCompiler.EntityLookupTable.ContainsKey(entityRef.reference.EntityName)) return null;
 
-            var ent = (WorldEntity)Activator.CreateInstance(EntityCompiler.EntityLookupTable[entityRef.reference.entityName]);
+            var ent = (WorldEntity)Activator.CreateInstance(EntityCompiler.EntityLookupTable[entityRef.reference.EntityName]);
             ApplyCommonSaveFields(ent, entityRef, positionOffset);
             ApplyBrushEntityData(ent, entityRef, positionOffset);
             return ent;
@@ -420,14 +420,14 @@ namespace Engine.SaveSystem
 
                                 foreach (var snap in snapshots)
                                 {
-                                    if (snap.reference.entityName == null) continue;
-                                    if (!EntityCompiler.EntityLookupTable.ContainsKey(snap.reference.entityName)) continue;
+                                    if (snap.reference.EntityName == null) continue;
+                                    if (!EntityCompiler.EntityLookupTable.ContainsKey(snap.reference.EntityName)) continue;
 
                                     var entityIDinMap = EntityManager.entities.FindIndex(
                                         e => e != null && e.SaveID == snap.entitySaveID);
 
                                     var newEnt = entityIDinMap == -1
-                                        ? (WorldEntity)Activator.CreateInstance(EntityCompiler.EntityLookupTable[snap.reference.entityName])
+                                        ? (WorldEntity)Activator.CreateInstance(EntityCompiler.EntityLookupTable[snap.reference.EntityName])
                                         : EntityManager.entities[entityIDinMap];
 
                                     ApplyCommonSaveFields(newEnt, snap, offset);
@@ -474,12 +474,12 @@ namespace Engine.SaveSystem
                         entitySaveID = be.SaveID,
                         reference = new EntityReference
                         {
-                            entityName = entity.GetType().Name,
-                            name = entity.Name,
-                            properties = entity.properties,
-                            position = entity.WorldPosition,
-                            rotation = entity.WorldRotation,
-                            scale = entity.WorldScale,
+                            EntityName = entity.GetType().Name,
+                            Name = entity.Name,
+                            Properties = entity.properties,
+                            Position = entity.WorldPosition,
+                            Rotation = entity.WorldRotation,
+                            Scale = entity.WorldScale,
                             entityMoveParentName = entity.MoveParent?.Name
                         },
                         customData = entity.CaptureCustomData(),
@@ -498,12 +498,12 @@ namespace Engine.SaveSystem
                         entitySaveID = entity.SaveID,
                         reference = new EntityReference
                         {
-                            entityName = entity.GetType().Name,
-                            name = entity.Name,
-                            properties = entity.properties,
-                            position = entity.WorldPosition,
-                            rotation = entity.WorldRotation,
-                            scale = entity.WorldScale,
+                            EntityName = entity.GetType().Name,
+                            Name = entity.Name,
+                            Properties = entity.properties,
+                            Position = entity.WorldPosition,
+                            Rotation = entity.WorldRotation,
+                            Scale = entity.WorldScale,
                             entityMoveParentName = entity.MoveParent?.Name
                         },
                         velocity = entity.Velocity,

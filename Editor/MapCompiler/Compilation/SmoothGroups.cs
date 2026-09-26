@@ -29,15 +29,15 @@ internal class SmoothGroups
 
         for (int b = 0; b < brushes.Length; b++)
         {
-            for (int f = 0; f < brushes[b].faces.Length; f++)
+            for (int f = 0; f < brushes[b].Faces.Length; f++)
             {
-                var face = brushes[b].faces[f];
-                if (face.smoothGroup == 0 || face.indices == null) continue;
+                var face = brushes[b].Faces[f];
+                if (face.smoothGroup == 0 || face.Indices == null) continue;
 
-                foreach (var vertIdx in face.indices.Distinct())
+                foreach (var vertIdx in face.Indices.Distinct())
                 {
-                    Vector3 worldPos = brushes[b].vertices[vertIdx] + brushes[b].position;
-                    refs.Add((b, f, vertIdx, worldPos, face.normal, face.tangent, face.binormal, face.smoothGroup));
+                    Vector3 worldPos = brushes[b].Vertices[vertIdx] + brushes[b].Position;
+                    refs.Add((b, f, vertIdx, worldPos, face.Normal, face.Tangent, face.Binormal, face.smoothGroup));
                 }
             }
         }
@@ -143,9 +143,9 @@ internal class SmoothGroups
     }
     public static int[] BuildFaceLoop(Brush brush, int faceIndex)
     {
-        var face = brush.faces[faceIndex];
-        if (face.indices == null || face.indices.Length == 0) return Array.Empty<int>();
-        return face.indices.Distinct().OrderBy(x => x).ToArray();
+        var face = brush.Faces[faceIndex];
+        if (face.Indices == null || face.Indices.Length == 0) return Array.Empty<int>();
+        return face.Indices.Distinct().OrderBy(x => x).ToArray();
     }
 
     public static SmoothedVertexData SampleAt(
@@ -158,16 +158,16 @@ internal class SmoothGroups
         Dictionary<(int, int, int), SmoothedVertexData> smoothed,
         int[] precomputedLoop)
     {
-        var face = brush.faces[faceIndex];
+        var face = brush.Faces[faceIndex];
 
         SmoothedVertexData flat = new()
         {
-            Normal = face.normal,
-            Tangent = face.tangent,
-            Binormal = face.binormal,
-            Basis1 = face.basis1,
-            Basis2 = face.basis2,
-            Basis3 = face.basis3,
+            Normal = face.Normal,
+            Tangent = face.Tangent,
+            Binormal = face.Binormal,
+            Basis1 = face.Basis1,
+            Basis2 = face.Basis2,
+            Basis3 = face.Basis3,
             Position = worldPos,
         };
 
@@ -183,10 +183,10 @@ internal class SmoothGroups
         for (int i = 0; i < n; i++)
         {
             data[i] = smoothed.TryGetValue((brushIndex, faceIndex, loopIdx[i]), out var sd) ? sd : flat;
-            pos[i] = brush.vertices[loopIdx[i]] + brush.position;
+            pos[i] = brush.Vertices[loopIdx[i]] + brush.Position;
         }
 
-        Vector3 normal = Vector3.Normalize(face.normal);
+        Vector3 normal = Vector3.Normalize(face.Normal);
         var d = new Vector3[n];
         var r = new float[n];
         const float eps = 1e-5f;

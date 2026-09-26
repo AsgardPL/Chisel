@@ -64,7 +64,7 @@ namespace Rockwall2.Tools
 
                 var hint = new Hint
                 {
-                    position = pos,
+                    Position = pos,
                 };
 
                 Toolbelt.OpenHint(hint, () => waitDDown = false);

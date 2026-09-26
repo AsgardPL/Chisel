@@ -73,12 +73,12 @@ namespace Engine.Utils
             if (brush == -1 || face == -1) return null;
             if (faceCubemaps.TryGetValue((brush,face), out var cubemap)) return cubemap;
 
-            var brushObj = GlobalMapData.activeMap.brushes[brush];
-            var verts = brushObj.faces[face].indices.Select(i => brushObj.vertices[i]);
+            var brushObj = GlobalMapData.ActiveMap.Brushes[brush];
+            var verts = brushObj.Faces[face].Indices.Select(i => brushObj.Vertices[i]);
             Vector3 pos = Vector3.Zero;
             foreach (var vert in verts) pos += vert;
             pos /= verts.Count();
-            pos += brushObj.position;
+            pos += brushObj.Position;
 
             float mindist = float.MaxValue;
             cubemap = null;

@@ -106,15 +106,15 @@ public class CSGUtils
         bool anySuccess = false;
         List<Brush> toAdd = new List<Brush>();
 
-        var sourceFaces = MapTools.Brushes[sourceBrushID].faces;
-        var sourcePos = MapTools.Brushes[sourceBrushID].position;
+        var sourceFaces = MapTools.Brushes[sourceBrushID].Faces;
+        var sourcePos = MapTools.Brushes[sourceBrushID].Position;
 
         // Cutter planes computed once, in world space.
         var cutterPlanes = new List<Plane>();
         foreach (var face in sourceFaces)
         {
-            if (!face.plane.HasValue) continue;
-            cutterPlanes.Add(new Plane(face.normal, face.plane.Value.D - Vector3.Dot(face.normal, sourcePos)));
+            if (!face.Plane.HasValue) continue;
+            cutterPlanes.Add(new Plane(face.Normal, face.Plane.Value.D - Vector3.Dot(face.Normal, sourcePos)));
         }
 
         foreach (var brushID in affectedBrushes)
@@ -210,12 +210,12 @@ public class CSGUtils
             var testBrushBounds = MapTools.BrushBounds[brushID];
 
             List<Plane> splits = new List<Plane>();
-            for (int f = 0; f < MapTools.Brushes[sourceBrushID].faces.Length; f++)
+            for (int f = 0; f < MapTools.Brushes[sourceBrushID].Faces.Length; f++)
             {
-                var face = MapTools.Brushes[sourceBrushID].faces[f];
+                var face = MapTools.Brushes[sourceBrushID].Faces[f];
 
-                if (!face.plane.HasValue) continue;
-                var testPlane = new Plane(face.normal, face.plane.Value.D - Vector3.Dot(face.normal, MapTools.Brushes[sourceBrushID].position));
+                if (!face.Plane.HasValue) continue;
+                var testPlane = new Plane(face.Normal, face.Plane.Value.D - Vector3.Dot(face.Normal, MapTools.Brushes[sourceBrushID].Position));
 
                 if (ClassifyBrush(workingBrush, testPlane) == PlaneIntersectionType.Intersecting)
                 {
@@ -263,7 +263,7 @@ public class CSGUtils
         var newBrushPos = Vector3.Zero;
         foreach (var idx in selectedBrushes)
         {
-            newBrushPos += WorldVertices(MapTools.Brushes[idx]).Aggregate((a,b)=>a+b) / MapTools.Brushes[idx].vertices.Length;
+            newBrushPos += WorldVertices(MapTools.Brushes[idx]).Aggregate((a,b)=>a+b) / MapTools.Brushes[idx].Vertices.Length;
         }
         newBrushPos /= selectedBrushes.Count;
 
@@ -276,14 +276,14 @@ public class CSGUtils
         }
 
         var poly = ConvexHull3D.BuildPolygonalHull(ConvexHull3D.Compute(allPoints));
-        var brush = BrushOperations.CreateBrushFromPlanes(poly.Select(p => p.plane).ToList(), sourceBrush.faces[0].materialName, sourceBrush.faces[0].surface);
+        var brush = BrushOperations.CreateBrushFromPlanes(poly.Select(p => p.plane).ToList(), sourceBrush.Faces[0].MaterialName, sourceBrush.Faces[0].Surface);
 
         MapTools.FinalizeDeletedObjects();
 
         if (brush.HasValue)
         {
             var b = brush.Value;
-            b.position = newBrushPos;
+            b.Position = newBrushPos;
             MapTools.AddBrush(b);
         }
         else return false;
@@ -303,14 +303,14 @@ public class CSGUtils
         newBrushPos /= worldPosVerts.Count;
 
         var poly = ConvexHull3D.BuildPolygonalHull(ConvexHull3D.Compute(worldPosVerts.Select(v=>v-newBrushPos).ToList()));
-        var brush = BrushOperations.CreateBrushFromPlanes(poly.Select(p => p.plane).ToList(), Toolbelt.ActiveTexture, GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]);
+        var brush = BrushOperations.CreateBrushFromPlanes(poly.Select(p => p.plane).ToList(), Toolbelt.ActiveTexture, GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]);
 
         MapTools.FinalizeDeletedObjects();
 
         if (brush.HasValue)
         {
             var b = brush.Value;
-            b.position = newBrushPos;
+            b.Position = newBrushPos;
             MapTools.AddBrush(b);
         }
         else return false;
@@ -322,16 +322,16 @@ public class CSGUtils
 
     static IEnumerable<Vector3> WorldVertices(Brush brush)
     {
-        foreach (var v in brush.vertices)
-            yield return v + brush.position;
+        foreach (var v in brush.Vertices)
+            yield return v + brush.Position;
     }
     static Plane GetWorldPlane(Brush brush, Face face)
     {
-        var plane = face.plane!.Value;
+        var plane = face.Plane!.Value;
 
         return new Plane(
-            face.normal,
-            plane.D - Vector3.Dot(face.normal, brush.position));
+            face.Normal,
+            plane.D - Vector3.Dot(face.Normal, brush.Position));
     }
     static bool AllVerticesOutsidePlane(Brush brush, Plane plane)
     {
@@ -357,9 +357,9 @@ public class CSGUtils
     {
         foreach (var v in WorldVertices(inner))
         {
-            foreach (var face in outer.faces)
+            foreach (var face in outer.Faces)
             {
-                if (!face.plane.HasValue)
+                if (!face.Plane.HasValue)
                     continue;
 
                 var plane = GetWorldPlane(outer, face);
@@ -373,9 +373,9 @@ public class CSGUtils
     }
     static bool PointInsideBrush(Vector3 worldPoint, Brush brush)
     {
-        foreach (var face in brush.faces)
+        foreach (var face in brush.Faces)
         {
-            if (!face.plane.HasValue)
+            if (!face.Plane.HasValue)
                 continue;
 
             var plane = GetWorldPlane(brush, face);
@@ -388,18 +388,18 @@ public class CSGUtils
     }
     static bool BrushesIntersect(Brush a, Brush b)
     {
-        foreach (var face in a.faces)
+        foreach (var face in a.Faces)
         {
-            if (!face.plane.HasValue)
+            if (!face.Plane.HasValue)
                 continue;
 
             if (AllVerticesOutsidePlane(b, GetWorldPlane(a, face)))
                 return false;
         }
 
-        foreach (var face in b.faces)
+        foreach (var face in b.Faces)
         {
-            if (!face.plane.HasValue)
+            if (!face.Plane.HasValue)
                 continue;
 
             if (AllVerticesOutsidePlane(a, GetWorldPlane(b, face)))

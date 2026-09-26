@@ -51,8 +51,8 @@ namespace Rockwall2.Tools
         {
             var saved = editingBrushes
                 .Select(bi => (bi,
-                               verts: (Vector3[])MapTools.Brushes[bi].vertices.Clone(),
-                               faces: (Face[])MapTools.Brushes[bi].faces.Clone()))
+                               verts: (Vector3[])MapTools.Brushes[bi].Vertices.Clone(),
+                               faces: (Face[])MapTools.Brushes[bi].Faces.Clone()))
                 .ToList();
 
             return () =>
@@ -60,8 +60,8 @@ namespace Rockwall2.Tools
                 foreach (var s in saved)
                 {
                     ref var b = ref MapTools.Brushes[s.bi];
-                    b.vertices = (Vector3[])s.verts.Clone();
-                    b.faces = (Face[])s.faces.Clone();
+                    b.Vertices = (Vector3[])s.verts.Clone();
+                    b.Faces = (Face[])s.faces.Clone();
                     BrushOperations.RebuildBrush(ref b);
                     MapTools.RecomputeBrushBounds(s.bi);
                 }
@@ -109,7 +109,7 @@ namespace Rockwall2.Tools
             {
                 var brush = MapTools.Brushes[bi];
                 var seen = new List<Vector3>();
-                foreach (var v in brush.vertices)
+                foreach (var v in brush.Vertices)
                 {
                     if (seen.Any(s => Vector3.DistanceSquared(s, v) < PosEps)) continue;
                     seen.Add(v);
@@ -125,8 +125,8 @@ namespace Rockwall2.Tools
                 var brush = MapTools.Brushes[bi];
                 foreach (var (iA, iB) in OtherMath.GetUniqueEdges(bi))
                 {
-                    if (Vector3.Distance(brush.vertices[iA], brush.vertices[iB]) < 0.1f) continue;
-                    yield return (bi, brush.vertices[iA], brush.vertices[iB]);
+                    if (Vector3.Distance(brush.Vertices[iA], brush.Vertices[iB]) < 0.1f) continue;
+                    yield return (bi, brush.Vertices[iA], brush.Vertices[iB]);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace Rockwall2.Tools
 
         bool IsSelected(Vert v) => selection.Any(s => SameVert(s, v));
 
-        static Vector3 World(Vert v) => v.pos + MapTools.Brushes[v.brush].position;
+        static Vector3 World(Vert v) => v.pos + MapTools.Brushes[v.brush].Position;
 
         void SelectVert(Vert v)
         {
@@ -159,7 +159,7 @@ namespace Rockwall2.Tools
             foreach (var v in verts)
             {
                 var brush = MapTools.Brushes[v.brush];
-                int i = Array.FindIndex(brush.vertices, p => SamePos(p, v.pos));
+                int i = Array.FindIndex(brush.Vertices, p => SamePos(p, v.pos));
                 if (i != -1) result.Add(new BrushVertexMoveable { brush = v.brush, vert = i });
             }
             return result;
@@ -207,7 +207,7 @@ namespace Rockwall2.Tools
                 // positions straight from the brushes before anything reorders them.
                 selection.Clear();
                 foreach (var obj in Toolbelt.SelectedObjects.OfType<BrushVertexMoveable>())
-                    selection.Add(new Vert { brush = obj.brush, pos = MapTools.Brushes[obj.brush].vertices[obj.vert] });
+                    selection.Add(new Vert { brush = obj.brush, pos = MapTools.Brushes[obj.brush].Vertices[obj.vert] });
             }
             wasGizmoDragging = isDragging;
 
@@ -271,8 +271,8 @@ namespace Rockwall2.Tools
             best = Pick3D;
             foreach (var (bi, a, b) in AllEdges())
             {
-                var wa = a + MapTools.Brushes[bi].position;
-                var wb = b + MapTools.Brushes[bi].position;
+                var wa = a + MapTools.Brushes[bi].Position;
+                var wb = b + MapTools.Brushes[bi].Position;
 
                 if (!OtherMath.ClipSegmentToNearPlane(wa, wb, vp.ViewMatrix, vp.ProjectionMatrix, out var ca, out var cb)) continue;
 
@@ -300,8 +300,8 @@ namespace Rockwall2.Tools
                 bool hi = hoveredEdge.HasValue && hoveredEdge.Value.a.brush == bi &&
                           SamePos(hoveredEdge.Value.a.pos, a) && SamePos(hoveredEdge.Value.b.pos, b);
 
-                var wa = a + MapTools.Brushes[bi].position;
-                var wb = b + MapTools.Brushes[bi].position;
+                var wa = a + MapTools.Brushes[bi].Position;
+                var wb = b + MapTools.Brushes[bi].Position;
                 if (!OtherMath.ClipSegmentToNearPlane(wa, wb, vp.ViewMatrix, vp.ProjectionMatrix, out var ca, out var cb)) continue;
 
                 var pa = graphicsDevice.Viewport.Project(ca, vp.ProjectionMatrix, vp.ViewMatrix, vp.WorldMatrix);
@@ -415,8 +415,8 @@ namespace Rockwall2.Tools
             best = Pick2D;
             foreach (var (bi, a, b) in AllEdges())
             {
-                var sa = vp.WorldToLocal(a + MapTools.Brushes[bi].position);
-                var sb = vp.WorldToLocal(b + MapTools.Brushes[bi].position);
+                var sa = vp.WorldToLocal(a + MapTools.Brushes[bi].Position);
+                var sb = vp.WorldToLocal(b + MapTools.Brushes[bi].Position);
                 var mid = (sa + sb) / 2f;
 
                 float d = Vector2.Distance(mid, mouse);
@@ -517,8 +517,8 @@ namespace Rockwall2.Tools
 
             foreach (var (bi, a, b) in AllEdges())
             {
-                var sa = vp.WorldToLocal(a + MapTools.Brushes[bi].position);
-                var sb = vp.WorldToLocal(b + MapTools.Brushes[bi].position);
+                var sa = vp.WorldToLocal(a + MapTools.Brushes[bi].Position);
+                var sb = vp.WorldToLocal(b + MapTools.Brushes[bi].Position);
 
                 bool sel = IsSelected(new Vert { brush = bi, pos = a }) && IsSelected(new Vert { brush = bi, pos = b });
                 bool hi = hoveredEdge.HasValue && hoveredEdge.Value.a.brush == bi &&

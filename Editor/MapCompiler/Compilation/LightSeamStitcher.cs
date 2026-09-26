@@ -23,10 +23,10 @@ public static class LightmapSeamStitcher
         for (int bi = 0; bi < brushes.Length; bi++)
         {
             var brush = brushes[bi];
-            for (int fi = 0; fi < brush.faces.Length; fi++)
+            for (int fi = 0; fi < brush.Faces.Length; fi++)
             {
-                if (!brush.faces[fi].drawn) continue;
-                var idx = brush.faces[fi].indices;
+                if (!brush.Faces[fi].Drawn) continue;
+                var idx = brush.Faces[fi].Indices;
                 var seen = new HashSet<(int, int)>();
                 for (int t = 0; t < idx.Length; t += 3)
                 {
@@ -36,8 +36,8 @@ public static class LightmapSeamStitcher
                         int lo = Math.Min(i0, i1), hi = Math.Max(i0, i1);
                         if (!seen.Add((lo, hi))) continue;
                         edges.Add((
-                            brush.vertices[i0] + brush.position,
-                            brush.vertices[i1] + brush.position,
+                            brush.Vertices[i0] + brush.Position,
+                            brush.Vertices[i1] + brush.Position,
                             bi, fi));
                     }
                 }
@@ -78,8 +78,8 @@ public static class LightmapSeamStitcher
 
                             if (!EdgesMatch(edges[i].a, edges[i].b, edges[j].a, edges[j].b)) continue;
 
-                            Vector3 nA = brushes[edges[i].brush].faces[edges[i].face].normal;
-                            Vector3 nB = brushes[edges[j].brush].faces[edges[j].face].normal;
+                            Vector3 nA = brushes[edges[i].brush].Faces[edges[i].face].Normal;
+                            Vector3 nB = brushes[edges[j].brush].Faces[edges[j].face].Normal;
                             if (Vector3.Dot(nA, nB) >= NormalThreshold)
                                 pairs.Add((i, j, EdgesParallel(edges[i].a, edges[i].b, edges[j].a, edges[j].b)));
                         }
@@ -158,11 +158,11 @@ public static class LightmapSeamStitcher
 
     private static Vector2 BarycentricLightmapUV(Vector3 worldPt, Brush brush, int faceIdx)
     {
-        var face = brush.faces[faceIdx];
-        var idx = face.indices;
-        var verts = brush.vertices;
-        var lmUvs = brush.lightmapUvs;
-        Vector3 local = worldPt - brush.position;
+        var face = brush.Faces[faceIdx];
+        var idx = face.Indices;
+        var verts = brush.Vertices;
+        var lmUvs = brush.LightmapUVs;
+        Vector3 local = worldPt - brush.Position;
 
         float bestPenalty = float.MaxValue;
         Vector2 best = Vector2.Zero;

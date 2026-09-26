@@ -27,7 +27,7 @@ public static class EditorDecalPreview
 
     static Vector3 ReadPosition(EntityReference ent, string name, Vector3 fallback)
     {
-        var raw = ent.properties?.FirstOrDefault(p => p.Name == name).Value;
+        var raw = ent.Properties?.FirstOrDefault(p => p.Name == name).Value;
         if (string.IsNullOrEmpty(raw))
         {
             return fallback;
@@ -41,11 +41,11 @@ public static class EditorDecalPreview
 
     static float ReadFloat(EntityReference ent, string name, float fallback)
     {
-        var raw = ent.properties?.FirstOrDefault(p => p.Name == name).Value;
+        var raw = ent.Properties?.FirstOrDefault(p => p.Name == name).Value;
         return string.IsNullOrEmpty(raw) ? fallback : float.Parse(raw, CultureInfo.InvariantCulture);
     }
 
-    static string ReadString(EntityReference ent, string name) => ent.properties?.FirstOrDefault(p => p.Name == name).Value;
+    static string ReadString(EntityReference ent, string name) => ent.Properties?.FirstOrDefault(p => p.Name == name).Value;
 
     public static void DrawForEntity(GraphicsDevice gd, BasicEffect basicEffect, EntityReference ent)
     {
@@ -54,12 +54,12 @@ public static class EditorDecalPreview
         {
             return;
         }
-        if (!GlobalMapData.materialNameToIndex.TryGetValue(materialName, out int materialIndex))
+        if (!GlobalMapData.MaterialNameToIndex.TryGetValue(materialName, out int materialIndex))
         {
             return;
         }
 
-        Texture2D texture = GlobalMapData.loadedMaterials[materialIndex].Texture;
+        Texture2D texture = GlobalMapData.LoadedMaterials[materialIndex].Texture;
         if (texture == null)
         {
             return;
@@ -71,7 +71,7 @@ public static class EditorDecalPreview
         Vector2 uvOffset = new(ReadFloat(ent, "Decal UV Offset X", 0f), ReadFloat(ent, "Decal UV Offset Y", 0f));
 
         Guid guid = ent.GroupingID ?? Guid.Empty;
-        string dirtyKey = $"{ent.position}|{ent.spawnRotation}|{min}|{max}|{materialName}|{uvScale}|{uvOffset}";
+        string dirtyKey = $"{ent.Position}|{ent.SpawnRotation}|{min}|{max}|{materialName}|{uvScale}|{uvOffset}";
 
         if (!cache.TryGetValue(guid, out var cached) || cached.dirtyKey != dirtyKey)
         {
@@ -113,12 +113,12 @@ public static class EditorDecalPreview
     static Cached Rebuild(GraphicsDevice gd, EntityReference ent, Vector3 min, Vector3 max, Vector2 uvScale, Vector2 uvOffset)
     {
         Matrix rot = Matrix.CreateFromYawPitchRoll(
-            MathHelper.ToRadians(ent.spawnRotation.X),
-            MathHelper.ToRadians(ent.spawnRotation.Y),
-            MathHelper.ToRadians(ent.spawnRotation.Z));
+            MathHelper.ToRadians(ent.SpawnRotation.X),
+            MathHelper.ToRadians(ent.SpawnRotation.Y),
+            MathHelper.ToRadians(ent.SpawnRotation.Z));
 
         Vector3 extents = (max - min) * 0.5f;
-        Vector3 worldCenter = ent.position + Vector3.Transform(min + extents, rot);
+        Vector3 worldCenter = ent.Position + Vector3.Transform(min + extents, rot);
         Matrix boxWorld = rot * Matrix.CreateTranslation(worldCenter);
         Matrix boxInverse = Matrix.Invert(boxWorld);
 
@@ -176,26 +176,26 @@ public static class EditorDecalPreview
             }
 
             var brush = MapTools.Brushes[i];
-            if (brush.isClip || (brush.isEntity && !brush.isDetail) || brush.isLightNodeVolume)
+            if (brush.IsClip || (brush.IsEntity && !brush.IsDetail) || brush.IsLightNodeVolume)
             {
                 continue;
             }
 
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
-                var face = brush.faces[f];
-                if (Vector3.Dot(face.normal, forward) < 0)
+                var face = brush.Faces[f];
+                if (Vector3.Dot(face.Normal, forward) < 0)
                 {
                     continue;
                 }
 
                 polygonScratch.Clear();
-                foreach (var idx in face.indices)
+                foreach (var idx in face.Indices)
                 {
-                    var vert = brush.vertices[idx] + brush.position;
+                    var vert = brush.Vertices[idx] + brush.Position;
                     if (!polygonScratch.Any(p => Vector3.DistanceSquared(p, vert) < 1e-8f))
                     {
-                        polygonScratch.Add(vert + face.normal*0.01f);
+                        polygonScratch.Add(vert + face.Normal*0.01f);
                     }
                 }
                 if (polygonScratch.Count < 3)
@@ -218,17 +218,17 @@ public static class EditorDecalPreview
             for (int i = 0; i < MapTools.Terrains.Length; i++)
             {
                 var terrain = MapTools.Terrains[i];
-                if (terrain.bounds.Contains(worldAABB) == ContainmentType.Disjoint)
+                if (terrain.Bounds.Contains(worldAABB) == ContainmentType.Disjoint)
                 {
                     continue;
                 }
 
-                for (int t = 0; t < terrain.triangles.Length; t += 3)
+                for (int t = 0; t < terrain.Triangles.Length; t += 3)
                 {
                     polygonScratch.Clear();
-                    polygonScratch.Add(terrain.vertices[terrain.triangles[t]].Position + terrain.vertices[terrain.triangles[t]].Normal*0.01f);
-                    polygonScratch.Add(terrain.vertices[terrain.triangles[t + 1]].Position + terrain.vertices[terrain.triangles[t + 1]].Normal * 0.01f);
-                    polygonScratch.Add(terrain.vertices[terrain.triangles[t + 2]].Position + terrain.vertices[terrain.triangles[t + 2]].Normal * 0.01f);
+                    polygonScratch.Add(terrain.Vertices[terrain.Triangles[t]].Position + terrain.Vertices[terrain.Triangles[t]].Normal*0.01f);
+                    polygonScratch.Add(terrain.Vertices[terrain.Triangles[t + 1]].Position + terrain.Vertices[terrain.Triangles[t + 1]].Normal * 0.01f);
+                    polygonScratch.Add(terrain.Vertices[terrain.Triangles[t + 2]].Position + terrain.Vertices[terrain.Triangles[t + 2]].Normal * 0.01f);
 
                     ClipPolygonAgainstPlanes(polygonScratch, clipPlanes, clippedScratch);
                     if (clippedScratch.Count < 3)

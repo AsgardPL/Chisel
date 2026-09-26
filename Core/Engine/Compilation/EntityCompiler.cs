@@ -117,61 +117,61 @@ namespace Engine.Compilation
                 //Register their properties, in all three flavors. Yummy
                 foreach (var descriptor in entity.GetCustomAttributes(typeof(ExposeEntityProperty), true).Cast<ExposeEntityProperty>())
                 {
-                    meta.properties.Add(new EntityPropertyDescriptor
+                    meta.Properties.Add(new EntityPropertyDescriptor
                     {
-                        name = descriptor.name,
-                        type = descriptor.type,
-                        hint = descriptor.hint,
-                        category = descriptor.category,
-                        defaultValue = descriptor.defaultValue,
-                        min = descriptor.min,
-                        max = descriptor.max
+                        Name = descriptor.name,
+                        Type = descriptor.type,
+                        Hint = descriptor.hint,
+                        Category = descriptor.category,
+                        DefaultValue = descriptor.defaultValue,
+                        Min = descriptor.min,
+                        Max = descriptor.max
                     });
                 }
                 foreach (var descriptor in entity.GetCustomAttributes(typeof(ExposeEntityPropertyEnum), true).Cast<ExposeEntityPropertyEnum>())
                 {
-                    meta.properties.Add(new EntityPropertyDescriptor
+                    meta.Properties.Add(new EntityPropertyDescriptor
                     {
-                        name = descriptor.name,
-                        type = EntityPropertyType.Enum,
-                        hint = descriptor.hint,
-                        category = descriptor.category,
-                        options = descriptor.options
+                        Name = descriptor.name,
+                        Type = EntityPropertyType.Enum,
+                        Hint = descriptor.hint,
+                        Category = descriptor.category,
+                        Options = descriptor.options
                     });
                 }
                 foreach (var descriptor in entity.GetCustomAttributes(typeof(ExposeEntityPropertyTarget), true).Cast<ExposeEntityPropertyTarget>())
                 {
-                    meta.properties.Add(new EntityPropertyDescriptor
+                    meta.Properties.Add(new EntityPropertyDescriptor
                     {
-                        name = descriptor.name,
-                        type = EntityPropertyType.EntityTarget,
-                        hint = descriptor.hint,
-                        category = descriptor.category,
-                        targetFilter = descriptor.classFilter
+                        Name = descriptor.name,
+                        Type = EntityPropertyType.EntityTarget,
+                        Hint = descriptor.hint,
+                        Category = descriptor.category,
+                        TargetFilter = descriptor.classFilter
                     });
                 }
 
-                meta.defaultProperties = meta.properties
-                    .Where(p => !string.IsNullOrEmpty(p.defaultValue))
-                    .Select(p => new EntityProperty { Name = p.name, Value = p.defaultValue })
+                meta.DefaultProperties = meta.Properties
+                    .Where(p => !string.IsNullOrEmpty(p.DefaultValue))
+                    .Select(p => new EntityProperty { Name = p.Name, Value = p.DefaultValue })
                     .ToArray();
 
                 //Register their inputs/outputs
                 foreach (var reg in entity.GetCustomAttributes(typeof(RegisterEntityInputs), true).Cast<RegisterEntityInputs>())
-                    meta.inputs.AddRange(reg.names);
+                    meta.Inputs.AddRange(reg.names);
 
                 foreach (var reg in entity.GetCustomAttributes(typeof(RegisterEntityOutputs), true).Cast<RegisterEntityOutputs>())
-                    meta.outputs.AddRange(reg.names);
+                    meta.Outputs.AddRange(reg.names);
 
                 //Editor-only presentation metadata
                 if (entity.GetCustomAttribute(typeof(EntityBounds), true) is EntityBounds bounds)
                 {
-                    meta.boundsMin = bounds.min;
-                    meta.boundsMax = bounds.max;
+                    meta.BoundsMin = bounds.min;
+                    meta.BoundsMax = bounds.max;
                 }
 
                 if (entity.GetCustomAttribute(typeof(AutoConnectOnDuplicate), true) is AutoConnectOnDuplicate link)
-                    meta.link = new EntityLinkDescriptor { next = link.next, previous = link.previous };
+                    meta.Link = new EntityLinkDescriptor { Next = link.next, Previous = link.previous };
 
                 if (entity.GetCustomAttribute(typeof(EntityVisualize), true) is EntityVisualize visualize)
                 {
@@ -183,11 +183,11 @@ namespace Engine.Compilation
                     foreach (var vl in entity.GetCustomAttributes(typeof(VisualizerLiteral), true).Cast<VisualizerLiteral>())
                         fieldToLiteral[vl.fieldName] = vl.value;
 
-                    meta.visualizer = new EntityVisualizerBinding
+                    meta.Visualizer = new EntityVisualizerBinding
                     {
-                        visualizerType = visualize.visualizerType.Name,
-                        fieldToProperty = fieldToProperty,
-                        fieldToLiteral = fieldToLiteral
+                        VisualizerType = visualize.visualizerType.Name,
+                        FieldToProperty = fieldToProperty,
+                        FieldToLiteral = fieldToLiteral
                     };
                 }
 

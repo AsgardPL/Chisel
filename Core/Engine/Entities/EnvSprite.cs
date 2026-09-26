@@ -78,10 +78,10 @@ public class EnvSprite : WorldEntity
 
             curRenderMode = sprite.renderMode == "Additive" ? RenderMode.Add : RenderMode.Normal;
 
-            if (!string.IsNullOrEmpty(sprite.spriteMaterial) && GlobalMapData.materialNameToIndex.TryGetValue(sprite.spriteMaterial, out int materialIndex))
+            if (!string.IsNullOrEmpty(sprite.spriteMaterial) && GlobalMapData.MaterialNameToIndex.TryGetValue(sprite.spriteMaterial, out int materialIndex))
             {
                 TextureMipGenerator.ReserveMaterial(materialIndex);
-                texture = GlobalMapData.loadedMaterials[materialIndex].Texture;
+                texture = GlobalMapData.LoadedMaterials[materialIndex].Texture;
             }
 
             EnsureResources(MainEngine.Instance.GraphicsDevice);

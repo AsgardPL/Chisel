@@ -35,21 +35,21 @@ public sealed class LightResources : IDisposable
             var l = sourceLights[i];
             gpuLights[i] = new GpuLight
             {
-                Position = l.position,
-                Type = l.type switch
+                Position = l.Position,
+                Type = l.Type switch
                 {
                     Light.LightType.Point => 0,
                     Light.LightType.Directional => 1,
                     Light.LightType.SpotLight => 2,
                     _ => 0
                 },
-                Rotation = l.rotation,
-                Intensity = l.intensity,
-                Color = l.color.ToVector3(),
-                Range = l.range,
-                Angle = l.angle,
-                InnerAngle = l.innerAngle,
-                Id = l.id
+                Rotation = l.Rotation,
+                Intensity = l.Intensity,
+                Color = l.Color.ToVector3(),
+                Range = l.Range,
+                Angle = l.Angle,
+                InnerAngle = l.InnerAngle,
+                Id = l.ID
             };
         }
 

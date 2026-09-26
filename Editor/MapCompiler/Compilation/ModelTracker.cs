@@ -36,20 +36,20 @@ public static class ModelTracker
         Parallel.For(0, entityReferences.Length, e =>
         {
             var entity = entityReferences[e];
-            if (entity.entityName != "DetailModel") return;
-            if (entity.properties == null || entity.properties.Length <= 0) return;
+            if (entity.EntityName != "DetailModel") return;
+            if (entity.Properties == null || entity.Properties.Length <= 0) return;
 
             var filepath = Path.Combine(
                 Program.WorkingDir,
-                Path.ChangeExtension(entity.properties[0].Value, "ccmdl"));
+                Path.ChangeExtension(entity.Properties[0].Value, "ccmdl"));
 
             if (!File.Exists(filepath) || Path.GetExtension(filepath) != ".ccmdl") return;
 
             var mat = Matrix.CreateFromYawPitchRoll(
-                          MathHelper.ToRadians(entity.spawnRotation.X),
-                          MathHelper.ToRadians(entity.spawnRotation.Y),
-                          MathHelper.ToRadians(entity.spawnRotation.Z)) *
-                      Matrix.CreateWorld(entity.position, Vector3.Forward, Vector3.Up);
+                          MathHelper.ToRadians(entity.SpawnRotation.X),
+                          MathHelper.ToRadians(entity.SpawnRotation.Y),
+                          MathHelper.ToRadians(entity.SpawnRotation.Z)) *
+                      Matrix.CreateWorld(entity.Position, Vector3.Forward, Vector3.Up);
 
             var model = CCMDLHandler.LoadCCMDL(File.ReadAllBytes(filepath));
 
@@ -67,7 +67,7 @@ public static class ModelTracker
 
                 SparseModels.Add(new TrackedModel
                 {
-                    Origin = entity.position,
+                    Origin = entity.Position,
                     Material = bg.material,
                     Vertices = verts,
                     Indices = bg.meshData.Indices
@@ -259,7 +259,7 @@ public static class ModelTracker
         Vector3 direct = Vector3.Zero;
         foreach (var light in lights)
         {
-            LightSample s = light.type switch
+            LightSample s = light.Type switch
             {
                 Light.LightType.Point => LightCalculator.FromPoint(
                                                    light, samplePos, normal, normal, normal),
@@ -277,17 +277,17 @@ public static class ModelTracker
         float totalWeight = 0;
         var nodeBundle = LightNodeTraversal.GetClosestNodeBundle(samplePos);
 
-        if (nodeBundle?.children is { Length: > 0 } children)
+        if (nodeBundle?.Children is { Length: > 0 } children)
         {
             foreach(var child in children)
             {
-                float distance = Vector3.Distance(position, child.pos);
+                float distance = Vector3.Distance(position, child.Pos);
 
-                if (BSPRoot.TraceRay(new Ray(position, Vector3.Normalize(child.pos - position)), distance).hit) continue;
+                if (BSPRoot.TraceRay(new Ray(position, Vector3.Normalize(child.Pos - position)), distance).Hit) continue;
 
                 float weight = 1.0f / (distance + 0.001f);
 
-                var coeffs = child.indirectCoefficients;
+                var coeffs = child.IndirectCoefficients;
                 if (coeffs != null)
                 {
                     float[] basis = SphericalHarmonicsUtils.EvaluateSHBasis(normal);

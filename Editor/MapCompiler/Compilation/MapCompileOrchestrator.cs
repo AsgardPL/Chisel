@@ -84,11 +84,11 @@ namespace MapCompiler
             for (ushort i = 0; i < brushes.Length; i++)
             {
                 brushIDs[i] = i;
-                finalFaces.Add(i, new List<Face>(brushes[i].faces));
+                finalFaces.Add(i, new List<Face>(brushes[i].Faces));
             }
             for (int i = 0; i < brushes.Length; i++)
             {
-                brushes[i].faces = finalFaces[i].ToArray();
+                brushes[i].Faces = finalFaces[i].ToArray();
             }
 
             int[] brushOwner = Rockwall.EntityOwnership.Sync(brushes, entities);
@@ -97,9 +97,9 @@ namespace MapCompiler
             {
                 foreach (var e in entities)
                 {
-                    if (e?.brushIndices == null || e.brushIndices.Count == 0) continue;
-                    int anchor = e.brushIndices[0];
-                    if (anchor >= 0 && anchor < brushes.Length) e.position = brushes[anchor].position;
+                    if (e?.BrushIndices == null || e.BrushIndices.Count == 0) continue;
+                    int anchor = e.BrushIndices[0];
+                    if (anchor >= 0 && anchor < brushes.Length) e.Position = brushes[anchor].Position;
                 }
             }
             if (terrains != null)
@@ -122,31 +122,31 @@ namespace MapCompiler
             for (int i = 0; i < brushes.Length; i++)
             {
                 Vector3 min = new(float.MaxValue), max = new(float.MinValue);
-                brushes[i].abnormal = BrushOperations.CheckIsAbnormal(brushes[i], out _, out _);
-                brushes[i].isSkybox = false;
-                brushes[i].isLightNodeVolume = false;
-                brushes[i].isTrigger = false;
-                brushes[i].isClip = false;
-                brushes[i].isDetail = false;
+                brushes[i].Abnormal = BrushOperations.CheckIsAbnormal(brushes[i], out _, out _);
+                brushes[i].IsSkybox = false;
+                brushes[i].IsLightNodeVolume = false;
+                brushes[i].IsTrigger = false;
+                brushes[i].IsClip = false;
+                brushes[i].IsDetail = false;
 
                 var brush = brushes[i];
-                for (int j = brushes[i].faces.Length - 1; j >= 0; j--)
+                for (int j = brushes[i].Faces.Length - 1; j >= 0; j--)
                 {
-                    ref var face = ref brushes[i].faces[j];
+                    ref var face = ref brushes[i].Faces[j];
 
                     // Make sure we're all synced up for later, too.
-                    if(GlobalMapData.materialNameToIndex.ContainsKey(face.materialName))
-                        face.surface = GlobalMapData.materialNameToIndex[face.materialName];
+                    if(GlobalMapData.MaterialNameToIndex.ContainsKey(face.MaterialName))
+                        face.Surface = GlobalMapData.MaterialNameToIndex[face.MaterialName];
 
-                    face.toolFace = !string.IsNullOrEmpty(face.materialName) && face.materialName.StartsWith("tool");
-                    brushes[i].isSkybox |= face.materialName == "tool_skybox";
-                    brushes[i].isLightNodeVolume |= face.materialName == "tool_lightnodevolume";
-                    brushes[i].isTrigger |= face.materialName == "tool_trigger";
-                    brushes[i].isClip |= face.materialName == "tool_clip";
+                    face.toolFace = !string.IsNullOrEmpty(face.MaterialName) && face.MaterialName.StartsWith("tool");
+                    brushes[i].IsSkybox |= face.MaterialName == "tool_skybox";
+                    brushes[i].IsLightNodeVolume |= face.MaterialName == "tool_lightnodevolume";
+                    brushes[i].IsTrigger |= face.MaterialName == "tool_trigger";
+                    brushes[i].IsClip |= face.MaterialName == "tool_clip";
 
                     allFaces.Add(new LeafInfo(i, j));
 
-                    Vector3 faceNormal = Vector3.Normalize(face.normal);
+                    Vector3 faceNormal = Vector3.Normalize(face.Normal);
                     UvCalculator.GetUVAxes(face, out Vector3 uAxis, out Vector3 vAxis);
                     Vector3 faceTangent = Vector3.Normalize(uAxis - faceNormal * Vector3.Dot(uAxis, faceNormal));
                     Vector3 faceBinormal = Vector3.Normalize(vAxis - faceNormal * Vector3.Dot(vAxis, faceNormal));
@@ -156,14 +156,14 @@ namespace MapCompiler
                         faceBinormal.X, faceBinormal.Y, faceBinormal.Z, 0f,
                         faceNormal.X, faceNormal.Y, faceNormal.Z, 0f,
                         0f, 0f, 0f, 1f);
-                    face.basis1 = Vector3.TransformNormal(B1, tbn);
-                    face.basis2 = Vector3.TransformNormal(B2, tbn);
-                    face.basis3 = Vector3.TransformNormal(B3, tbn);
-                    face.drawn = !face.toolFace;
+                    face.Basis1 = Vector3.TransformNormal(B1, tbn);
+                    face.Basis2 = Vector3.TransformNormal(B2, tbn);
+                    face.Basis3 = Vector3.TransformNormal(B3, tbn);
+                    face.Drawn = !face.toolFace;
 
-                    foreach (int t in face.indices)
+                    foreach (int t in face.Indices)
                     {
-                        Vector3 v = brushes[i].vertices[t] + brushes[i].position;
+                        Vector3 v = brushes[i].Vertices[t] + brushes[i].Position;
                         min = Vector3.Min(v, min);
                         max = Vector3.Max(v, max);
                     }
@@ -171,9 +171,9 @@ namespace MapCompiler
                 // brushOwner/isEntity were already derived by EntityOwnership.Sync above; isDetail
                 // just needs to know *which* entity, to check its class name.
                 bool isPartOfEntity = Rockwall.EntityOwnership.IsPartOfEntity(brushOwner, i);
-                brushes[i].isDetail = isPartOfEntity && entities[brushOwner[i]].entityName == "FuncDetail";
+                brushes[i].IsDetail = isPartOfEntity && entities[brushOwner[i]].EntityName == "FuncDetail";
 
-                if (brushes[i].isLightNodeVolume)
+                if (brushes[i].IsLightNodeVolume)
                 {
                     lightNodes.Add(new LightNodeBundle(new BoundingBox(min, max), skipOccluded: false));
                 }
@@ -193,20 +193,20 @@ namespace MapCompiler
             var mapBounds = new BoundingBox(absoluteMin, absoluteMax);
 
             var octreeRoot = new Octree(new BoundingBox(Vector3.One * (small - 1), Vector3.One * (big + 1)), 0, 0);
-            OctreeRoot.allNodes.Add(octreeRoot);
+            OctreeRoot.AllNodes.Add(octreeRoot);
 
             var splits = new List<(int brush, int face, Plane plane, int pside)>(brushes.Length * 6);
             for (int i = 0; i < brushBounds.Length; i++)
             {
-                if (brushes[i].isLightNodeVolume || brushes[i].isEntity || brushes[i].isClip) continue;
+                if (brushes[i].IsLightNodeVolume || brushes[i].IsEntity || brushes[i].IsClip) continue;
 
                 octreeRoot.TestAdd(brushBounds[i], i);
 
-                for (int f = 0; f < brushes[i].faces.Length; f++)
+                for (int f = 0; f < brushes[i].Faces.Length; f++)
                 {
-                    var face = brushes[i].faces[f];
-                    var plane = new Plane(brushes[i].vertices[face.indices[0]] + brushes[i].position,
-                                         Vector3.Normalize(face.normal));
+                    var face = brushes[i].Faces[f];
+                    var plane = new Plane(brushes[i].Vertices[face.Indices[0]] + brushes[i].Position,
+                                         Vector3.Normalize(face.Normal));
                     Portalizer.FindPlane(ref plane, out _);
                     splits.Add((i, f, plane, 0));
                 }
@@ -216,8 +216,8 @@ namespace MapCompiler
 
             splits.Sort((a, b) =>
             {
-                float sA = FaceSize(brushes[a.brush].faces[a.face], brushes[a.brush].vertices);
-                float sB = FaceSize(brushes[b.brush].faces[b.face], brushes[b.brush].vertices);
+                float sA = FaceSize(brushes[a.brush].Faces[a.face], brushes[a.brush].Vertices);
+                float sB = FaceSize(brushes[b.brush].Faces[b.face], brushes[b.brush].Vertices);
                 return sB.CompareTo(sA);
             });
 
@@ -227,7 +227,7 @@ namespace MapCompiler
             foreach (var s in splits)
                 BSPRoot.Cut(s.plane, brushes, brushBounds, s.brush, s.face, 0);
             BSPRoot.DoubleCheck(brushes);
-            BSPRoot.nodes = BSPRoot.tempNodes.ToArray();
+            BSPRoot.Nodes = BSPRoot.tempNodes.ToArray();
 
             CompilerConsole.Header("Visibility");
             CompilerConsole.Step("Creating vis leaves...");
@@ -256,10 +256,10 @@ namespace MapCompiler
                 CompilerConsole.Warn("Skipping fine PVS (fastVis=true).");
             }
 
-            foreach (var node in OctreeRoot.allNodes)
+            foreach (var node in OctreeRoot.AllNodes)
             {
-                if (!node.isEnd) continue;
-                lightNodes.Add(new LightNodeBundle(node.box, 2f, false));
+                if (!node.IsEnd) continue;
+                lightNodes.Add(new LightNodeBundle(node.Box, 2f, false));
             }
 
             Portalizer.Finalize(brushes);
@@ -267,28 +267,28 @@ namespace MapCompiler
             CompilerConsole.Step("Collecting vis data...");
             var visData = new VisFile
             {
-                leaves = Portalizer.GetVisLeaves(brushes).ToArray(),
-                portals = Portalizer.GetPortals().ToArray()
+                Leaves = Portalizer.GetVisLeaves(brushes).ToArray(),
+                Portals = Portalizer.GetPortals().ToArray()
             };
 
             for (int b = 0; b < brushes.Length; b++)
             {
-                var lightmapUvs = new List<Vector2>(brushes[b].uvs);
+                var lightmapUvs = new List<Vector2>(brushes[b].UVs);
 
-                var triangles = brushes[b].faces.SelectMany(f => f.indices.Select(i => (short)i)).ToArray();
+                var triangles = brushes[b].Faces.SelectMany(f => f.Indices.Select(i => (short)i)).ToArray();
 
-                brushes[b].lightmapUvs = UvCalculator.CalculateUVs(brushes[b].vertices, triangles, 1f, brushes[b].position);
+                brushes[b].LightmapUVs = UvCalculator.CalculateUVs(brushes[b].Vertices, triangles, 1f, brushes[b].Position);
             }
             for (int t = 0; t < terrains.Length; t++)
             {
                 terrains[t].lightmapUvs = UvCalculator.CalculateUVs(
-                    terrains[t].vertices.Select(i => i.Position).ToArray(),
-                    terrains[t].triangles, 1f, projectionNormal: terrains[t].sourceNormal);
+                    terrains[t].Vertices.Select(i => i.Position).ToArray(),
+                    terrains[t].Triangles, 1f, projectionNormal: terrains[t].SourceNormal);
             }
 
             CompilerConsole.Header("Lightmap UVs");
             CompilerConsole.Step("Rebuilding brush geometry from CSG results...");
-            BrushCSGReconstructor.RebuildBrushesFromPortals(ref brushes, out var workingLeafPolys, out var pendingToFinalFace, out var pendingToBaseVertex, visData.portals);
+            BrushCSGReconstructor.RebuildBrushesFromPortals(ref brushes, out var workingLeafPolys, out var pendingToFinalFace, out var pendingToBaseVertex, visData.Portals);
 
             CompilerConsole.Step("Computing smoothing groups...");
             var smoothedNormals = SmoothGroups.Compute(brushes, smoothAngleDegrees: 80f);
@@ -303,7 +303,7 @@ namespace MapCompiler
             CompilerConsole.Step("Computing leaf polygon lightmap UVs...");
             BrushCSGReconstructor.ComputeLeafPolygonLightmapUVs(workingLeafPolys, brushes, pendingToBaseVertex);
 
-            var finalLeafPolys = CompileLeafPolygons(workingLeafPolys, visData.leaves.Length);
+            var finalLeafPolys = CompileLeafPolygons(workingLeafPolys, visData.Leaves.Length);
             CompilerConsole.Stat("Leaf polys", finalLeafPolys.polys.Length);
 
             CompilerConsole.Header("Radiosity Patches");
@@ -328,7 +328,7 @@ namespace MapCompiler
 
 
             var faceVBounds = PrecomputeFaceBounds(brushes, lightmapResolution);
-            GlobalMapData.activeMap = new Map { brushes = brushes, brushBounds = brushBounds };
+            GlobalMapData.ActiveMap = new Map { Brushes = brushes, BrushBounds = brushBounds };
 
             int totalLuxels = lightmapResolution * lightmapResolution;
 
@@ -406,7 +406,7 @@ namespace MapCompiler
             LightmapWriter.SaveLightmapArchive(lmNormal, lmTangent, lmBinormal, baked.GroupLayers, mapPath);
 
 
-            GlobalMapData.activeMap.lightNodes = lightNodes.ToArray();
+            GlobalMapData.ActiveMap.LightNodes = lightNodes.ToArray();
             List<MapPropModel> models = null;
             if(ModelTracker.Any)
             {
@@ -424,29 +424,29 @@ namespace MapCompiler
             }
 
             CompilerConsole.Step("Building AI node graph...");
-            var graph = new NodeGraph { nodes = aiNodes.ToArray() };
+            var graph = new NodeGraph { Nodes = aiNodes.ToArray() };
             RegenerateNodegraph(ref graph);
 
             CompilerConsole.Step("Writing map archive (.cmap)...");
             var compiledMap = new Map
             {
-                brushes = brushes,
-                brushBounds = brushBounds,
-                terrains = terrains,
-                hasVis = true,
-                root = octreeRoot,
-                octreeNodes = OctreeRoot.allNodes,
-                entities = entities,
-                lightNodes = lightNodes.ToArray(),
-                lightGroupKeys = baked.LightGroupKeys,
-                mapModels = (models != null ? models.ToArray() : Array.Empty<MapPropModel>()),
+                Brushes = brushes,
+                BrushBounds = brushBounds,
+                Terrains = terrains,
+                HasVis = true,
+                Root = octreeRoot,
+                OctreeNodes = OctreeRoot.AllNodes,
+                Entities = entities,
+                LightNodes = lightNodes.ToArray(),
+                LightGroupKeys = baked.LightGroupKeys,
+                MapModels = (models != null ? models.ToArray() : Array.Empty<MapPropModel>()),
 
-                staticGeomVertices = finalLeafPolys.vertices,
-                leafPolyStart = finalLeafPolys.leafPolyStart,
-                leafPolyCount = finalLeafPolys.leafPolyCount,
-                leafPolygons = finalLeafPolys.polys,
+                StaticGeomVertices = finalLeafPolys.vertices,
+                LeafPolyStart = finalLeafPolys.leafPolyStart,
+                LeafPolyCount = finalLeafPolys.leafPolyCount,
+                LeafPolygons = finalLeafPolys.polys,
 
-                nodegraph = graph
+                Nodegraph = graph
             };
 
             WriteMapArchive(compiledMap, mapPath, visData);
@@ -499,7 +499,7 @@ namespace MapCompiler
             if (!groupedLights.TryGetValue(group.archiveKey, out var members) || members.Count == 0)
                 return null;
 
-            return members.Select(l => { l.color = Color.White; return l; }).ToList();
+            return members.Select(l => { l.Color = Color.White; return l; }).ToList();
         }
 
         private static (BakedLighting Baked, GpuBuffer TexelHomePatchBuffer, Vector3[] PatchFinalArr, Vector3 AmbientColor, float AmbientIntensity) BakeLightingGpu(
@@ -631,19 +631,19 @@ namespace MapCompiler
             int flatIdx = 0;
             foreach (var node in lightNodes)
             {
-                for (int i = 0; i < node.children.Length; i++)
+                for (int i = 0; i < node.Children.Length; i++)
                 {
-                    node.children[i].indirectCoefficients = indexNodeCoeffs[flatIdx];
+                    node.Children[i].IndirectCoefficients = indexNodeCoeffs[flatIdx];
 
                     var data = new List<LightNodeBundle.LightData>(allLights.Count);
                     for (int li = 0; li < allLights.Count; li++)
-                        data.Add(new LightNodeBundle.LightData { lightNum = allLights[li].id, lightBlocked = nodeBlocked[flatIdx][li] });
-                    node.children[i].data = data.ToArray();
+                        data.Add(new LightNodeBundle.LightData { LightNum = allLights[li].ID, LightBlocked = nodeBlocked[flatIdx][li] });
+                    node.Children[i].Data = data.ToArray();
 
                     var groupCoeffs = new Vector3[groupPatchColorsPerLayer.Count][];
                     for (int g = 0; g < groupPatchColorsPerLayer.Count; g++)
                         groupCoeffs[g] = groupNodeCoeffsPerLayer[g][flatIdx];
-                    node.children[i].groupIndirectCoefficients = groupCoeffs;
+                    node.Children[i].GroupIndirectCoefficients = groupCoeffs;
 
                     flatIdx++;
                 }
@@ -661,7 +661,7 @@ namespace MapCompiler
             CompilerConsole.Info("GPU baking not supported. Falling back to CPU implementation. This will be a slow compile!");
 
             CompilerConsole.Step("Computing transfer functions...");
-            PatchSystem.ComputeTransferFunctions(ref patches, ctx.Brushes, ctx.LightNodes, ctx.SpatialGrid, ctx.PatchCenters, ctx.VisData.leaves);
+            PatchSystem.ComputeTransferFunctions(ref patches, ctx.Brushes, ctx.LightNodes, ctx.SpatialGrid, ctx.PatchCenters, ctx.VisData.Leaves);
 
             CompilerConsole.Step("Baking index layer (static lights)...");
             RunDirectLightingPass(ctx.StaticLights, ctx.Brushes, ctx.BrushBounds, lightmapResolution, ctx.FaceVBounds, ctx.SmoothedNormals, lmB1, lmB2, lmB3);
@@ -725,17 +725,17 @@ namespace MapCompiler
 
         private static void RegenerateNodegraph(ref NodeGraph graph)
         {
-            for (int i = 0; i < graph.nodes.Length; i++)
+            for (int i = 0; i < graph.Nodes.Length; i++)
             {
-                Vector3 mainNodePos = graph.nodes[i].position;
+                Vector3 mainNodePos = graph.Nodes[i].Position;
                 List<int> connections = new List<int>();
-                if (graph.nodes[i].connections != null) connections.AddRange(graph.nodes[i].connections);
+                if (graph.Nodes[i].Connections != null) connections.AddRange(graph.Nodes[i].Connections);
 
-                for (int j = 0; j < graph.nodes.Length; j++)
+                for (int j = 0; j < graph.Nodes.Length; j++)
                 {
                     if (i == j) continue;
                     if (connections.Contains(j)) continue;
-                    Vector3 secondaryNodePos = graph.nodes[j].position;
+                    Vector3 secondaryNodePos = graph.Nodes[j].Position;
                     float distance = Vector3.Distance(mainNodePos, secondaryNodePos);
 
                     const int mDist = 25;
@@ -747,7 +747,7 @@ namespace MapCompiler
                         bool notviable = false;
                         for (int c = 0; c < connections.Count; c++)
                         {
-                            Vector3 dirToOld = graph.nodes[connections[c]].position - mainNodePos; dirToOld.Y = 0; dirToOld.Normalize();
+                            Vector3 dirToOld = graph.Nodes[connections[c]].Position - mainNodePos; dirToOld.Y = 0; dirToOld.Normalize();
                             Vector3 dirToNew = secondaryNodePos - mainNodePos; dirToNew.Y = 0; dirToNew.Normalize();
 
                             float angToOldConnection = (float)Math.Atan2(dirToOld.X, dirToOld.Z);
@@ -778,7 +778,7 @@ namespace MapCompiler
                     float dst = Vector3.Distance(pTestA, pTestB);
                     BSPHit hit = BSPRoot.TraceRay(new Ray(pTestA, Vector3.Normalize(pTestB - pTestA)), dst);
                     var triangleHit = TriangleOccluder.TraceRay(new Ray(pTestA, Vector3.Normalize(pTestB - pTestA)), dst);
-                    bool pathClear = !hit.hit && !triangleHit;
+                    bool pathClear = !hit.Hit && !triangleHit;
 
                     if (!pathClear)
                     {
@@ -792,7 +792,7 @@ namespace MapCompiler
 
                         hit = BSPRoot.TraceRay(new Ray(pointOnPath, Vector3.Down), 0.8f);
                         triangleHit = TriangleOccluder.TraceRay(new Ray(pointOnPath, Vector3.Down), 0.8f);
-                        pathClear = hit.hit || triangleHit;
+                        pathClear = hit.Hit || triangleHit;
 
                         if (!pathClear) break;
                     }
@@ -802,9 +802,9 @@ namespace MapCompiler
                     connections.Add(j);
 
                     // Inherently, if we can connect to this node, this node can connect to us.
-                    graph.nodes[j].connections = (graph.nodes[j].connections ?? new int[0]).Append(i).ToArray();
+                    graph.Nodes[j].Connections = (graph.Nodes[j].Connections ?? new int[0]).Append(i).ToArray();
                 }
-                graph.nodes[i].connections = connections.ToArray();
+                graph.Nodes[i].Connections = connections.ToArray();
             }
         }
 
@@ -870,18 +870,18 @@ namespace MapCompiler
             Brush brush, int brushIdx, int faceIdx, Face face, Light light,
             Dictionary<(int brush, int face, int vertex), SmoothedVertexData> smoothed)
         {
-            if (face.indices == null || face.indices.Length == 0) return false;
+            if (face.Indices == null || face.Indices.Length == 0) return false;
 
             if (face.smoothGroup != 0) return true;
 
-            foreach (var vertIdx in face.indices.Distinct())
+            foreach (var vertIdx in face.Indices.Distinct())
             {
-                Vector3 worldPos = brush.vertices[vertIdx] + brush.position;
-                Vector3 normal = face.normal;
+                Vector3 worldPos = brush.Vertices[vertIdx] + brush.Position;
+                Vector3 normal = face.Normal;
 
-                Vector3 toLight = light.type == Light.LightType.Directional
-                    ? light.rotation
-                    : Vector3.Normalize(light.position - worldPos);
+                Vector3 toLight = light.Type == Light.LightType.Directional
+                    ? light.Rotation
+                    : Vector3.Normalize(light.Position - worldPos);
 
                 if (Vector3.Dot(normal, toLight) > -0.1f)
                     return true;
@@ -895,10 +895,10 @@ namespace MapCompiler
             float VolOf(Brush br)
             {
                 Vector3 min = new(float.MaxValue), max = new(float.MinValue);
-                foreach (var f in br.faces)
-                    foreach (int t in f.indices)
+                foreach (var f in br.Faces)
+                    foreach (int t in f.Indices)
                     {
-                        var v = br.vertices[t] + br.position;
+                        var v = br.Vertices[t] + br.Position;
                         min = Vector3.Min(v, min); max = Vector3.Max(v, max);
                     }
                 var s = max - min;
@@ -929,16 +929,16 @@ namespace MapCompiler
 
             foreach (var entity in entities)
             {
-                if (entity?.brushIndices == null || entity.brushIndices.Count == 0) continue;
+                if (entity?.BrushIndices == null || entity.BrushIndices.Count == 0) continue;
 
-                var remapped = new List<int>(entity.brushIndices.Count);
-                foreach (var idx in entity.brushIndices)
+                var remapped = new List<int>(entity.BrushIndices.Count);
+                foreach (var idx in entity.BrushIndices)
                 {
                     if (idx < 0 || idx >= origToFinal.Length) continue;
                     int final = origToFinal[idx];
                     if (final >= 0) remapped.Add(final);
                 }
-                entity.brushIndices = remapped;
+                entity.BrushIndices = remapped;
             }
         }
 
@@ -948,16 +948,16 @@ namespace MapCompiler
 
             for (int t = 0; t < terrains.Length; t++)
             {
-                int src = terrains[t].brushSource;
+                int src = terrains[t].BrushSource;
                 if (src < 0 || src >= origToFinal.Length) continue;
-                terrains[t].brushSource = origToFinal[src];
+                terrains[t].BrushSource = origToFinal[src];
             }
         }
 
         internal static float FaceSize(Face face, Vector3[] verts)
         {
             Vector3 min = new(float.MaxValue), max = new(float.MinValue);
-            foreach (int i in face.indices) { min = Vector3.Min(verts[i], min); max = Vector3.Max(verts[i], max); }
+            foreach (int i in face.Indices) { min = Vector3.Min(verts[i], min); max = Vector3.Max(verts[i], max); }
             return (max - min).Length();
         }
 
@@ -973,67 +973,67 @@ namespace MapCompiler
             {
                 var ent = entities[i];
 
-                if (ent.entityName.Contains("SkyCamera")) { skyCamera = ent; continue; }
+                if (ent.EntityName.Contains("SkyCamera")) { skyCamera = ent; continue; }
 
-                if (ent.entityName == "LightGroup") continue;
+                if (ent.EntityName == "LightGroup") continue;
 
-                if (!ent.entityName.Contains("Light"))
+                if (!ent.EntityName.Contains("Light"))
                 {
-                    if (ent.entityName == "GroundNode")
-                        aiNodes.Add(new AINode { position = ent.position, type = AINode.NodeType.Ground });
+                    if (ent.EntityName == "GroundNode")
+                        aiNodes.Add(new AINode { Position = ent.Position, Type = AINode.NodeType.Ground });
                     continue;
                 }
 
                 var light = new Light();
 
-                switch (ent.entityName)
+                switch (ent.EntityName)
                 {
                     case "PointLight":
-                        light.type = Light.LightType.Point;
+                        light.Type = Light.LightType.Point;
                         break;
                     case "DirectionalLight":
-                        light.type = Light.LightType.Directional;
+                        light.Type = Light.LightType.Directional;
                         ParseAmbient(ent);
                         break;
                     case "SpotLight":
-                        light.type = Light.LightType.SpotLight;
+                        light.Type = Light.LightType.SpotLight;
                         break;
                 }
 
                 string[] col = FindProp(ent, "Color").Split(',');
-                light.color = new Color(byte.Parse(col[0]), byte.Parse(col[1]), byte.Parse(col[2]), (byte)255);
-                light.intensity = float.Parse(FindProp(ent, "Intensity"));
-                light.range = float.Parse(FindProp(ent, "Range", "0"));
-                light.position = ent.position;
-                light.rotation = Matrix.CreateFromYawPitchRoll(
-                    MathHelper.ToRadians(ent.spawnRotation.X),
-                    MathHelper.ToRadians(ent.spawnRotation.Y),
-                    MathHelper.ToRadians(ent.spawnRotation.Z)).Forward;
-                light.angle = float.Parse(FindProp(ent, "Spot Angle", "0"));
-                light.innerAngle = float.Parse(FindProp(ent, "Inner Angle", "0"));
-                light.targetname = ent.name;
+                light.Color = new Color(byte.Parse(col[0]), byte.Parse(col[1]), byte.Parse(col[2]), (byte)255);
+                light.Intensity = float.Parse(FindProp(ent, "Intensity"));
+                light.Range = float.Parse(FindProp(ent, "Range", "0"));
+                light.Position = ent.Position;
+                light.Rotation = Matrix.CreateFromYawPitchRoll(
+                    MathHelper.ToRadians(ent.SpawnRotation.X),
+                    MathHelper.ToRadians(ent.SpawnRotation.Y),
+                    MathHelper.ToRadians(ent.SpawnRotation.Z)).Forward;
+                light.Angle = float.Parse(FindProp(ent, "Spot Angle", "0"));
+                light.InnerAngle = float.Parse(FindProp(ent, "Inner Angle", "0"));
+                light.TargetName = ent.Name;
 
                 var affected = new List<Tuple<int, int>>();
                 for (int b = 0; b < brushes.Length; b++)
                 {
-                    if (brushes[b].isClip || brushes[b].isLightNodeVolume || brushes[b].isSkybox) continue;
-                    if (light.type != Light.LightType.Directional
-                        && !brushBounds[b].Intersects(new BoundingSphere(light.position, light.range))) continue;
+                    if (brushes[b].IsClip || brushes[b].IsLightNodeVolume || brushes[b].IsSkybox) continue;
+                    if (light.Type != Light.LightType.Directional
+                        && !brushBounds[b].Intersects(new BoundingSphere(light.Position, light.Range))) continue;
 
-                    for (int f = 0; f < brushes[b].faces.Length; f++)
+                    for (int f = 0; f < brushes[b].Faces.Length; f++)
                     {
-                        var face = brushes[b].faces[f];
+                        var face = brushes[b].Faces[f];
                         if (!FaceCouldReceiveLight(brushes[b], b, f, face, light, smoothNormals)) continue;
                         affected.Add(Tuple.Create(b, f));
                     }
                 }
 
-                light.affectedBrushes = affected.ToArray();
-                light.id = lightId;
+                light.AffectedBrushes = affected.ToArray();
+                light.ID = lightId;
 
-                var props = entities[i].properties.ToList();
+                var props = entities[i].Properties.ToList();
                 props.Add(new EntityProperty { Name = "ID", Value = lightId.ToString() });
-                entities[i].properties = props.ToArray();
+                entities[i].Properties = props.ToArray();
 
                 lights.Add(light);
                 lightId++;
@@ -1068,9 +1068,9 @@ namespace MapCompiler
 
             foreach (var ent in entities)
             {
-                if (ent.entityName != "LightGroup") continue;
+                if (ent.EntityName != "LightGroup") continue;
 
-                string name = ent.name;
+                string name = ent.Name;
                 string archiveKey;
 
                 if (string.IsNullOrEmpty(name))
@@ -1134,7 +1134,7 @@ namespace MapCompiler
 
             foreach (var light in lights)
             {
-                if (!string.IsNullOrEmpty(light.targetname) && targetToGroupKey.TryGetValue(light.targetname, out var groupKey))
+                if (!string.IsNullOrEmpty(light.TargetName) && targetToGroupKey.TryGetValue(light.TargetName, out var groupKey))
                 {
                     if (!groups.TryGetValue(groupKey, out var list))
                         groups[groupKey] = list = new List<Light>();
@@ -1157,7 +1157,7 @@ namespace MapCompiler
 
         private static string FindProp(EntityReference ent, string name, string fallback = "")
         {
-            var p = Array.Find(ent.properties, x => x.Name == name);
+            var p = Array.Find(ent.Properties, x => x.Name == name);
             return p.Value ?? fallback;
         }
 
@@ -1168,13 +1168,13 @@ namespace MapCompiler
             Parallel.For(0, brushes.Length, i =>
             {
                 bounds[i] = new List<(Vector2, Vector2)>();
-                for (int f = 0; f < brushes[i].faces.Length; f++)
+                for (int f = 0; f < brushes[i].Faces.Length; f++)
                 {
                     Vector2 vmin = new(float.MaxValue), vmax = new(float.MinValue);
-                    foreach (int v in brushes[i].faces[f].indices)
+                    foreach (int v in brushes[i].Faces[f].Indices)
                     {
-                        float x = brushes[i].lightmapUvs[v].X;
-                        float y = brushes[i].lightmapUvs[v].Y;
+                        float x = brushes[i].LightmapUVs[v].X;
+                        float y = brushes[i].LightmapUVs[v].Y;
                         vmin = new Vector2(MathF.Min(vmin.X, x), MathF.Min(vmin.Y, y));
                         vmax = new Vector2(MathF.Max(vmax.X, x), MathF.Max(vmax.Y, y));
                     }
@@ -1208,7 +1208,7 @@ namespace MapCompiler
             // accumulation logic itself is untouched - same formulas, same order.
             var faceLights = new Dictionary<(int b, int f), List<Light>>();
             foreach (var light in lights)
-                foreach (var (b, f) in light.affectedBrushes)
+                foreach (var (b, f) in light.AffectedBrushes)
                 {
                     var key = (b, f);
                     if (!faceLights.TryGetValue(key, out var list))
@@ -1236,7 +1236,7 @@ namespace MapCompiler
                 var faceLightList = faceLights[key];
 
                 var (vmin, vmax) = faceVBounds[i][f];
-                var faceGrid = faceGridCache.GetOrAdd((i, f), k => new GeometryUtils.FaceUvGrid(brushes[k.brush].lightmapUvs, brushes[k.brush].faces[k.face].indices, uvCellSize));
+                var faceGrid = faceGridCache.GetOrAdd((i, f), k => new GeometryUtils.FaceUvGrid(brushes[k.brush].LightmapUVs, brushes[k.brush].Faces[k.face].Indices, uvCellSize));
                 var faceLoop = SmoothGroups.BuildFaceLoop(brushes[i], f);
 
                 int xMin = (int)MathF.Floor(vmin.X * lightmapResolution) - 3;
@@ -1308,9 +1308,9 @@ namespace MapCompiler
                                     continue;
                                 }
 
-                                Vector3 toLight = light.type == Light.LightType.Directional
-                                    ? light.rotation
-                                    : Vector3.Normalize(light.position - sampleWorld[s]);
+                                Vector3 toLight = light.Type == Light.LightType.Directional
+                                    ? light.Rotation
+                                    : Vector3.Normalize(light.Position - sampleWorld[s]);
 
                                 float facing = Vector3.Dot(sampleNormal[s], toLight);
                                 const float facingCutoff = 0;
@@ -1323,26 +1323,26 @@ namespace MapCompiler
                                     continue;
                                 }
 
-                                if (light.type == Light.LightType.Directional)
+                                if (light.Type == Light.LightType.Directional)
                                 {
                                     sampleRayOrigin[s] = sampleWorld[s];
-                                    sampleRayDir[s] = light.rotation;
+                                    sampleRayDir[s] = light.Rotation;
                                     sampleMaxDist[s] = 512f;
 
-                                    var ray = new Ray(sampleWorld[s], light.rotation);
+                                    var ray = new Ray(sampleWorld[s], light.Rotation);
                                     BSPHit hit = BSPRoot.TraceRay(ray, 512f, default, i);
-                                    bspShadow[s] = hit.hit ? BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode : true;
+                                    bspShadow[s] = hit.Hit ? BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode : true;
                                 }
                                 else
                                 {
-                                    float dist = Vector3.Distance(sampleWorld[s], light.position);
-                                    bool outOfRange = dist > light.range || dist == 0f;
+                                    float dist = Vector3.Distance(sampleWorld[s], light.Position);
+                                    bool outOfRange = dist > light.Range || dist == 0f;
 
-                                    if (!outOfRange && light.type == Light.LightType.SpotLight)
+                                    if (!outOfRange && light.Type == Light.LightType.SpotLight)
                                     {
-                                        float pdot = Vector3.Dot(Vector3.Normalize(sampleWorld[s] - light.position), -light.rotation);
+                                        float pdot = Vector3.Dot(Vector3.Normalize(sampleWorld[s] - light.Position), -light.Rotation);
                                         float angle = (float)Math.Acos(pdot);
-                                        outOfRange = angle > MathHelper.ToRadians(light.angle);
+                                        outOfRange = angle > MathHelper.ToRadians(light.Angle);
                                     }
 
                                     if (outOfRange)
@@ -1353,12 +1353,12 @@ namespace MapCompiler
                                     }
 
                                     sampleRayOrigin[s] = sampleWorld[s];
-                                    sampleRayDir[s] = light.position - sampleWorld[s];
+                                    sampleRayDir[s] = light.Position - sampleWorld[s];
                                     sampleMaxDist[s] = dist;
 
-                                    var ray = new Ray(sampleWorld[s], light.position - sampleWorld[s]);
+                                    var ray = new Ray(sampleWorld[s], light.Position - sampleWorld[s]);
                                     BSPHit hit = BSPRoot.TraceRay(ray, dist, default, i);
-                                    bspShadow[s] = hit.hit && Vector3.Distance(hit.point, sampleWorld[s]) < dist;
+                                    bspShadow[s] = hit.Hit && Vector3.Distance(hit.Point, sampleWorld[s]) < dist;
                                 }
 
                                 if (bspShadow[s])
@@ -1383,7 +1383,7 @@ namespace MapCompiler
 
                                 bool inShadow = bspShadow[s] || occHit[s];
 
-                                LightSample cols = light.type switch
+                                LightSample cols = light.Type switch
                                 {
                                     Light.LightType.Point => LightCalculator.FromPointBrushShadowKnown(light, sampleWorld[s], sampleBasis1[s], sampleBasis2[s], sampleBasis3[s], inShadow),
                                     Light.LightType.Directional => LightCalculator.FromDirectionalBrushShadowKnown(light, sampleWorld[s], sampleBasis1[s], sampleBasis2[s], sampleBasis3[s], inShadow),
@@ -1438,8 +1438,8 @@ namespace MapCompiler
                 var list = new List<Light>();
                 foreach (var light in lights)
                 {
-                    if (light.type != Light.LightType.Directional &&
-                        !terrains[t].bounds.Intersects(new BoundingSphere(light.position, light.range)))
+                    if (light.Type != Light.LightType.Directional &&
+                        !terrains[t].Bounds.Intersects(new BoundingSphere(light.Position, light.Range)))
                         continue;
                     list.Add(light);
                 }
@@ -1450,7 +1450,7 @@ namespace MapCompiler
             for (int t = 0; t < terrains.Length; t++)
             {
                 if (terrainLights[t].Count == 0) continue;
-                for (int tri = 0; tri < terrains[t].triangles.Length; tri += 3)
+                for (int tri = 0; tri < terrains[t].Triangles.Length; tri += 3)
                     tasks.Add((t, tri));
             }
 
@@ -1470,25 +1470,25 @@ namespace MapCompiler
                     var (t, triStart) = task;
                     var affectingLights = terrainLights[t];
 
-                    int i0 = terrains[t].triangles[triStart];
-                    int i1 = terrains[t].triangles[triStart + 1];
-                    int i2 = terrains[t].triangles[triStart + 2];
+                    int i0 = terrains[t].Triangles[triStart];
+                    int i1 = terrains[t].Triangles[triStart + 1];
+                    int i2 = terrains[t].Triangles[triStart + 2];
 
                     Vector2 uv0 = terrains[t].lightmapUvs[i0];
                     Vector2 uv1 = terrains[t].lightmapUvs[i1];
                     Vector2 uv2 = terrains[t].lightmapUvs[i2];
 
-                    Vector3 p0 = terrains[t].vertices[i0].Position;
-                    Vector3 p1 = terrains[t].vertices[i1].Position;
-                    Vector3 p2 = terrains[t].vertices[i2].Position;
+                    Vector3 p0 = terrains[t].Vertices[i0].Position;
+                    Vector3 p1 = terrains[t].Vertices[i1].Position;
+                    Vector3 p2 = terrains[t].Vertices[i2].Position;
 
-                    Vector3 n0 = terrains[t].vertices[i0].Normal;
-                    Vector3 n1 = terrains[t].vertices[i1].Normal;
-                    Vector3 n2 = terrains[t].vertices[i2].Normal;
+                    Vector3 n0 = terrains[t].Vertices[i0].Normal;
+                    Vector3 n1 = terrains[t].Vertices[i1].Normal;
+                    Vector3 n2 = terrains[t].Vertices[i2].Normal;
 
-                    Vector4 tv0 = terrains[t].vertices[i0].Tangent.ToVector4();
-                    Vector4 tv1 = terrains[t].vertices[i1].Tangent.ToVector4();
-                    Vector4 tv2 = terrains[t].vertices[i2].Tangent.ToVector4();
+                    Vector4 tv0 = terrains[t].Vertices[i0].Tangent.ToVector4();
+                    Vector4 tv1 = terrains[t].Vertices[i1].Tangent.ToVector4();
+                    Vector4 tv2 = terrains[t].Vertices[i2].Tangent.ToVector4();
 
                     float area2D = GeometryUtils.TriArea2D(uv0, uv1, uv2);
                     if (MathF.Abs(area2D) < 1e-10f) return;
@@ -1568,7 +1568,7 @@ namespace MapCompiler
                                 {
                                     if (!valid[s]) continue;
 
-                                    LightSample? _cols = light.type switch
+                                    LightSample? _cols = light.Type switch
                                     {
                                         Light.LightType.Point => LightCalculator.FromPoint(
                                             light, sampleWorld[s], sampleBasis1[s], sampleBasis2[s], sampleBasis3[s], t),
@@ -1595,7 +1595,7 @@ namespace MapCompiler
                                 var sample2 = new Vector3(tred, tgrn, tblu) * inv;
                                 var sample3 = new Vector3(bred, bgrn, bblu) * inv;
 
-                                var key = (x, y, light.id);
+                                var key = (x, y, light.ID);
                                 texelAccum.AddOrUpdate(key,
                                     _ => (sample1, sample2, sample3, 1),
                                     (_, existing) => (existing.b1 + sample1, existing.b2 + sample2, existing.b3 + sample3, existing.count + 1));
@@ -1652,16 +1652,16 @@ namespace MapCompiler
             var results = new List<(int, List<int>, List<int>)>();
 
             var srcTerrain = terrains[terrainIdx];
-            int srcBrushIdx = srcTerrain.brushSource;
+            int srcBrushIdx = srcTerrain.BrushSource;
             if (srcBrushIdx < 0 || srcBrushIdx >= rawBrushes.Length) return results;
 
             var srcBrush = rawBrushes[srcBrushIdx];
-            if (srcTerrain.faceSource < 0 || srcTerrain.faceSource >= srcBrush.faces.Length) return results;
+            if (srcTerrain.FaceSource < 0 || srcTerrain.FaceSource >= srcBrush.Faces.Length) return results;
 
             int srcRes = GetTerrainGridResolution(srcTerrain);
             if (srcRes < 2) return results;
 
-            var srcCorners = GetTerrainSourceCorners(srcBrush, srcBrush.faces[srcTerrain.faceSource]);
+            var srcCorners = GetTerrainSourceCorners(srcBrush, srcBrush.Faces[srcTerrain.FaceSource]);
             if (srcCorners.Count != 4) return results;
             var srcEdges = GetTerrainCanonicalEdges(srcCorners, srcRes);
 
@@ -1669,21 +1669,21 @@ namespace MapCompiler
             {
                 var otherBrush = rawBrushes[bi];
 
-                for (int ofi = 0; ofi < otherBrush.faces.Length; ofi++)
+                for (int ofi = 0; ofi < otherBrush.Faces.Length; ofi++)
                 {
-                    if (bi == srcBrushIdx && ofi == srcTerrain.faceSource) continue;
+                    if (bi == srcBrushIdx && ofi == srcTerrain.FaceSource) continue;
 
                     for (int ti = 0; ti < terrains.Length; ti++)
                     {
                         if (ti == terrainIdx) continue;
-                        if (terrains[ti].brushSource != bi) continue;
-                        if (terrains[ti].faceSource != ofi) continue;
+                        if (terrains[ti].BrushSource != bi) continue;
+                        if (terrains[ti].FaceSource != ofi) continue;
 
                         var otherTerrain = terrains[ti];
                         int otherRes = GetTerrainGridResolution(otherTerrain);
                         if (otherRes != srcRes) continue;
 
-                        var otherCorners = GetTerrainSourceCorners(otherBrush, otherBrush.faces[ofi]);
+                        var otherCorners = GetTerrainSourceCorners(otherBrush, otherBrush.Faces[ofi]);
                         if (otherCorners.Count != 4) continue;
                         var otherEdges = GetTerrainCanonicalEdges(otherCorners, otherRes);
 
@@ -1728,8 +1728,8 @@ namespace MapCompiler
         {
             if (localIndices.Count != neighborIndices.Count) return;
 
-            var a = terrains[ta].vertices;
-            var b = terrains[tb].vertices;
+            var a = terrains[ta].Vertices;
+            var b = terrains[tb].Vertices;
 
             var weldedA = new List<int>();
             var weldedB = new List<int>();
@@ -1769,7 +1769,7 @@ namespace MapCompiler
             int res = GetTerrainGridResolution(terrain);
             if (res < 2) return;
 
-            var verts = terrain.vertices;
+            var verts = terrain.Vertices;
             var ringOf = new int[verts.Length];
             var originWeight = new float[verts.Length];
             Array.Fill(ringOf, -1);
@@ -1836,8 +1836,8 @@ namespace MapCompiler
         }
         private static int GetTerrainGridResolution(Terrain terrain)
         {
-            int res = (int)MathF.Round(MathF.Sqrt(terrain.vertices.Length));
-            return (res >= 2 && res * res == terrain.vertices.Length) ? res : -1;
+            int res = (int)MathF.Round(MathF.Sqrt(terrain.Vertices.Length));
+            return (res >= 2 && res * res == terrain.Vertices.Length) ? res : -1;
         }
 
         private static int[] GetTerrainGridCornerIndices(int res) => new[] { 0, res - 1, res * res - 1, (res - 1) * res };
@@ -1887,11 +1887,11 @@ namespace MapCompiler
 
         private static List<Vector3> GetTerrainSourceCorners(Brush brush, Face face)
         {
-            if (face.indices == null) return new List<Vector3>();
+            if (face.Indices == null) return new List<Vector3>();
 
             var uniqueVertices = new HashSet<Vector3>();
-            for (int i = 0; i < face.indices.Length; i++)
-                uniqueVertices.Add(brush.vertices[face.indices[i]] + brush.position);
+            for (int i = 0; i < face.Indices.Length; i++)
+                uniqueVertices.Add(brush.Vertices[face.Indices[i]] + brush.Position);
 
             if (uniqueVertices.Count != 4) return new List<Vector3>();
 
@@ -2031,8 +2031,8 @@ namespace MapCompiler
 
                     if (!patches[pid].isTerrain && !patches[nPid].isTerrain)
                     {
-                        int myGroup = brushes[patchBrush[pid]].faces[patchFace[pid]].smoothGroup;
-                        int otherGroup = brushes[patchBrush[nPid]].faces[patchFace[nPid]].smoothGroup;
+                        int myGroup = brushes[patchBrush[pid]].Faces[patchFace[pid]].smoothGroup;
+                        int otherGroup = brushes[patchBrush[nPid]].Faces[patchFace[nPid]].smoothGroup;
                         bool sameGroup = myGroup != 0 && (myGroup & otherGroup) != 0;
                         effectiveNdot = sameGroup ? 1f : ndot;
                     }
@@ -2086,10 +2086,10 @@ namespace MapCompiler
 
                         if (!patches[pid].isTerrain)
                         {
-                            var pFace = brushes[patchBrush[pid]].faces[patchFace[pid]];
-                            worldBasis1 = pFace.basis1;
-                            worldBasis2 = pFace.basis2;
-                            worldBasis3 = pFace.basis3;
+                            var pFace = brushes[patchBrush[pid]].Faces[patchFace[pid]];
+                            worldBasis1 = pFace.Basis1;
+                            worldBasis2 = pFace.Basis2;
+                            worldBasis3 = pFace.Basis3;
                         }
 
                         var (b1c0, b2c0, b3c0) = EvaluateBlendAtPoint(pid, patches[pid].c0, worldNormal, worldBasis1, worldBasis2, worldBasis3);
@@ -2279,7 +2279,7 @@ namespace MapCompiler
             var hit = BSPRoot.TraceRay(new Ray(a, Vector3.Normalize(b - a)), dist);
             //var nonBSPhit = TriangleOccluder.TraceRay(new Ray(a, Vector3.Normalize(b - a)), dist);
             //return (!hit.hit || Vector3.Distance(a, hit.point) > dist) && !nonBSPhit;
-            return (!hit.hit || Vector3.Distance(a, hit.point) > dist);
+            return (!hit.Hit || Vector3.Distance(a, hit.Point) > dist);
         }
         private static Vector3[] BuildPatchColorArray(Patch[] patches, bool includeAmbient = true)
         {
@@ -2334,15 +2334,15 @@ namespace MapCompiler
                 var nbrWeight = new List<float>(64);
                 var accumPerLayer = new Vector3[layerCount];
 
-                for (int i = 0; i < node.children.Length; i++)
+                for (int i = 0; i < node.Children.Length; i++)
                 {
                     var data = new List<LightNodeBundle.LightData>(lights.Count);
-                    var worldPos = node.children[i].pos;
+                    var worldPos = node.Children[i].Pos;
 
                     foreach (var light in lights)
                     {
                         bool blocked = LightCalculator.TestPointOcclusion(light, worldPos);
-                        data.Add(new LightNodeBundle.LightData { lightNum = light.id, lightBlocked = blocked });
+                        data.Add(new LightNodeBundle.LightData { LightNum = light.ID, LightBlocked = blocked });
                     }
 
                     grid.QueryNeighborsNonAlloc(worldPos, NeighborRadius, nbrs);
@@ -2420,9 +2420,9 @@ namespace MapCompiler
                         for (int s2 = 0; s2 < 9; s2++)
                             coefficientsPerLayer[l][s2] *= norm;
 
-                    node.children[i].indirectCoefficients = coefficientsPerLayer[0];
-                    node.children[i].groupIndirectCoefficients = coefficientsPerLayer[1..];
-                    node.children[i].data = data.ToArray();
+                    node.Children[i].IndirectCoefficients = coefficientsPerLayer[0];
+                    node.Children[i].GroupIndirectCoefficients = coefficientsPerLayer[1..];
+                    node.Children[i].Data = data.ToArray();
                 }
             });
         }
@@ -2432,7 +2432,7 @@ namespace MapCompiler
             string rootDir = Path.GetDirectoryName(mapPath)!;
             string filename = Path.GetFileNameWithoutExtension(mapPath);
 
-            var mapData = MapFormatter.WriteMapData(compiledMap, new BSPFile { nodes = BSPRoot.nodes }, visData);
+            var mapData = MapFormatter.WriteMapData(compiledMap, new BSPFile { Nodes = BSPRoot.Nodes }, visData);
 
             File.WriteAllBytes(Path.Combine(rootDir, filename + ".cmap"), mapData);
         }

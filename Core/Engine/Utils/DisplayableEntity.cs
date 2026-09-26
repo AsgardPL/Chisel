@@ -79,9 +79,9 @@ namespace Engine.Utils
         {
             this.Shader = shader;
             this.MaterialID = material;
-            this.Shader?.Param("MainTex").SetValue(GlobalMapData.loadedMaterials[material].Texture);
-            this.Shader?.Param("SpecTex").SetValue(GlobalMapData.loadedMaterials[material].Specular);
-            this.Shader?.Param("shine").SetValue(GlobalMapData.loadedMaterials[material].reflectivity);
+            this.Shader?.Param("MainTex").SetValue(GlobalMapData.LoadedMaterials[material].Texture);
+            this.Shader?.Param("SpecTex").SetValue(GlobalMapData.LoadedMaterials[material].Specular);
+            this.Shader?.Param("shine").SetValue(GlobalMapData.LoadedMaterials[material].Reflectivity);
 
             shadowBounds = new OrientedBoundingBox(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
@@ -113,8 +113,8 @@ namespace Engine.Utils
             for (int i = 0; i < realtimeLights.Length; i++)
             {
                 var light = realtimeLights[i];
-                float distSq = Vector3.DistanceSquared(position, light.position);
-                float key = distSq > light.range * light.range ? float.PositiveInfinity : distSq;
+                float distSq = Vector3.DistanceSquared(position, light.Position);
+                float key = distSq > light.Range * light.Range ? float.PositiveInfinity : distSq;
 
                 if (keptRT < MaxRealtimeLightsPerObject)
                 {
@@ -146,9 +146,9 @@ namespace Engine.Utils
             for (int i = 0; i < keptRT; i++)
             {
                 var light = topRealtimeLights[i];
-                realtimeLightPositionsCache[i] = new Vector4(light.position, light.range);
-                realtimeLightColorsCache[i] = new Vector4(light.color.ToVector3(), light.intensity);
-                realtimeLightSpotDataCache[i] = new Vector4(light.rotation, MathHelper.ToRadians(light.type == Light.LightType.Point ? -1 : light.angle));
+                realtimeLightPositionsCache[i] = new Vector4(light.Position, light.Range);
+                realtimeLightColorsCache[i] = new Vector4(light.Color.ToVector3(), light.Intensity);
+                realtimeLightSpotDataCache[i] = new Vector4(light.Rotation, MathHelper.ToRadians(light.Type == Light.LightType.Point ? -1 : light.Angle));
             }
 
             if (nodes == null || Vector3.DistanceSquared(position, lastPos) > 0.01f)
@@ -158,13 +158,13 @@ namespace Engine.Utils
 
                 if (nodeBundle == null) return;
 
-                nodes = nodeBundle.GetClosest(CMath.ClampToBoundingBox(position, nodeBundle.box));
+                nodes = nodeBundle.GetClosest(CMath.ClampToBoundingBox(position, nodeBundle.Box));
             }
 
             if (nodes.Length == 0) return;
 
             var node = nodes[0];
-            var data = node.data;
+            var data = node.Data;
 
             topLights ??= new Light[MaxStaticLights];
             topKeys ??= new float[MaxStaticLights];
@@ -174,21 +174,21 @@ namespace Engine.Utils
             for (int i = 0; i < MainEngine.ActiveStaticLights.Count; i++)
             {
                 var light = MainEngine.ActiveStaticLights[i];
-                if (light.type == Light.LightType.Directional)
+                if (light.Type == Light.LightType.Directional)
                 {
                     sun = light;
                     continue;
                 }
 
                 float key;
-                if (light.intensity <= 0f)
+                if (light.Intensity <= 0f)
                 {
                     key = float.NegativeInfinity;
                 }
                 else
                 {
-                    float distSq = Vector3.DistanceSquared(lastPos, light.position);
-                    key = distSq > light.range * light.range ? float.PositiveInfinity : distSq;
+                    float distSq = Vector3.DistanceSquared(lastPos, light.Position);
+                    key = distSq > light.Range * light.Range ? float.PositiveInfinity : distSq;
                 }
 
                 if (kept < MaxStaticLights)
@@ -220,7 +220,7 @@ namespace Engine.Utils
             bool sunBlocked = false;
             for (int i = 0; i < data.Length; i++)
             {
-                if (data[i].lightNum == sun.id) { sunBlocked = data[i].lightBlocked; break; }
+                if (data[i].LightNum == sun.ID) { sunBlocked = data[i].LightBlocked; break; }
             }
             InDir = !sunBlocked;
 
@@ -228,17 +228,17 @@ namespace Engine.Utils
             for (int i = 0; i < kept; i++)
             {
                 var light = topLights[i];
-                float intensity = light.intensity;
+                float intensity = light.Intensity;
                 Vector3 colorTint = Vector3.One;
 
                 for (int d = 0; d < data.Length; d++)
                 {
-                    if (data[d].lightNum == light.id) { if (data[d].lightBlocked) intensity = 0; break; }
+                    if (data[d].LightNum == light.ID) { if (data[d].LightBlocked) intensity = 0; break; }
                 }
 
-                if (!string.IsNullOrEmpty(light.targetname))
+                if (!string.IsNullOrEmpty(light.TargetName))
                 {
-                    var groupName = LightGroupRuntime.GetCorrespondingGroup(light.targetname);
+                    var groupName = LightGroupRuntime.GetCorrespondingGroup(light.TargetName);
                     if (!string.IsNullOrEmpty(groupName) && LightGroupRuntime.TryGetResolvedTint(groupName, out var groupTint, out var groupIntensity))
                     {
                         colorTint = groupTint;
@@ -250,9 +250,9 @@ namespace Engine.Utils
                     }
                 }
 
-                lightPositions[i] = new Vector4(light.position, light.range);
-                lightColors[i] = new Vector4(light.color.ToVector3() * colorTint, intensity);
-                lightAngles[i] = new Vector4(light.rotation, light.type == Light.LightType.SpotLight ? MathHelper.ToRadians(light.angle) : -100);
+                lightPositions[i] = new Vector4(light.Position, light.Range);
+                lightColors[i] = new Vector4(light.Color.ToVector3() * colorTint, intensity);
+                lightAngles[i] = new Vector4(light.Rotation, light.Type == Light.LightType.SpotLight ? MathHelper.ToRadians(light.Angle) : -100);
             }
 
             float totalWeight = 0f;
@@ -265,10 +265,10 @@ namespace Engine.Utils
                     {
                         foreach (var nClose in nodes)
                         {
-                            if (nClose.indirectCoefficients == null) continue;
-                            float weight = 1f / (Vector3.Distance(position, nClose.pos) + 0.001f);
+                            if (nClose.IndirectCoefficients == null) continue;
+                            float weight = 1f / (Vector3.Distance(position, nClose.Pos) + 0.001f);
                             totalWeight += weight;
-                            fixed (Vector3* coeffs = nClose.indirectCoefficients)
+                            fixed (Vector3* coeffs = nClose.IndirectCoefficients)
                                 for (int s = 0; s < 9; s++)
                                     blend[s] += coeffs[s] * weight;
                         }
@@ -290,11 +290,11 @@ namespace Engine.Utils
                         {
                             foreach (var nClose in nodes)
                             {
-                                if (nClose.groupIndirectCoefficients == null || sample.groupIndex >= nClose.groupIndirectCoefficients.Length) continue;
-                                var coeffs = nClose.groupIndirectCoefficients[sample.groupIndex];
+                                if (nClose.GroupIndirectCoefficients == null || sample.groupIndex >= nClose.GroupIndirectCoefficients.Length) continue;
+                                var coeffs = nClose.GroupIndirectCoefficients[sample.groupIndex];
                                 if (coeffs == null) continue;
 
-                                float weight = 1f / (Vector3.Distance(position, nClose.pos) + 0.001f);
+                                float weight = 1f / (Vector3.Distance(position, nClose.Pos) + 0.001f);
                                 groupWeight += weight;
                                 for (int s = 0; s < 9; s++)
                                     blend[s] += coeffs[s] * weight;
@@ -327,10 +327,10 @@ namespace Engine.Utils
                 lastLightDir = lightDir;
 
                 var hit = BSPRoot.TraceRay(new Ray(pos + lightDir * 0.05f, -lightDir), 512f, true);
-                if (hit.hit) shadowFloorPoint = hit.point + lightDir * 0.5f;
+                if (hit.Hit) shadowFloorPoint = hit.Point + lightDir * 0.5f;
                 else shadowFloorPoint = pos;
 
-                shadowDistance = Vector3.Distance(hit.point, pos) / 2f;
+                shadowDistance = Vector3.Distance(hit.Point, pos) / 2f;
                 shadowBounds.Extents.Z = shadowDistance + 1.25f;
             }
 
@@ -423,10 +423,10 @@ namespace Engine.Utils
 
             if (!ignoreTextures)
             {
-                p.Param("MainTex").SetValue(RenderEngine.CurrentWireframeDisplayMode == 0 && !RenderEngine.ShowBlankTexture ? GlobalMapData.loadedMaterials[MaterialID].Texture : RenderEngine.WhiteTexture);
-                p.Param("SpecTex").SetValue(RenderEngine.CurrentWireframeDisplayMode == 0 ? GlobalMapData.loadedMaterials[MaterialID].Specular : RenderEngine.WhiteTexture);
-                p.Param("NormalTex").SetValue(RenderEngine.CurrentWireframeDisplayMode == 0 ? GlobalMapData.loadedMaterials[MaterialID].Normal : RenderEngine.PurpleTexture);
-                p.Param("shine").SetValue(GlobalMapData.loadedMaterials[MaterialID].reflectivity);
+                p.Param("MainTex").SetValue(RenderEngine.CurrentWireframeDisplayMode == 0 && !RenderEngine.ShowBlankTexture ? GlobalMapData.LoadedMaterials[MaterialID].Texture : RenderEngine.WhiteTexture);
+                p.Param("SpecTex").SetValue(RenderEngine.CurrentWireframeDisplayMode == 0 ? GlobalMapData.LoadedMaterials[MaterialID].Specular : RenderEngine.WhiteTexture);
+                p.Param("NormalTex").SetValue(RenderEngine.CurrentWireframeDisplayMode == 0 ? GlobalMapData.LoadedMaterials[MaterialID].Normal : RenderEngine.PurpleTexture);
+                p.Param("shine").SetValue(GlobalMapData.LoadedMaterials[MaterialID].Reflectivity);
             }
 
             if (MainEngine.ShaderRealtimeLightPositions != null)

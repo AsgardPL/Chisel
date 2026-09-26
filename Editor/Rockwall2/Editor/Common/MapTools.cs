@@ -22,12 +22,12 @@ public static class MapTools
     public static RawMap ActiveMap;
     public static bool MapModified;
     public static bool MapLoaded;
-    public static Brush[] Brushes => ActiveMap.brushes;
+    public static Brush[] Brushes => ActiveMap.Brushes;
     public static BoundingBox[] BrushBounds { get; private set; }
-    public static Hint[] Hints => ActiveMap.hints;
-    public static EntityReference[] Entities => ActiveMap.entityReferences;
-    public static Terrain[] Terrains => ActiveMap.terrains;
-    public static EditorGroup[] Groups => ActiveMap.groups;
+    public static Hint[] Hints => ActiveMap.Hints;
+    public static EntityReference[] Entities => ActiveMap.EntityReferences;
+    public static Terrain[] Terrains => ActiveMap.Terrains;
+    public static EditorGroup[] Groups => ActiveMap.Groups;
 
     public static VertexPosition[] LeakPoints;
 
@@ -65,7 +65,7 @@ public static class MapTools
             // resolved fresh here, same as Terrain.brushSource is resolved from BrushOwnerGUID above.
             if (Entities[i].brushOwnerGUIDs != null)
             {
-                Entities[i].brushIndices = Entities[i].brushOwnerGUIDs
+                Entities[i].BrushIndices = Entities[i].brushOwnerGUIDs
                     .Select(g => ResolveIndex(g, ObjType.Brush))
                     .Where(idx => idx != -1)
                     .ToList();
@@ -124,14 +124,14 @@ public static class MapTools
 
         lst.Add(g);
 
-        ActiveMap.groups = lst.ToArray();
+        ActiveMap.Groups = lst.ToArray();
     }
     public static void FreeGroup(EditorGroup g)
     {
         var lst = Groups.ToList();
         lst.Remove(g);
 
-        ActiveMap.groups = lst.ToArray();
+        ActiveMap.Groups = lst.ToArray();
     }
 
     public static void AddBrush(Brush b)
@@ -144,7 +144,7 @@ public static class MapTools
 
         lst.Add(b);
 
-        ActiveMap.brushes = lst.ToArray();
+        ActiveMap.Brushes = lst.ToArray();
 
         BrushBounds = new BoundingBox[Brushes.Length];
 
@@ -173,13 +173,13 @@ public static class MapTools
         }
 
         var lst = MapTools.Brushes.ToList();
-        int id = lst.FindIndex(brush => brush.vertices == b.vertices && brush.uvs == b.uvs && brush.faces == b.faces);
+        int id = lst.FindIndex(brush => brush.Vertices == b.Vertices && brush.UVs == b.UVs && brush.Faces == b.Faces);
         if (id != -1)
         {
             lst.RemoveAt(id);
             RemapBrushOwnershipOnRemoval(b.GroupingID);
         }
-        ActiveMap.brushes = lst.ToArray();
+        ActiveMap.Brushes = lst.ToArray();
 
         BrushBounds = new BoundingBox[Brushes.Length];
 
@@ -205,7 +205,7 @@ public static class MapTools
             if (entity?.brushOwnerGUIDs == null || entity.brushOwnerGUIDs.Count == 0) continue;
 
             entity.brushOwnerGUIDs.RemoveAll(g => g == removedBrushGuid);
-            entity.brushIndices = entity.brushOwnerGUIDs
+            entity.BrushIndices = entity.brushOwnerGUIDs
                 .Select(ResolveBrushIndexDirect)
                 .Where(idx => idx != -1)
                 .ToList();
@@ -231,40 +231,40 @@ public static class MapTools
     {
         if (owner == null || brushIndex < 0 || brushIndex >= Brushes.Length) return;
 
-        owner.brushIndices ??= new List<int>();
+        owner.BrushIndices ??= new List<int>();
         owner.brushOwnerGUIDs ??= new List<Guid>();
 
-        owner.brushIndices.Add(brushIndex);
+        owner.BrushIndices.Add(brushIndex);
         owner.brushOwnerGUIDs.Add(Brushes[brushIndex].GroupingID ??= Guid.NewGuid());
     }
 
     public static void RemoveBrushFromEntity(EntityReference owner, int brushIndex)
     {
-        if (owner?.brushIndices == null) return;
+        if (owner?.BrushIndices == null) return;
 
         Guid? guid = brushIndex >= 0 && brushIndex < Brushes.Length ? Brushes[brushIndex].GroupingID : null;
-        owner.brushIndices.RemoveAll(i => i == brushIndex);
+        owner.BrushIndices.RemoveAll(i => i == brushIndex);
         owner.brushOwnerGUIDs?.RemoveAll(g => g == guid);
     }
 
     public static void SyncBrushOwnership()
     {
-        if (ActiveMap.brushes == null || ActiveMap.entityReferences == null) return;
+        if (ActiveMap.Brushes == null || ActiveMap.EntityReferences == null) return;
 
-        Rockwall.EntityOwnership.Sync(ActiveMap.brushes, ActiveMap.entityReferences);
+        Rockwall.EntityOwnership.Sync(ActiveMap.Brushes, ActiveMap.EntityReferences);
 
-        var orphaned = ActiveMap.entityReferences
-            .Where(e => e != null && e.brushIndices != null && e.brushIndices.Count == 0)
+        var orphaned = ActiveMap.EntityReferences
+            .Where(e => e != null && e.BrushIndices != null && e.BrushIndices.Count == 0)
             .ToList();
         if (orphaned.Count == 0) return;
 
-        ActiveMap.entityReferences = ActiveMap.entityReferences.Except(orphaned).ToArray();
+        ActiveMap.EntityReferences = ActiveMap.EntityReferences.Except(orphaned).ToArray();
     }
 
     public static EntityReference GetOwningEntity(int brushIndex)
     {
         if (Entities == null) return null;
-        return Entities.FirstOrDefault(e => e?.brushIndices != null && e.brushIndices.Contains(brushIndex));
+        return Entities.FirstOrDefault(e => e?.BrushIndices != null && e.BrushIndices.Contains(brushIndex));
     }
 
     static readonly Regex trailingNumber = new(@"^(.*?)(\d+)$");
@@ -272,7 +272,7 @@ public static class MapTools
     public static string GenerateUniqueName(string baseName)
     {
         if (string.IsNullOrEmpty(baseName)) return baseName;
-        if (!Entities.Any(e => e.name == baseName)) return baseName;
+        if (!Entities.Any(e => e.Name == baseName)) return baseName;
 
         var match = trailingNumber.Match(baseName);
         string prefix = match.Success ? match.Groups[1].Value : baseName + "_";
@@ -285,7 +285,7 @@ public static class MapTools
             candidate = prefix + next.ToString().PadLeft(width, '0');
             next++;
         }
-        while (Entities.Any(e => e.name == candidate));
+        while (Entities.Any(e => e.Name == candidate));
         return candidate;
     }
 
@@ -298,7 +298,7 @@ public static class MapTools
         GuidMapper.Add(e.GroupingID!.Value, (lst.Count, ObjType.Entity));
 
         lst.Add(e);
-        ActiveMap.entityReferences = lst.ToArray();
+        ActiveMap.EntityReferences = lst.ToArray();
     }
     public static void RemoveEntity(EntityReference e)
     {
@@ -310,19 +310,19 @@ public static class MapTools
 
         var lst = Entities.ToList();
         lst.Remove(e);
-        ActiveMap.entityReferences = lst.ToArray();
+        ActiveMap.EntityReferences = lst.ToArray();
     }
     public static void AddTerrain(Terrain t)
     {
         t.GroupingID = Guid.NewGuid();
-        t.BrushOwnerGUID = Brushes[t.brushSource].GroupingID;
+        t.BrushOwnerGUID = Brushes[t.BrushSource].GroupingID;
 
         var lst = Terrains.ToList();
 
         GuidMapper.Add(t.GroupingID!.Value, (lst.Count, ObjType.Terrain));
 
         lst.Add(t);
-        ActiveMap.terrains = lst.ToArray();
+        ActiveMap.Terrains = lst.ToArray();
     }
     public static void RemoveTerrain(Terrain t)
     {
@@ -335,7 +335,7 @@ public static class MapTools
         var lst = Terrains.ToList();
         lst.Remove(t);
 
-        ActiveMap.terrains = lst.ToArray();
+        ActiveMap.Terrains = lst.ToArray();
     }
     public static void AddHint(Hint h)
     {
@@ -346,7 +346,7 @@ public static class MapTools
         GuidMapper.Add(h.GroupingID!.Value, (lst.Count, ObjType.Terrain));
 
         lst.Add(h);
-        ActiveMap.hints = lst.ToArray();
+        ActiveMap.Hints = lst.ToArray();
     }
     public static void RemoveHint(Hint h)
     {
@@ -359,7 +359,7 @@ public static class MapTools
         var lst = Hints.ToList();
         lst.Remove(h);
 
-        ActiveMap.hints = lst.ToArray();
+        ActiveMap.Hints = lst.ToArray();
     }
     public static void FinalizeDeletedObjects()
     {
@@ -370,7 +370,7 @@ public static class MapTools
 
         for (int i = 0; i < Terrains.Length; i++)
         {
-            Terrains[i].brushSource = ResolveIndex(Terrains[i].BrushOwnerGUID, ObjType.Brush);
+            Terrains[i].BrushSource = ResolveIndex(Terrains[i].BrushOwnerGUID, ObjType.Brush);
         }
 
         RebuildGuidMapper();
@@ -383,11 +383,11 @@ public static class MapTools
         ActiveMap = Chisel.Formatter.MapMigration.LoadAndMigrate(data);
 
         // Add if they dont exist
-        ActiveMap.brushes ??= new Brush[0];
-        ActiveMap.entityReferences ??= new EntityReference[0];
-        ActiveMap.terrains ??= new Terrain[0];
-        ActiveMap.hints ??= new Hint[0];
-        ActiveMap.groups ??= new EditorGroup[0];
+        ActiveMap.Brushes ??= new Brush[0];
+        ActiveMap.EntityReferences ??= new EntityReference[0];
+        ActiveMap.Terrains ??= new Terrain[0];
+        ActiveMap.Hints ??= new Hint[0];
+        ActiveMap.Groups ??= new EditorGroup[0];
 
         BrushBounds = new BoundingBox[Brushes.Length];
         MapLoaded = true;
@@ -421,9 +421,9 @@ public static class MapTools
             {
                 Terrains[i].BrushOwnerGUID = Brushes[i].GroupingID;
             }
-            if (Terrains[i].blendedSurfaceName != null) Terrains[i].blendedSurface = GlobalMapData.materialNameToIndex[Terrains[i].blendedSurfaceName];
-            if (Terrains[i].surfaceName != null) Terrains[i].surface = GlobalMapData.materialNameToIndex[Terrains[i].surfaceName];
-            Terrains[i].brushSource = ResolveIndex(Terrains[i].BrushOwnerGUID, ObjType.Brush);
+            if (Terrains[i].BlendedSurfaceName != null) Terrains[i].BlendedSurface = GlobalMapData.MaterialNameToIndex[Terrains[i].BlendedSurfaceName];
+            if (Terrains[i].SurfaceName != null) Terrains[i].Surface = GlobalMapData.MaterialNameToIndex[Terrains[i].SurfaceName];
+            Terrains[i].BrushSource = ResolveIndex(Terrains[i].BrushOwnerGUID, ObjType.Brush);
             GuidMapper.Add(Terrains[i].GroupingID!.Value, (i, ObjType.Terrain));
         }
 
@@ -434,17 +434,17 @@ public static class MapTools
                 Entities[i].GroupingID = Guid.NewGuid();
             }
 
-            if (Entities[i].brushIndices != null && Entities[i].brushIndices.Count > 0)
+            if (Entities[i].BrushIndices != null && Entities[i].BrushIndices.Count > 0)
             {
-                if (Entities[i].brushOwnerGUIDs == null || Entities[i].brushOwnerGUIDs.Count != Entities[i].brushIndices.Count)
+                if (Entities[i].brushOwnerGUIDs == null || Entities[i].brushOwnerGUIDs.Count != Entities[i].BrushIndices.Count)
                 {
-                    Entities[i].brushOwnerGUIDs = Entities[i].brushIndices
+                    Entities[i].brushOwnerGUIDs = Entities[i].BrushIndices
                         .Where(bi => bi >= 0 && bi < Brushes.Length)
                         .Select(bi => Brushes[bi].GroupingID!.Value)
                         .ToList();
                 }
 
-                Entities[i].brushIndices = Entities[i].brushOwnerGUIDs
+                Entities[i].BrushIndices = Entities[i].brushOwnerGUIDs
                     .Select(g => ResolveIndex(g, ObjType.Brush))
                     .Where(idx => idx != -1)
                     .ToList();
@@ -472,12 +472,12 @@ public static class MapTools
         GuidMapper.Clear();
 
         ActiveMap = new RawMap();
-        ActiveMap.brushes = new Brush[0];
-        ActiveMap.entityReferences = new EntityReference[0];
-        ActiveMap.terrains = new Terrain[0];
-        ActiveMap.hints = new Hint[0];
-        ActiveMap.groups = new EditorGroup[0];
-        ActiveMap.formatVersion = Chisel.Formatter.MapMigration.CurrentFormatVersion;
+        ActiveMap.Brushes = new Brush[0];
+        ActiveMap.EntityReferences = new EntityReference[0];
+        ActiveMap.Terrains = new Terrain[0];
+        ActiveMap.Hints = new Hint[0];
+        ActiveMap.Groups = new EditorGroup[0];
+        ActiveMap.FormatVersion = Chisel.Formatter.MapMigration.CurrentFormatVersion;
         BrushBounds = new BoundingBox[0];
         MapLoaded = true;
         ActivePath = ""; // Literally just lost an awesome map because i didnt do this... damnit
@@ -573,7 +573,7 @@ public static class MapTools
     }
     public static void RecomputeBrushBounds(int i)
     {
-        var verts = Brushes[i].vertices.Select(v => v + Brushes[i].position);
+        var verts = Brushes[i].Vertices.Select(v => v + Brushes[i].Position);
         Vector3 min = new Vector3(float.MaxValue);
         Vector3 max = new Vector3(float.MinValue);
 
@@ -607,15 +607,15 @@ public static class MapTools
 
         for (int i = 0; i < Brushes.Length; i++)
         {
-            if (Brushes[i].isLightNodeVolume && skipLightNodeVolumes) continue;
+            if (Brushes[i].IsLightNodeVolume && skipLightNodeVolumes) continue;
             if (!(BrushBounds[i].Intersects(ray) > 0)) continue;
             if (Brushes[i].isUsedForTerrain && skipTerrainSource) continue;
 
             if (ignoreBrush != null && ignoreBrush.Contains(i)) continue;
 
-            for (int j = 0; j < Brushes[i].faces.Length; j++)
+            for (int j = 0; j < Brushes[i].Faces.Length; j++)
             {
-                var plane = Brushes[i].faces[j].plane;
+                var plane = Brushes[i].Faces[j].Plane;
                 if (!plane.HasValue) continue;
 
                 // Ray-plane intersection
@@ -626,7 +626,7 @@ public static class MapTools
 
                 // t = -(n·origin + D) / (n·direction)
                 // But our planes are in local space, so offset ray origin by -brush.position
-                Vector3 localOrigin = ray.Position - Brushes[i].position;
+                Vector3 localOrigin = ray.Position - Brushes[i].Position;
                 float t = -(Vector3.Dot(plane.Value.Normal, localOrigin) + plane.Value.D) / denom;
 
                 if (t < 0.01f || t >= minDistance) continue;
@@ -634,10 +634,10 @@ public static class MapTools
                 // Check intersection point is inside all other planes (inside the brush)
                 Vector3 localHit = localOrigin + ray.Direction * t;
                 bool inside = true;
-                for (int k = 0; k < Brushes[i].faces.Length; k++)
+                for (int k = 0; k < Brushes[i].Faces.Length; k++)
                 {
                     if (k == j) continue;
-                    var otherPlane = Brushes[i].faces[k].plane;
+                    var otherPlane = Brushes[i].Faces[k].Plane;
                     if (!otherPlane.HasValue) continue;
                     if (otherPlane.Value.DotCoordinate(localHit) > 0.001f)
                     {
@@ -666,9 +666,9 @@ public static class MapTools
             var ent = Entities[i];
             if (ent.IsBrushEntity) continue; // picked via its brushes (RaycastMapGeometry) instead
 
-            var box = MapperView.BoundsFor(ent.entityName);
-            box.Min += ent.position;
-            box.Max += ent.position;
+            var box = MapperView.BoundsFor(ent.EntityName);
+            box.Min += ent.Position;
+            box.Max += ent.Position;
 
             float? dist = box.Intersects(ray);
 
@@ -687,7 +687,7 @@ public static class MapTools
         int hint = -1;
         for (int i = 0; i < Hints.Length; i++)
         {
-            var pos = Hints[i].position;
+            var pos = Hints[i].Position;
             var box = new BoundingBox(pos - Vector3.One * 0.25f, pos + Vector3.One * 0.25f);
 
             float? dist = box.Intersects(ray);
@@ -706,13 +706,13 @@ public static class MapTools
         int terrain = -1;
         for (int i = 0; i < Terrains.Length; i++)
         {
-            if (!(Terrains[i].bounds.Intersects(ray) > 0)) continue;
+            if (!(Terrains[i].Bounds.Intersects(ray) > 0)) continue;
 
-            for (int j = 0; j < Terrains[i].triangles.Length; j += 3)
+            for (int j = 0; j < Terrains[i].Triangles.Length; j += 3)
             {
-                float dist = BrushOperations.IntersectRayTriangle(Terrains[i].vertices[Terrains[i].triangles[j + 0]].Position,
-                                                                  Terrains[i].vertices[Terrains[i].triangles[j + 1]].Position,
-                                                                  Terrains[i].vertices[Terrains[i].triangles[j + 2]].Position, ray);
+                float dist = BrushOperations.IntersectRayTriangle(Terrains[i].Vertices[Terrains[i].Triangles[j + 0]].Position,
+                                                                  Terrains[i].Vertices[Terrains[i].Triangles[j + 1]].Position,
+                                                                  Terrains[i].Vertices[Terrains[i].Triangles[j + 2]].Position, ray);
 
                 if (dist > 0.1f && dist < minDistance)
                 {

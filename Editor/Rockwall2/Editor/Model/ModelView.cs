@@ -166,10 +166,10 @@ public class ModelView : IEditorScene
 
         cameraLight = realtimeLights.Add(new Light
         {
-            color = Color.White,
-            range = 20,
-            intensity = 0.03f,
-            type = Light.LightType.Point
+            Color = Color.White,
+            Range = 20,
+            Intensity = 0.03f,
+            Type = Light.LightType.Point
         });
 
         boxVerts = CMath.GetDebugEdges(new BoundingBox(-Vector3.One * 0.5f, Vector3.One * 0.5f));
@@ -262,11 +262,11 @@ public class ModelView : IEditorScene
 
         realtimeLights[cameraLight] = new Light
         {
-            position = orbitCamera.position,
-            color = Color.White,
-            range = 20,
-            intensity = 0.1f,
-            type = Light.LightType.Point
+            Position = orbitCamera.position,
+            Color = Color.White,
+            Range = 20,
+            Intensity = 0.1f,
+            Type = Light.LightType.Point
         };
 
         PrepLightParams();
@@ -1073,9 +1073,9 @@ public class ModelView : IEditorScene
 
         for (int i = 0; i < shaderRealtimeLightCount; i++)
         {
-            shaderRealtimeLightPositions[i] = new Vector4(vals[i].position, vals[i].range);
-            shaderRealtimeLightColors[i] = new Vector4(vals[i].color.ToVector3(), vals[i].intensity);
-            shaderRealtimeLightSpotData[i] = new Vector4(vals[i].rotation, MathHelper.ToRadians(vals[i].angle));
+            shaderRealtimeLightPositions[i] = new Vector4(vals[i].Position, vals[i].Range);
+            shaderRealtimeLightColors[i] = new Vector4(vals[i].Color.ToVector3(), vals[i].Intensity);
+            shaderRealtimeLightSpotData[i] = new Vector4(vals[i].Rotation, MathHelper.ToRadians(vals[i].Angle));
         }
     }
     protected void PrepEyeShaderParams(Chisel.Models.CModel model, Matrix[] modelTransforms)
@@ -1130,10 +1130,10 @@ public class ModelView : IEditorScene
 
             if (shader != skinnedEye)
             {
-                shader.Parameters["MainTex"]?.SetValue(GlobalMapData.loadedMaterials[material].Texture);
-                shader.Parameters["SpecTex"]?.SetValue(GlobalMapData.loadedMaterials[material].Specular);
-                shader.Parameters["NormalTex"]?.SetValue(GlobalMapData.loadedMaterials[material].Normal);
-                shader.Parameters["shine"]?.SetValue(GlobalMapData.loadedMaterials[material].reflectivity);
+                shader.Parameters["MainTex"]?.SetValue(GlobalMapData.LoadedMaterials[material].Texture);
+                shader.Parameters["SpecTex"]?.SetValue(GlobalMapData.LoadedMaterials[material].Specular);
+                shader.Parameters["NormalTex"]?.SetValue(GlobalMapData.LoadedMaterials[material].Normal);
+                shader.Parameters["shine"]?.SetValue(GlobalMapData.LoadedMaterials[material].Reflectivity);
             }
 
             if (shaderRealtimeLightPositions != null)

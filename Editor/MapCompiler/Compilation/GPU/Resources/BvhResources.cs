@@ -111,36 +111,36 @@ public sealed class BvhResources : IDisposable
 
         for (int b = 0; b < brushes.Length; b++)
         {
-            if (brushes[b].isClip || brushes[b].isLightNodeVolume || brushes[b].isTrigger) continue;
+            if (brushes[b].IsClip || brushes[b].IsLightNodeVolume || brushes[b].IsTrigger) continue;
 
-            bool skybox = brushes[b].isSkybox;
+            bool skybox = brushes[b].IsSkybox;
 
             int entityGroup = TriangleOccluder.GetBrushEntityGroup(b);
 
-            for (int f = 0; f < brushes[b].faces.Length; f++)
+            for (int f = 0; f < brushes[b].Faces.Length; f++)
             {
-                var face = brushes[b].faces[f];
+                var face = brushes[b].Faces[f];
 
-                Vector3 albedo = matColors[face.surface].ToVector3() / 255f;
+                Vector3 albedo = matColors[face.Surface].ToVector3() / 255f;
 
-                for (int t = 0; t < face.indices.Length; t += 3)
+                for (int t = 0; t < face.Indices.Length; t += 3)
                 {
-                    int i0 = face.indices[t];
-                    int i1 = face.indices[t + 1];
-                    int i2 = face.indices[t + 2];
+                    int i0 = face.Indices[t];
+                    int i1 = face.Indices[t + 1];
+                    int i2 = face.Indices[t + 2];
 
-                    Vector3 v0 = brushes[b].vertices[i0] + brushes[b].position;
-                    Vector3 v1 = brushes[b].vertices[i1] + brushes[b].position;
-                    Vector3 v2 = brushes[b].vertices[i2] + brushes[b].position;
+                    Vector3 v0 = brushes[b].Vertices[i0] + brushes[b].Position;
+                    Vector3 v1 = brushes[b].Vertices[i1] + brushes[b].Position;
+                    Vector3 v2 = brushes[b].Vertices[i2] + brushes[b].Position;
 
                     tris.Add(new BvhTriangle
                     {
                         V0 = v0,
                         V1 = v1,
                         V2 = v2,
-                        Uv0 = brushes[b].lightmapUvs[i0],
-                        Uv1 = brushes[b].lightmapUvs[i1],
-                        Uv2 = brushes[b].lightmapUvs[i2],
+                        Uv0 = brushes[b].LightmapUVs[i0],
+                        Uv1 = brushes[b].LightmapUVs[i1],
+                        Uv2 = brushes[b].LightmapUVs[i2],
                         Albedo = albedo,
                         SourceBrush = b,
                         EntityGroup = entityGroup,
@@ -152,19 +152,19 @@ public sealed class BvhResources : IDisposable
 
         for (int i = 0; i < terrains.Length; i++)
         {
-            Vector3 albedo = matColors[terrains[i].surface].ToVector3() / 255f;
+            Vector3 albedo = matColors[terrains[i].Surface].ToVector3() / 255f;
 
-            for (int t = 0; t < terrains[i].triangles.Length; t += 3)
+            for (int t = 0; t < terrains[i].Triangles.Length; t += 3)
             {
-                int i0 = terrains[i].triangles[t];
-                int i1 = terrains[i].triangles[t + 1];
-                int i2 = terrains[i].triangles[t + 2];
+                int i0 = terrains[i].Triangles[t];
+                int i1 = terrains[i].Triangles[t + 1];
+                int i2 = terrains[i].Triangles[t + 2];
 
                 tris.Add(new BvhTriangle
                 {
-                    V0 = terrains[i].vertices[i0].Position,
-                    V1 = terrains[i].vertices[i1].Position,
-                    V2 = terrains[i].vertices[i2].Position,
+                    V0 = terrains[i].Vertices[i0].Position,
+                    V1 = terrains[i].Vertices[i1].Position,
+                    V2 = terrains[i].Vertices[i2].Position,
                     Uv0 = terrains[i].lightmapUvs[i0],
                     Uv1 = terrains[i].lightmapUvs[i1],
                     Uv2 = terrains[i].lightmapUvs[i2],

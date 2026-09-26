@@ -49,7 +49,7 @@ namespace Chisel.Models.Data
                 bodyGroup.MeshData = g.meshData;
                 bodyGroup.Name = g.name;
                 bodyGroup.Offset = g.offset;
-                bodyGroup.MaterialID = GlobalMapData.materialNameToIndex[g.material];
+                bodyGroup.MaterialID = GlobalMapData.MaterialNameToIndex[g.material];
                 bodyGroup.IsSkinned = g.skinned;
                 bodyGroup.IsEye = g.isEye;
                 bodyGroup.Mesh = CSkinnedMesh.CreateFrom(graphicsDevice, g.meshData);

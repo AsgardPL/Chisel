@@ -38,15 +38,15 @@ public static class EXHostCompletionData
     public static IReadOnlyDictionary<string, string[]> InputsByClassname() =>
         GlobalEditorData.RegisteredEntityMeta.ToDictionary(
             kvp => kvp.Key,
-            kvp => kvp.Value.inputs?.ToArray() ?? Array.Empty<string>());
+            kvp => kvp.Value.Inputs?.ToArray() ?? Array.Empty<string>());
 
     public static IReadOnlyDictionary<string, string> PlacedEntityNames()
     {
         var map = new Dictionary<string, string>();
         foreach (var e in MapTools.Entities)
         {
-            if (string.IsNullOrEmpty(e.name)) continue;
-            map[e.name] = e.entityName;
+            if (string.IsNullOrEmpty(e.Name)) continue;
+            map[e.Name] = e.EntityName;
         }
         return map;
     }

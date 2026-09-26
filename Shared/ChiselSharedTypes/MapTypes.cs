@@ -1,12 +1,9 @@
-﻿using Chisel.Collision;
-using Chisel.Utils;
+﻿using Chisel.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Newtonsoft.Json;
-using Rockwall;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 #if !rockwall
 using System.Collections.Immutable;
@@ -17,13 +14,7 @@ using System.IO;
 using Engine;
 #endif
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Chisel.EXScript;
 using System.Runtime.Serialization;
 using Newtonsoft.Json.Linq;
@@ -38,55 +29,55 @@ namespace Rockwall
             Point,
             SpotLight
         }
-        public Color color;
-        public float intensity, range, angle, innerAngle;
-        public Vector3 position, rotation;
-        public LightType type;
-        public int id;
+        public Color Color;
+        public float Intensity, Range, Angle, InnerAngle;
+        public Vector3 Position, Rotation;
+        public LightType Type;
+        public int ID;
 
-        public string targetname;
+        public string TargetName;
 
 #if compiler
-        [JsonIgnore] public Tuple<int, int>[] affectedBrushes;
+        [JsonIgnore] public Tuple<int, int>[] AffectedBrushes;
 #endif
     }
     public struct StyleKeyframe
     {
-        public float time;
-        public float intensity;
-        public Color tint;
-        public bool blend;
+        public float Time;
+        public float Intensity;
+        public Color Tint;
+        public bool Blend;
 
         public StyleKeyframe(float time, float intensity, bool blend = true)
         {
-            this.time = time;
-            this.intensity = intensity;
-            this.tint = Color.White;
-            this.blend = blend;
+            this.Time = time;
+            this.Intensity = intensity;
+            this.Tint = Color.White;
+            this.Blend = blend;
         }
         public StyleKeyframe(float time, float intensity, Color tint, bool blend = true)
         {
-            this.time = time;
-            this.intensity = intensity;
-            this.tint = tint;
-            this.blend = blend;
+            this.Time = time;
+            this.Intensity = intensity;
+            this.Tint = tint;
+            this.Blend = blend;
         }
     }
     public struct LightStyle
     {
-        public string name;
-        public StyleKeyframe[] keyframes;  // sorted ascending by time
-        public bool loop;
+        public string Name;
+        public StyleKeyframe[] Keyframes;  // sorted ascending by time
+        public bool Loop;
     }
     public struct StyleSample
     {
-        public float intensity;
-        public Color tint;
+        public float Intensity;
+        public Color Tint;
     }
     public struct LightGroupBounds
     {
-        public string name;
-        public Vector2 uvMin, uvMax;
+        public string Name;
+        public Vector2 UvMin, UvMax;
     }
     public static class LightPageResolver
     {
@@ -96,38 +87,38 @@ namespace Rockwall
         /// </summary>
         public static StyleSample Evaluate(LightStyle style, float t)
         {
-            var kf = style.keyframes;
-            if (kf == null || kf.Length == 0) return new StyleSample { intensity = 1f, tint = Color.White };
-            if (kf.Length == 1) return new StyleSample { intensity = kf[0].intensity, tint = kf[0].tint };
+            var kf = style.Keyframes;
+            if (kf == null || kf.Length == 0) return new StyleSample { Intensity = 1f, Tint = Color.White };
+            if (kf.Length == 1) return new StyleSample { Intensity = kf[0].Intensity, Tint = kf[0].Tint };
 
-            float duration = kf[kf.Length - 1].time;
+            float duration = kf[kf.Length - 1].Time;
             float lt = t;
 
-            if (style.loop && duration > 0f)
+            if (style.Loop && duration > 0f)
             {
                 lt %= duration;
                 if (lt < 0f) lt += duration;
             }
             else
             {
-                if (lt <= kf[0].time) return new StyleSample { intensity = kf[0].intensity, tint = kf[0].tint };
-                if (lt >= duration) return new StyleSample { intensity = kf[kf.Length - 1].intensity, tint = kf[kf.Length - 1].tint };
+                if (lt <= kf[0].Time) return new StyleSample { Intensity = kf[0].Intensity, Tint = kf[0].Tint };
+                if (lt >= duration) return new StyleSample { Intensity = kf[kf.Length - 1].Intensity, Tint = kf[kf.Length - 1].Tint };
             }
 
             int i = FindSegment(kf, lt);
             var a = kf[i];
             var b = kf[i + 1];
 
-            if (!a.blend)
-                return new StyleSample { intensity = a.intensity, tint = a.tint };
+            if (!a.Blend)
+                return new StyleSample { Intensity = a.Intensity, Tint = a.Tint };
 
-            float span = b.time - a.time;
-            float frac = span > 0f ? Math.Clamp((lt - a.time) / span, 0f, 1f) : 0f;
+            float span = b.Time - a.Time;
+            float frac = span > 0f ? Math.Clamp((lt - a.Time) / span, 0f, 1f) : 0f;
 
             return new StyleSample
             {
-                intensity = a.intensity + (b.intensity - a.intensity) * frac,
-                tint = Color.Lerp(a.tint, b.tint, frac)
+                Intensity = a.Intensity + (b.Intensity - a.Intensity) * frac,
+                Tint = Color.Lerp(a.Tint, b.Tint, frac)
             };
         }
 
@@ -136,21 +127,21 @@ namespace Rockwall
         /// </summary>
         public static int GetKeyframeIndex(LightStyle style, float t)
         {
-            var kf = style.keyframes;
+            var kf = style.Keyframes;
             if (kf == null || kf.Length == 0) return -1;
             if (kf.Length == 1) return 0;
 
-            float duration = kf[kf.Length - 1].time;
+            float duration = kf[kf.Length - 1].Time;
             float lt = t;
 
-            if (style.loop && duration > 0f)
+            if (style.Loop && duration > 0f)
             {
                 lt %= duration;
                 if (lt < 0f) lt += duration;
             }
             else
             {
-                if (lt <= kf[0].time) return 0;
+                if (lt <= kf[0].Time) return 0;
                 if (lt >= duration) return kf.Length - 1;
             }
 
@@ -161,7 +152,7 @@ namespace Rockwall
         private static int FindSegment(StyleKeyframe[] kf, float lt)
         {
             int i = 0;
-            while (i < kf.Length - 2 && lt >= kf[i + 1].time) i++;
+            while (i < kf.Length - 2 && lt >= kf[i + 1].Time) i++;
             return i;
         }
     }
@@ -174,19 +165,19 @@ namespace Rockwall
     }
     public struct RawMap
     {
-        public Brush[] brushes;
-        public Hint[] hints;
-        public EntityReference[] entityReferences;
-        public Terrain[] terrains;
-        public EditorGroup[] groups;
+        public Brush[] Brushes;
+        public Hint[] Hints;
+        public EntityReference[] EntityReferences;
+        public Terrain[] Terrains;
+        public EditorGroup[] Groups;
         /// <summary>
         /// Map-format version. 0 (the default for any JSON saved before this field existed) means
         /// "may still have brush-owned-entity data embedded per-brush".
         /// </summary>
-        public int formatVersion;
+        public int FormatVersion;
         public static RawMap CompileRawMap(Hint[] hints, Brush[] brushes, EntityReference[] entityReferences, Terrain[] terrains)
         {
-            return new RawMap() { hints = hints, brushes = brushes, entityReferences = entityReferences, terrains = terrains, formatVersion = 1 };
+            return new RawMap() { Hints = hints, Brushes = brushes, EntityReferences = entityReferences, Terrains = terrains, FormatVersion = 1 };
         }
     }
     public struct MatGroup
@@ -196,17 +187,17 @@ namespace Rockwall
     }
     public struct Brush
     {
-        public Face[] faces;
-        public Vector3[] vertices;
-        public Vector2[] uvs, lightmapUvs;
-        public Vector3 position;
-        public float width, height, length;
-        public bool abnormal, isDetail, isClip, isTrigger, isSkybox, isLightNodeVolume, isEntity;
+        public Face[] Faces;
+        public Vector3[] Vertices;
+        public Vector2[] UVs, LightmapUVs;
+        public Vector3 Position;
+        public float Width, Height, Length;
+        public bool Abnormal, IsDetail, IsClip, IsTrigger, IsSkybox, IsLightNodeVolume, IsEntity;
 #if !rockwall && !compiler
-        [JsonIgnore] public BrushEntity entity;
-        [JsonIgnore] public VertexBuffer brushVertexBuffer;
-        [JsonIgnore] public MatGroup[] matGroups;
-        [JsonIgnore] public bool renderPiecewise;
+        [JsonIgnore] public BrushEntity Entity;
+        [JsonIgnore] public VertexBuffer BrushVertexBuffer;
+        [JsonIgnore] public MatGroup[] MatGroups;
+        [JsonIgnore] public bool RenderPiecewise;
 #endif
 #if rockwall || compiler
         public bool isUsedForTerrain;
@@ -214,20 +205,20 @@ namespace Rockwall
         {
             var b = new Brush
             {
-                position = this.position,
-                width = this.width,
-                height = this.height,
-                length = this.length,
-                abnormal = this.abnormal,
+                Position = this.Position,
+                Width = this.Width,
+                Height = this.Height,
+                Length = this.Length,
+                Abnormal = this.Abnormal,
                 isUsedForTerrain = this.isUsedForTerrain
             };
-            b.faces = new Face[this.faces.Length];
-            b.vertices = new Vector3[this.vertices.Length];
-            b.uvs = new Vector2[this.uvs.Length];
+            b.Faces = new Face[this.Faces.Length];
+            b.Vertices = new Vector3[this.Vertices.Length];
+            b.UVs = new Vector2[this.UVs.Length];
 
-            Array.Copy(faces, b.faces, faces.Length);
-            Array.Copy(vertices, b.vertices, vertices.Length);
-            Array.Copy(uvs, b.uvs, uvs.Length);
+            Array.Copy(Faces, b.Faces, Faces.Length);
+            Array.Copy(Vertices, b.Vertices, Vertices.Length);
+            Array.Copy(UVs, b.UVs, UVs.Length);
 
             // Note: entity ownership is intentionally NOT copied here.
 
@@ -240,26 +231,26 @@ namespace Rockwall
     }
     public struct Material
     {
-        public string name;
-        public string surfaceType;
-        public string shaderName;
-        public float reflectivity;
-        public bool transparent;
-        public bool alphaClip;
-        public bool noCull;
-        public int texelsPerUnit;
-        public Dictionary<string, bool> shaderFlags;
+        public string Name;
+        public string SurfaceType;
+        public string ShaderName;
+        public float Reflectivity;
+        public bool Transparent;
+        public bool AlphaClip;
+        public bool NoCull;
+        public int TexelsPerUnit;
+        public Dictionary<string, bool> ShaderFlags;
 
         // Catches every JSON key that doesn't match a declared field above.
         [JsonExtensionData] private IDictionary<string, JToken> extensionData;
 
-        [JsonIgnore] public Dictionary<string, string> texturePaths;
-        [JsonIgnore] public Dictionary<string, Texture2D> textures;
+        [JsonIgnore] public Dictionary<string, string> TexturePaths;
+        [JsonIgnore] public Dictionary<string, Texture2D> Textures;
 
         // Legacy
-        [JsonIgnore] public string texture => GetPath("texture");
-        [JsonIgnore] public string specular => GetPath("specular");
-        [JsonIgnore] public string normal => GetPath("normal");
+        [JsonIgnore] public string TextureName => GetPath("texture");
+        [JsonIgnore] public string SpecularName => GetPath("specular");
+        [JsonIgnore] public string NormalName => GetPath("normal");
 
         // Legacy
         [JsonIgnore] public Texture2D Texture { get => GetTexture("texture"); set => SetTexture("texture", value); }
@@ -267,42 +258,42 @@ namespace Rockwall
         [JsonIgnore] public Texture2D Normal { get => GetTexture("normal"); set => SetTexture("normal", value); }
 
         [JsonIgnore] public object Shader;
-        [JsonIgnore] public float TexelsPerUnit => texelsPerUnit > 0 ? texelsPerUnit : 512f;
+        [JsonIgnore] public float EffectiveTexelsPerUnit => TexelsPerUnit > 0 ? TexelsPerUnit : 512f;
 
-        private static readonly HashSet<string> LegacyMapNames = new() { "texture", "specular", "normal" };
+        private static readonly HashSet<string> legacyMapNames = new() { "texture", "specular", "normal" };
 
         public IEnumerable<KeyValuePair<string, string>> GetExtraTexturePaths() =>
-            texturePaths?.Where(kv => !LegacyMapNames.Contains(kv.Key))
+            TexturePaths?.Where(kv => !legacyMapNames.Contains(kv.Key))
                 ?? Enumerable.Empty<KeyValuePair<string, string>>();
 
         public IEnumerable<KeyValuePair<string, Texture2D>> GetExtraTextures() =>
-            textures?.Where(kv => !LegacyMapNames.Contains(kv.Key))
+            Textures?.Where(kv => !legacyMapNames.Contains(kv.Key))
                 ?? Enumerable.Empty<KeyValuePair<string, Texture2D>>();
 
         public Texture2D GetExtraTexture(string key) =>
-            !LegacyMapNames.Contains(key) ? GetTexture(key) : null;
+            !legacyMapNames.Contains(key) ? GetTexture(key) : null;
 
         public string GetPath(string key) =>
-            texturePaths != null && texturePaths.TryGetValue(key, out var v) ? v : null;
+            TexturePaths != null && TexturePaths.TryGetValue(key, out var v) ? v : null;
 
         public Texture2D GetTexture(string key) =>
-            textures != null && textures.TryGetValue(key, out var t) ? t : null;
+            Textures != null && Textures.TryGetValue(key, out var t) ? t : null;
 
         public void SetTexture(string key, Texture2D value)
         {
-            textures ??= new();
-            textures[key] = value;
+            Textures ??= new();
+            Textures[key] = value;
         }
 
         [OnDeserialized]
         void OnDeserialized(StreamingContext ctx)
         {
             if (extensionData == null) return;
-            texturePaths ??= new();
+            TexturePaths ??= new();
             foreach (var kv in extensionData)
             {
                 if (kv.Value.Type == JTokenType.String)
-                    texturePaths[kv.Key] = kv.Value.Value<string>();
+                    TexturePaths[kv.Key] = kv.Value.Value<string>();
             }
             extensionData = null;
         }
@@ -328,20 +319,20 @@ namespace Rockwall
 
     public struct Face
     {
-        public int[] indices;
-        public Vector3 normal;
-        public Vector3 tangent;
-        public Vector3 binormal;
-        public Vector3 basis1, basis2, basis3;
-        public bool drawn;
-        public string materialName;
-        public int surface;
-        public float tOffX, tOffY, tScaleX, tScaleY, luxelScale;
-        public float uvRotation;
-        public UVProjectionMode uvProjectionMode;
-        public EnvironmentalDecal[] decals;
+        public int[] Indices;
+        public Vector3 Normal;
+        public Vector3 Tangent;
+        public Vector3 Binormal;
+        public Vector3 Basis1, Basis2, Basis3;
+        public bool Drawn;
+        public string MaterialName;
+        public int Surface;
+        public float TOffX, TOffY, TScaleX, TScaleY, LuxelScale;
+        public float UvRotation;
+        public UVProjectionMode UvProjectionMode;
+        public EnvironmentalDecal[] Decals;
 
-        public Plane? plane;
+        public Plane? Plane;
 
 #if rockwall || compiler
         [JsonIgnore] public List<VertexLightmapped> editorVerts;
@@ -349,7 +340,7 @@ namespace Rockwall
         public bool toolFace;
         public int smoothGroup;
 #else
-        [JsonIgnore] public IndexBuffer faceIndices;
+        [JsonIgnore] public IndexBuffer FaceIndices;
 #endif
     }
     public struct EnvironmentalDecal
@@ -359,9 +350,9 @@ namespace Rockwall
     }
     public struct Terrain
     {
-        public TerrainVertex[] vertices;
-        public string surfaceName;
-        public string blendedSurfaceName;
+        public TerrainVertex[] Vertices;
+        public string SurfaceName;
+        public string BlendedSurfaceName;
 #if rockwall
         public TerrainVertex[] editor_cheat_flipalphavert;
 #endif
@@ -369,25 +360,25 @@ namespace Rockwall
         public float cmp_avgvertdist;
         public Vector2[] lightmapUvs;
 #endif
-        public short[] triangles;
-        public int surface;
-        public int blendedSurface;
-        public int brushSource;
-        public int faceSource;
-        public Vector3 sourceNormal;
-        public BoundingBox bounds;
+        public short[] Triangles;
+        public int Surface;
+        public int BlendedSurface;
+        public int BrushSource;
+        public int FaceSource;
+        public Vector3 SourceNormal;
+        public BoundingBox Bounds;
 #if rockwall
         public Guid? GroupingID;
         public Guid? BrushOwnerGUID;
 #endif
 #if !rockwall && !compiler
-        public ulong[] leafBits;
+        public ulong[] LeafBits;
 #endif
     }
     public class Hint
     {
-        public Vector3 position;
-        public string header, body;
+        public Vector3 Position;
+        public string Header, Body;
 #if rockwall
         public Guid? GroupingID;
 #endif
@@ -404,15 +395,15 @@ namespace Rockwall
     }
     public class EntityReference
     {
-        public Vector3 position;
-        public Vector3 spawnRotation;
-        public Quaternion rotation;
-        public Vector3 scale;
-        public string name;
-        public string entityName;
+        public Vector3 Position;
+        public Vector3 SpawnRotation;
+        public Quaternion Rotation;
+        public Vector3 Scale;
+        public string Name;
+        public string EntityName;
 
-        public EntityProperty[] properties;
-        public List<(string, EntityOutput)> entityOutputs;
+        public EntityProperty[] Properties;
+        public List<(string, EntityOutput)> EntityOutputs;
 
         /// <summary>
         /// Indices into the map's Brush[] array that this entity owns and controls. Null or empty
@@ -420,11 +411,11 @@ namespace Rockwall
         /// or more brushes at once (a func_door made of two brushes is one entity owning two
         /// indices, not two separate entities).
         /// </summary>
-        public List<int> brushIndices;
+        public List<int> BrushIndices;
         public string entityMoveParentName;
 
         /// <summary>True if this is a brush entity (owns at least one brush).</summary>
-        [JsonIgnore] public bool IsBrushEntity => brushIndices != null && brushIndices.Count > 0;
+        [JsonIgnore] public bool IsBrushEntity => BrushIndices != null && BrushIndices.Count > 0;
 #if rockwall
         public Guid? GroupingID;
         public List<Guid> brushOwnerGUIDs;
@@ -434,26 +425,27 @@ namespace Rockwall
     public struct EntityProperty
     {
         private string name, value;
+        // ? Why did I write these as getters and setters lmao
         public string Name { get { return name; } set { name = value; } }
         public string Value { get { return value; } set { this.value = value; } }
     }
     public struct EntityPropertyDescriptor
     {
-        public string name;
-        public string hint;
-        public EntityPropertyType type;
+        public string Name;
+        public string Hint;
+        public EntityPropertyType Type;
 
         // Enum options, EntityTarget classname filter, inspector grouping, compiled default, and Float clamp range.
         // All optional.
-        public string[] options;
-        public string targetFilter;
-        public string category;
-        public string defaultValue;
-        public float min, max;
+        public string[] Options;
+        public string TargetFilter;
+        public string Category;
+        public string DefaultValue;
+        public float Min, Max;
 
         public override string ToString()
         {
-            return name;
+            return Name;
         }
     }
     public enum EntityPropertyType
@@ -474,43 +466,43 @@ namespace Rockwall
     // "Next"/"previous" property names used to auto-wire duplicated entities together.
     public struct EntityLinkDescriptor
     {
-        public string next;
-        public string previous;
+        public string Next;
+        public string Previous;
     }
     // Which EntityVisualizer to draw for this class, and which entity property feeds each of its fields.
     public struct EntityVisualizerBinding
     {
-        public string visualizerType;
-        public Dictionary<string, string> fieldToProperty;
-        public Dictionary<string, string> fieldToLiteral;
+        public string VisualizerType;
+        public Dictionary<string, string> FieldToProperty;
+        public Dictionary<string, string> FieldToLiteral;
     }
     // Everything the compiler knows about one entity class.
     public class EntityClassMetadata
     {
-        public List<EntityPropertyDescriptor> properties = new();
-        public List<string> inputs = new();
-        public List<string> outputs = new();
-        public EntityLinkDescriptor? link;
-        public EntityVisualizerBinding? visualizer;
-        public Vector3 boundsMin, boundsMax;
-        public EntityProperty[] defaultProperties;
+        public List<EntityPropertyDescriptor> Properties = new();
+        public List<string> Inputs = new();
+        public List<string> Outputs = new();
+        public EntityLinkDescriptor? Link;
+        public EntityVisualizerBinding? Visualizer;
+        public Vector3 BoundsMin, BoundsMax;
+        public EntityProperty[] DefaultProperties;
     }
     public struct LeafInfo
     {
-        public int brush, face;
+        public int Brush, Face;
         public LeafInfo(int brush, int face)
         {
-            this.brush = brush;
-            this.face = face;
+            this.Brush = brush;
+            this.Face = face;
         }
     }
     public class VisLeaf
     {
-        public int[] portals;
+        public int[] Portals;
         public bool IsEmpty;
-        public int bspLeafID;
-        public uint[] pvs;
-        public ushort[] brushes;
+        public int BspLeafID;
+        public uint[] PVS;
+        public ushort[] Brushes;
         public bool HasSkybox;
     }
     public class Portal
@@ -532,15 +524,15 @@ namespace Rockwall
 
     public static class OctreeRoot
     {
-        public static List<Octree> allNodes = new List<Octree>();
+        public static List<Octree> AllNodes = new List<Octree>();
     }
     public class Octree
     {
         const float minSize = 32;
 
-        public int depth, id;
-        public List<int> contents = new List<int>();
-        public int[] children = new int[8] {
+        public int Depth, Id;
+        public List<int> Contents = new List<int>();
+        public int[] Children = new int[8] {
             -1,-1,
             -1,-1,
             -1,-1,
@@ -548,11 +540,11 @@ namespace Rockwall
         };
         //public int[] visible;
         //public bool[,] faceToFaceVisibility;
-        public BoundingBox box;
-        public BoundingBox[] corners;
-        public bool isEnd = false;
+        public BoundingBox Box;
+        public BoundingBox[] Corners;
+        public bool IsEnd = false;
 
-        public static Vector3[] searchDirections = new Vector3[6]
+        public static Vector3[] SearchDirections = new Vector3[6]
         {
             Vector3.Up,
             Vector3.Right,
@@ -566,13 +558,13 @@ namespace Rockwall
 
         public Octree(BoundingBox box, int d, int id)
         {
-            this.box = box;
-            this.depth = d + 1;
-            this.id = id;
+            this.Box = box;
+            this.Depth = d + 1;
+            this.Id = id;
             var boxQuarter = new BoundingBox(Vector3.Zero, (box.Max - box.Min) * 0.5f);
 
             //visible = new int[6] { -1,-1,-1,-1,-1,-1 };
-            corners = new BoundingBox[8];
+            Corners = new BoundingBox[8];
 
             Vector3[] c = new Vector3[]
             {
@@ -590,7 +582,7 @@ namespace Rockwall
             {
                 Vector3 placement = Replace(c[i], boxQuarter.Max);
 
-                corners[i] = new BoundingBox(box.Min + placement, box.Min + boxQuarter.Max + placement);
+                Corners[i] = new BoundingBox(box.Min + placement, box.Min + boxQuarter.Max + placement);
             }
         }
 
@@ -601,33 +593,33 @@ namespace Rockwall
 
         private void CreateChild(int index, BoundingBox box)
         {
-            children[index] = OctreeRoot.allNodes.Count;
-            OctreeRoot.allNodes.Add(new Octree(box, depth, children[index]));
+            Children[index] = OctreeRoot.AllNodes.Count;
+            OctreeRoot.AllNodes.Add(new Octree(box, Depth, Children[index]));
         }
         public void TestAdd(BoundingBox box, int brush)
         {
-            if (contents.Contains(brush) || this.box.Contains(box) == ContainmentType.Disjoint) return;
+            if (Contents.Contains(brush) || this.Box.Contains(box) == ContainmentType.Disjoint) return;
 
-            contents.Add(brush);
+            Contents.Add(brush);
 
-            if (isEnd || Math.Abs((this.box.Max - this.box.Min).X) < minSize)
+            if (IsEnd || Math.Abs((this.Box.Max - this.Box.Min).X) < minSize)
             {
-                isEnd = true;
+                IsEnd = true;
                 return;
             }
 
-            if (!isEnd)
+            if (!IsEnd)
             {
                 for (int i = 0; i < 8; i++)
                 {
-                    if (corners[i].Contains(box) == ContainmentType.Disjoint) continue;
+                    if (Corners[i].Contains(box) == ContainmentType.Disjoint) continue;
 
-                    if (children[i] == -1)
+                    if (Children[i] == -1)
                     {
-                        CreateChild(i, corners[i]);
+                        CreateChild(i, Corners[i]);
                     }
 
-                    OctreeRoot.allNodes[children[i]].TestAdd(box, brush);
+                    OctreeRoot.AllNodes[Children[i]].TestAdd(box, brush);
                 }
             }
         }
@@ -635,56 +627,56 @@ namespace Rockwall
         {
             for (int i = 0; i < 8; i++)
             {
-                if (corners[i].Contains(position) == ContainmentType.Disjoint) continue;
+                if (Corners[i].Contains(position) == ContainmentType.Disjoint) continue;
 
-                if (children[i] >= 0)
+                if (Children[i] >= 0)
                 {
-                    return OctreeRoot.allNodes[children[i]].Traverse(position);
+                    return OctreeRoot.AllNodes[Children[i]].Traverse(position);
                 }
             }
 
-            return id;
+            return Id;
         }
         public int TraverseBox(BoundingBox bounds)
         {
-            if (isEnd) return id;
+            if (IsEnd) return Id;
 
             for (int i = 0; i < 8; i++)
             {
-                if (corners[i].Contains(bounds) == ContainmentType.Disjoint) continue;
+                if (Corners[i].Contains(bounds) == ContainmentType.Disjoint) continue;
 
-                if (children[i] >= 0)
+                if (Children[i] >= 0)
                 {
-                    return OctreeRoot.allNodes[children[i]].TraverseBox(bounds);
+                    return OctreeRoot.AllNodes[Children[i]].TraverseBox(bounds);
                 }
             }
-            return id;
+            return Id;
         }
         public List<int> Raycast(Ray ray)
         {
             List<int> contents = new List<int>();
 
-            if (isEnd)
+            if (IsEnd)
             {
-                return this.contents;
+                return this.Contents;
             }
 
             for (int i = 0; i < 8; i++)
             {
-                if (children[i] > 0)
+                if (Children[i] > 0)
                 {
-                    float? res = ray.Intersects(OctreeRoot.allNodes[children[i]].box);
+                    float? res = ray.Intersects(OctreeRoot.AllNodes[Children[i]].Box);
 
-                    if (OctreeRoot.allNodes[children[i]].box.Contains(ray.Position) == ContainmentType.Contains || res.HasValue)
+                    if (OctreeRoot.AllNodes[Children[i]].Box.Contains(ray.Position) == ContainmentType.Contains || res.HasValue)
                     {
-                        if (OctreeRoot.allNodes[children[i]].isEnd && OctreeRoot.allNodes[children[i]].box.Contains(ray.Position) == ContainmentType.Contains)
+                        if (OctreeRoot.AllNodes[Children[i]].IsEnd && OctreeRoot.AllNodes[Children[i]].Box.Contains(ray.Position) == ContainmentType.Contains)
                         {
-                            contents.AddRange(OctreeRoot.allNodes[children[i]].contents);
+                            contents.AddRange(OctreeRoot.AllNodes[Children[i]].Contents);
                             continue;
                         }
                         else
                         {
-                            contents.AddRange(OctreeRoot.allNodes[children[i]].Raycast(ray));
+                            contents.AddRange(OctreeRoot.AllNodes[Children[i]].Raycast(ray));
                             continue;
                         }
                     }
@@ -697,8 +689,8 @@ namespace Rockwall
             onLast.Invoke(this);
             for (int i = 0; i < 8; i++)
             {
-                if (children[i] > 0)
-                    OctreeRoot.allNodes[children[i]].Iterate(onLast);
+                if (Children[i] > 0)
+                    OctreeRoot.AllNodes[Children[i]].Iterate(onLast);
             }
         }
         //public void CalculateVis_Crude()
@@ -742,26 +734,26 @@ namespace Rockwall
 
     public class LightNodeBundle
     {
-        public LightNode[] children;
-        public BoundingBox box;
-        public float gridSize = 2f;
+        public LightNode[] Children;
+        public BoundingBox Box;
+        public float GridSize = 2f;
         public struct LightData
         {
-            public bool lightBlocked;
-            public int lightNum;
+            public bool LightBlocked;
+            public int LightNum;
         }
         public struct LightNode
         {
-            public Vector3 pos;
-            public LightData[] data;
-            public Vector3[] indirectCoefficients;
-            public Vector3[][] groupIndirectCoefficients;
+            public Vector3 Pos;
+            public LightData[] Data;
+            public Vector3[] IndirectCoefficients;
+            public Vector3[][] GroupIndirectCoefficients;
         }
 
         public LightNodeBundle(BoundingBox box, float gridSize = 2f, bool spreadDistribution = false, bool skipOccluded = true)
         {
-            this.box = box;
-            this.gridSize = gridSize;
+            this.Box = box;
+            this.GridSize = gridSize;
 #if compiler
             List<LightNode> nodes = new List<LightNode>();
 
@@ -775,20 +767,20 @@ namespace Rockwall
 
                         var pos = new Vector3(x * gridSize, y * gridSize, z * gridSize) + box.Min;
 
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos)].solid) continue;
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos + new Vector3(0, -1, 0) * 0.025f)].solid) continue;
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos + new Vector3(0, 1, 0) * 0.025f)].solid) continue;
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos + new Vector3(-1, 0, 0) * 0.025f)].solid) continue;
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos + new Vector3(1, 0, 0) * 0.025f)].solid) continue;
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos + new Vector3(0, 0, -1) * 0.025f)].solid) continue;
-                        if (skipOccluded && BSPRoot.nodes[BSPRoot.Traverse(pos + new Vector3(0, 0, 1) * 0.025f)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos + new Vector3(0, -1, 0) * 0.025f)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos + new Vector3(0, 1, 0) * 0.025f)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos + new Vector3(-1, 0, 0) * 0.025f)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos + new Vector3(1, 0, 0) * 0.025f)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos + new Vector3(0, 0, -1) * 0.025f)].solid) continue;
+                        if (skipOccluded && BSPRoot.Nodes[BSPRoot.Traverse(pos + new Vector3(0, 0, 1) * 0.025f)].solid) continue;
 
-                        nodes.Add(new LightNode { pos = CMath.ClampToBoundingBox(pos, box) });
+                        nodes.Add(new LightNode { Pos = CMath.ClampToBoundingBox(pos, box) });
                     }
                 }
             }
 
-            children = nodes.ToArray();
+            Children = nodes.ToArray();
 #endif
         }
 
@@ -801,12 +793,12 @@ namespace Rockwall
             {
                 if (spatialGrid != null) return;
 
-                float cellSize = gridSize > 0f ? gridSize : EstimateCellSize();
-                var grid = new Dictionary<long, List<int>>(children.Length);
+                float cellSize = GridSize > 0f ? GridSize : EstimateCellSize();
+                var grid = new Dictionary<long, List<int>>(Children.Length);
 
-                for (int i = 0; i < children.Length; i++)
+                for (int i = 0; i < Children.Length; i++)
                 {
-                    long key = CellKey(children[i].pos, cellSize);
+                    long key = CellKey(Children[i].Pos, cellSize);
                     if (!grid.TryGetValue(key, out var list))
                         grid[key] = list = new List<int>(4);
                     list.Add(i);
@@ -819,10 +811,10 @@ namespace Rockwall
         private float cellSizeResolved;
         private float EstimateCellSize()
         {
-            if (children.Length < 2) return 2f;
-            var size = box.Max - box.Min;
+            if (Children.Length < 2) return 2f;
+            var size = Box.Max - Box.Min;
             float volume = MathF.Max(size.X, 0.001f) * MathF.Max(size.Y, 0.001f) * MathF.Max(size.Z, 0.001f);
-            return MathF.Max(0.1f, MathF.Cbrt(volume / children.Length));
+            return MathF.Max(0.1f, MathF.Cbrt(volume / Children.Length));
         }
         private static long CellKey(Vector3 pos, float cellSize)
         {
@@ -856,14 +848,14 @@ namespace Rockwall
             }
 
             if (result.Count == 0)
-                for (int i = 0; i < children.Length; i++) result.Add(i); // pathological fallback
+                for (int i = 0; i < Children.Length; i++) result.Add(i); // pathological fallback
 
             return result;
         }
 
         public LightNode Traverse(Vector3 position)
         {
-            if (children.Length == 0) return default;
+            if (Children.Length == 0) return default;
             EnsureGridBuilt();
 
             var candidates = CollectCandidates(position, desiredCount: 1);
@@ -871,14 +863,14 @@ namespace Rockwall
             int bestIdx = candidates[0];
             foreach (int i in candidates)
             {
-                float d = Vector3.DistanceSquared(children[i].pos, position);
+                float d = Vector3.DistanceSquared(Children[i].Pos, position);
                 if (d < best) { best = d; bestIdx = i; }
             }
-            return children[bestIdx];
+            return Children[bestIdx];
         }
         public LightNode[] GetClosest(Vector3 position)
         {
-            if (children.Length == 0) return Array.Empty<LightNode>();
+            if (Children.Length == 0) return Array.Empty<LightNode>();
             EnsureGridBuilt();
 
             var candidates = CollectCandidates(position, desiredCount: 10);
@@ -888,12 +880,12 @@ namespace Rockwall
 
             foreach (int i in candidates)
             {
-                var toNode = children[i].pos - position;
+                var toNode = Children[i].Pos - position;
                 float distSq = toNode.LengthSquared();
                 if (distSq >= bestDistSq[4]) continue;
 
                 float dist = MathF.Sqrt(distSq);
-                if (dist > 0.001f && BSPRoot.TraceRay(new Ray(position, toNode / dist), dist).hit)
+                if (dist > 0.001f && BSPRoot.TraceRay(new Ray(position, toNode / dist), dist).Hit)
                     continue; // occluded
 
                 int insertAt = 4;
@@ -912,13 +904,13 @@ namespace Rockwall
 
             var result = new LightNode[count];
             for (int i = 0; i < count; i++)
-                result[i] = children[bestIndex[i]];
+                result[i] = Children[bestIndex[i]];
 
             return result;
         }
         public void Iterate(Action<int> onLast)
         {
-            for (int i = 0; i < children.Length; i++)
+            for (int i = 0; i < Children.Length; i++)
             {
                 onLast.Invoke(i);
             }
@@ -927,22 +919,22 @@ namespace Rockwall
 
     public struct BSPFile
     {
-        public BSPNode[] nodes;
+        public BSPNode[] Nodes;
     }
     public struct VisFile
     {
-        public VisLeaf[] leaves;
-        public Portal[] portals;
+        public VisLeaf[] Leaves;
+        public Portal[] Portals;
     }
 
     public static class VisRoot
     {
-        public static VisLeaf[] visLeaves;
-        public static Portal[] visPortals;
+        public static VisLeaf[] VisLeaves;
+        public static Portal[] VisPortals;
     }
     public static class BSPRoot
     {
-        public static BSPNode[] nodes;
+        public static BSPNode[] Nodes;
 #if compiler || rockwall
         public static List<BSPNode> tempNodes = new List<BSPNode>();
         public const float EPS = 0.001f;
@@ -972,12 +964,12 @@ namespace Rockwall
         }
         public static void Reset()
         {
-            nodes = null;
+            Nodes = null;
             tempNodes = new List<BSPNode>();
         }
         public static void Cut(Plane splittingPlane, Brush[] brushes, BoundingBox[] brushBounds, int brushFrom, int face, int pside, bool allowDuplicates = false)
         {
-            if (brushes[brushFrom].isEntity) return;
+            if (brushes[brushFrom].IsEntity) return;
 
             Stack<BSPNode> stack = new Stack<BSPNode>();
             stack.Push(tempNodes[0]);
@@ -986,13 +978,13 @@ namespace Rockwall
             {
                 bool backside = false, frontside = false;
 
-                for (int f = 0; f < brushes[brush].faces.Length; f++)
+                for (int f = 0; f < brushes[brush].Faces.Length; f++)
                 {
-                    for (int v = 0; v < brushes[brush].faces[f].indices.Length; v++)
+                    for (int v = 0; v < brushes[brush].Faces[f].Indices.Length; v++)
                     {
-                        Vector3 vertex = brushes[brush].vertices[brushes[brush].faces[f].indices[v]];
+                        Vector3 vertex = brushes[brush].Vertices[brushes[brush].Faces[f].Indices[v]];
 
-                        float dotCoord = splittingPlane.DotCoordinate(vertex + brushes[brush].position);
+                        float dotCoord = splittingPlane.DotCoordinate(vertex + brushes[brush].Position);
                         if (dotCoord < -EPS)
                             backside = true;
                         else if (dotCoord > EPS)
@@ -1030,7 +1022,7 @@ namespace Rockwall
                     // Then this node will just straddle two solid leaves, or add the brush to the correct side.
                     if (!allowDuplicates && (tempNodes[(int)node.front].nodeContents.Contains((ushort)brushFrom) || tempNodes[(int)node.back].nodeContents.Contains((ushort)brushFrom)))
                     {
-                        int planeMatch = SamePlane(node.splittingPlane, splittingPlane);
+                        int planeMatch = SamePlane(node.SplittingPlane, splittingPlane);
                         if (planeMatch != 0)
                         {
                             AddBrushToNodes(node, brushFrom, flipped: planeMatch == -1);
@@ -1088,7 +1080,7 @@ namespace Rockwall
                 {
                     node.solid = node.nodeContents != null && node.nodeContents.Length >= 1;
 
-                    if (node.solid) node.nodeFlag = (byte)(brushes[node.nodeContents[0]].isSkybox ? BSPNode.SkyboxNode : brushes[node.nodeContents[0]].isClip ? BSPNode.ClipNode : 0);
+                    if (node.solid) node.nodeFlag = (byte)(brushes[node.nodeContents[0]].IsSkybox ? BSPNode.SkyboxNode : brushes[node.nodeContents[0]].IsClip ? BSPNode.ClipNode : 0);
                 }
             }
 
@@ -1098,26 +1090,26 @@ namespace Rockwall
         public static uint Traverse(Vector3 point)
         {
             uint node = 0;
-            while (nodes[node].split)
-                node = nodes[node].splittingPlane.DotCoordinate(point) >= 0
-                    ? nodes[node].front : nodes[node].back;
-            return nodes[node].id;
+            while (Nodes[node].split)
+                node = Nodes[node].SplittingPlane.DotCoordinate(point) >= 0
+                    ? Nodes[node].front : Nodes[node].back;
+            return Nodes[node].id;
         }
 
         private struct TraceFrame
         {
-            public uint farNode;
-            public Vector3 mid;
-            public Vector3 p2;
-            public Vector3 normal;
-            public Vector3 binormal;
-            public int surf;
+            public uint FarNode;
+            public Vector3 Mid;
+            public Vector3 P2;
+            public Vector3 Normal;
+            public Vector3 Binormal;
+            public int Surf;
         }
 
 
         public static BSPHit TraceRay(Ray ray, float distance, bool ignoreClip = true, int ignoreBrush = -1, int ignoreFace = -1)
         {
-            BSPHit hit = new BSPHit { point = ray.Position + ray.Direction * distance, normal = ray.Direction };
+            BSPHit hit = new BSPHit { Point = ray.Position + ray.Direction * distance, Normal = ray.Direction };
 
             Vector3 p1 = ray.Position;
             Vector3 p2 = ray.Position + ray.Direction * distance;
@@ -1133,7 +1125,7 @@ namespace Rockwall
 
             while (true)
             {
-                BSPNode node = nodes[nodeNum];
+                BSPNode node = Nodes[nodeNum];
 
                 if (node.solid)
                 {
@@ -1146,19 +1138,19 @@ namespace Rockwall
                     if (!rejected)
                     {
                         found = true;
-                        hit.node = nodeNum;
+                        hit.Node = nodeNum;
                         break;
                     }
 
                     if (stackTop == 0) break;
                     stackTop--;
                     TraceFrame frame = stack[stackTop];
-                    p1 = frame.mid;
-                    p2 = frame.p2;
-                    nodeNum = frame.farNode;
-                    normal = frame.normal;
-                    binormal = frame.binormal;
-                    surf = frame.surf;
+                    p1 = frame.Mid;
+                    p2 = frame.P2;
+                    nodeNum = frame.FarNode;
+                    normal = frame.Normal;
+                    binormal = frame.Binormal;
+                    surf = frame.Surf;
                     continue;
                 }
 
@@ -1170,16 +1162,16 @@ namespace Rockwall
                     if (stackTop == 0) break;
                     stackTop--;
                     TraceFrame frame = stack[stackTop];
-                    p1 = frame.mid;
-                    p2 = frame.p2;
-                    nodeNum = frame.farNode;
-                    normal = frame.normal;
-                    binormal = frame.binormal;
-                    surf = frame.surf;
+                    p1 = frame.Mid;
+                    p2 = frame.P2;
+                    nodeNum = frame.FarNode;
+                    normal = frame.Normal;
+                    binormal = frame.Binormal;
+                    surf = frame.Surf;
                     continue;
                 }
 
-                Plane plane = node.splittingPlane;
+                Plane plane = node.SplittingPlane;
                 float t1 = plane.DotCoordinate(p1);
                 float t2 = plane.DotCoordinate(p2);
 
@@ -1200,17 +1192,17 @@ namespace Rockwall
                 int nodeSurf = 0;
 #if !rockwall && !compiler
                 nodeSurf = string.IsNullOrEmpty(node.surface) ? 0 :
-                    GlobalMapData.materialNameToIndex.TryGetValue(node.surface, out var val) ? val : 0;
+                    GlobalMapData.MaterialNameToIndex.TryGetValue(node.surface, out var val) ? val : 0;
 #endif
 
                 stack[stackTop] = new TraceFrame
                 {
-                    farNode = t1 >= 0f ? node.back : node.front,
-                    mid = mid,
-                    p2 = p2,
-                    normal = plane.Normal,
-                    binormal = node.binormal,
-                    surf = nodeSurf
+                    FarNode = t1 >= 0f ? node.back : node.front,
+                    Mid = mid,
+                    P2 = p2,
+                    Normal = plane.Normal,
+                    Binormal = node.Binormal,
+                    Surf = nodeSurf
                 };
                 stackTop++;
 
@@ -1220,10 +1212,10 @@ namespace Rockwall
 
             if (found)
             {
-                hit = new BSPHit { point = intersection, hit = true, node = nodeNum, normal = normal, surf = surf, binormal = binormal };
+                hit = new BSPHit { Point = intersection, Hit = true, Node = nodeNum, Normal = normal, Surf = surf, Binormal = binormal };
             }
 
-            if (Vector3.Dot(hit.normal, ray.Direction) > 0) hit.normal *= -1;
+            if (Vector3.Dot(hit.Normal, ray.Direction) > 0) hit.Normal *= -1;
             return hit;
         }
     }
@@ -1234,51 +1226,51 @@ namespace Rockwall
         public const byte SkyboxNode = 4;
 
         //public Vector3 splitPos, splitNormal; // Plane that splits the room
-        public Plane splittingPlane;
-        public Vector3 binormal;
+        public Plane SplittingPlane;
+        public Vector3 Binormal;
 
         public float spx
         {
             get
             {
-                return splittingPlane.Normal.X;
+                return SplittingPlane.Normal.X;
             }
             set
             {
-                splittingPlane.Normal.X = value;
+                SplittingPlane.Normal.X = value;
             }
         }
         public float spy
         {
             get
             {
-                return splittingPlane.Normal.Y;
+                return SplittingPlane.Normal.Y;
             }
             set
             {
-                splittingPlane.Normal.Y = value;
+                SplittingPlane.Normal.Y = value;
             }
         }
         public float spz
         {
             get
             {
-                return splittingPlane.Normal.Z;
+                return SplittingPlane.Normal.Z;
             }
             set
             {
-                splittingPlane.Normal.Z = value;
+                SplittingPlane.Normal.Z = value;
             }
         }
         public float d
         {
             get
             {
-                return splittingPlane.D;
+                return SplittingPlane.D;
             }
             set
             {
-                splittingPlane.D = value;
+                SplittingPlane.D = value;
             }
         }
 
@@ -1297,33 +1289,33 @@ namespace Rockwall
         {
             get
             {
-                return binormal.X;
+                return Binormal.X;
             }
             set
             {
-                binormal.X = value;
+                Binormal.X = value;
             }
         }
         public float bny
         {
             get
             {
-                return binormal.Y;
+                return Binormal.Y;
             }
             set
             {
-                binormal.Y = value;
+                Binormal.Y = value;
             }
         }
         public float bnz
         {
             get
             {
-                return binormal.Z;
+                return Binormal.Z;
             }
             set
             {
-                binormal.Z = value;
+                Binormal.Z = value;
             }
         }
 
@@ -1339,7 +1331,7 @@ namespace Rockwall
             this.brush = (ushort)brushFrom;
             this.face = (byte)face;
 
-            this.splittingPlane = splittingPlane;
+            this.SplittingPlane = splittingPlane;
 
             var backContents = new List<ushort>() { (ushort)brushFrom };
             var frontContents = new List<ushort>();
@@ -1347,20 +1339,20 @@ namespace Rockwall
             foreach (int content in nodeContents)
             {
                 if (content == brushFrom) continue;
-                if (brushes[content].isEntity) continue;
-                if (brushes[content].isLightNodeVolume) continue;
-                if (brushes[content].isTrigger) continue;
-                if (brushes[content].isClip) continue;
+                if (brushes[content].IsEntity) continue;
+                if (brushes[content].IsLightNodeVolume) continue;
+                if (brushes[content].IsTrigger) continue;
+                if (brushes[content].IsClip) continue;
 
                 bool backside = false, frontside = false;
 
-                for (int f = 0; f < brushes[content].faces.Length; f++)
+                for (int f = 0; f < brushes[content].Faces.Length; f++)
                 {
-                    for (int v = 0; v < brushes[content].faces[f].indices.Length; v++)
+                    for (int v = 0; v < brushes[content].Faces[f].Indices.Length; v++)
                     {
-                        Vector3 vertex = brushes[content].vertices[brushes[content].faces[f].indices[v]];
+                        Vector3 vertex = brushes[content].Vertices[brushes[content].Faces[f].Indices[v]];
 
-                        float dotCoord = splittingPlane.DotCoordinate(vertex + brushes[content].position);
+                        float dotCoord = splittingPlane.DotCoordinate(vertex + brushes[content].Position);
                         if (dotCoord < -BSPRoot.EPS)
                             backside = true;
                         else if (dotCoord > BSPRoot.EPS)
@@ -1376,34 +1368,25 @@ namespace Rockwall
                 if (frontside) frontContents.Add((ushort)content);
             }
 
-            bool skybox = brushes[brushFrom].isSkybox;
-            bool clip = brushes[brushFrom].isClip;
+            bool skybox = brushes[brushFrom].IsSkybox;
+            bool clip = brushes[brushFrom].IsClip;
 
-            var bface = brushes[brushFrom].faces[face];
+            var bface = brushes[brushFrom].Faces[face];
 
             front = (uint)Nodes.Count;
             back = (uint)Nodes.Count + 1;
-            Nodes.Add(new BSPNode { nodeContents = frontContents.ToArray(), parent = id, id = front, nodeFlag = (byte)(skybox ? SkyboxNode : clip ? ClipNode : 0), brush = (ushort)brushFrom, face = (byte)face, binormal = bface.binormal, surface = bface.materialName });
-            Nodes.Add(new BSPNode { nodeContents = backContents.ToArray(), solid = true, parent = id, id = back, nodeFlag = (byte)(skybox ? SkyboxNode : clip ? ClipNode : 0), brush = (ushort)brushFrom, face = (byte)face, binormal = bface.binormal, surface = bface.materialName });
+            Nodes.Add(new BSPNode { nodeContents = frontContents.ToArray(), parent = id, id = front, nodeFlag = (byte)(skybox ? SkyboxNode : clip ? ClipNode : 0), brush = (ushort)brushFrom, face = (byte)face, Binormal = bface.Binormal, surface = bface.MaterialName });
+            Nodes.Add(new BSPNode { nodeContents = backContents.ToArray(), solid = true, parent = id, id = back, nodeFlag = (byte)(skybox ? SkyboxNode : clip ? ClipNode : 0), brush = (ushort)brushFrom, face = (byte)face, Binormal = bface.Binormal, surface = bface.MaterialName });
         }
 #endif
     }
 
     public struct BSPHit
     {
-        public Vector3 point, normal, binormal;
-        public bool hit;
-        public uint node;
-        public int surf;
-    }
-
-    public struct Navmesh
-    {
-        public Navpatch[] patches;
-    }
-    public struct Navpatch
-    {
-        public Vector3[] points;
+        public Vector3 Point, Normal, Binormal;
+        public bool Hit;
+        public uint Node;
+        public int Surf;
     }
 
     public struct AINode
@@ -1413,64 +1396,66 @@ namespace Rockwall
             Ground,
             Air,
         }
-        public NodeType type;
-        public int[] connections;
-        public int zone;
+        public NodeType Type;
+        public int[] Connections;
+        public int Zone;
 
-        public Vector3 position;
+        public Vector3 Position;
     }
 
     public struct NodeGraph
     {
-        public AINode[] nodes;
+        public AINode[] Nodes;
     }
 
     public struct Map
     {
-        public Brush[] brushes;
-        public Terrain[] terrains;
-        public BoundingBox[] brushBounds;
-        public MapPropModel[] mapModels;
+        public Brush[] Brushes;
+        public Terrain[] Terrains;
+        public BoundingBox[] BrushBounds;
+        public MapPropModel[] MapModels;
 
-        public LeafPolygon[] leafPolygons;
-        public int[] leafPolyStart, leafPolyCount;
-        public VertexLightmapped[] staticGeomVertices;
+        public LeafPolygon[] LeafPolygons;
+        public int[] LeafPolyStart, LeafPolyCount;
+        public VertexLightmapped[] StaticGeomVertices;
 
-        public bool hasVis;
-        public Octree root;
-        public List<Octree> octreeNodes;
-        public EntityReference[] entities;
-        public LightNodeBundle[] lightNodes;
-        public string[] lightGroupKeys;
-        public NodeGraph nodegraph;
+        public bool HasVis;
+        public Octree Root;
+        public List<Octree> OctreeNodes;
+        public EntityReference[] Entities;
+        public LightNodeBundle[] LightNodes;
+        public string[] LightGroupKeys;
+        public NodeGraph Nodegraph;
     }
 
     public static class GlobalMapData
     {
-        public static Map activeMap;
-        public static Material[] loadedMaterials;
+        public static Map ActiveMap;
+        public static Material[] LoadedMaterials;
 #if !rockwall
-        public static ImmutableDictionary<string, int> materialNameToIndex;
+        public static ImmutableDictionary<string, int> MaterialNameToIndex;
 #else
-        public static Dictionary<string, int> materialNameToIndex;
+        public static Dictionary<string, int> MaterialNameToIndex;
 #endif
     }
 }
+
 [System.Serializable]
 public struct EntityOutput
 {
-    public string entityTarget;
-    public string entityInputTarget;
-    public string inputParameters;
+    public string EntityTarget;
+    public string EntityInputTarget;
+    public string InputParameters;
 
     // scripting rocks and is awesome and epic
-    public string scriptSource;
+    public string ScriptSource;
     [JsonIgnore()]
-    public EXScript script;
+    public EXScript Script;
 
-    public float delay;
-    public int refire;
+    public float Delay;
+    public int Refire;
 }
+
 [System.Serializable]
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct VertexLightmapped : IVertexType
@@ -1553,6 +1538,7 @@ public struct VertexLightmapped : IVertexType
             new VertexElement(56, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 1));
     }
 }
+
 [System.Serializable]
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct VertexModelLightmapped : IVertexType

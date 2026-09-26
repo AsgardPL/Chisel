@@ -289,9 +289,9 @@ namespace Engine.Utils
         }
         private ShaderHandle ResolveBodygroupShader(int materialID)
         {
-            if (materialID >= 0 && materialID < GlobalMapData.loadedMaterials.Length)
+            if (materialID >= 0 && materialID < GlobalMapData.LoadedMaterials.Length)
             {
-                var mat = GlobalMapData.loadedMaterials[materialID];
+                var mat = GlobalMapData.LoadedMaterials[materialID];
                 var matShader = (ShaderHandle)mat.Shader;
                 if (matShader != null && matShader != MainEngine.Instance.WorldShader)
                 {
@@ -1134,7 +1134,7 @@ namespace Engine.Utils
                     bool useMorph = bodygroup.MorphApplicator != null && lodMorphTargets?.Count > 0;
 
                     Matrix bodygroupWorld = bodygroup.Offset * Transform * world.Value;
-                    bool transparent = GlobalMapData.loadedMaterials[bodygroup.MaterialID].transparent;
+                    bool transparent = GlobalMapData.LoadedMaterials[bodygroup.MaterialID].Transparent;
 
                     if (transparent)
                     {
@@ -1214,7 +1214,7 @@ namespace Engine.Utils
             bool ignoreTextures,
             bool transparent)
         {
-            var mat = GlobalMapData.loadedMaterials[bodygroup.MaterialID];
+            var mat = GlobalMapData.LoadedMaterials[bodygroup.MaterialID];
 
             bool isEyeBodygroup = bodygroup.IsEye && hasEyes;
 
@@ -1226,7 +1226,7 @@ namespace Engine.Utils
 
             bool usingCustomShader = (fx != this.Shader);
 
-            bool ignoreCull = mat.noCull;
+            bool ignoreCull = mat.NoCull;
 
             if (ignoreCull)
                 MainEngine.Instance.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -1252,7 +1252,7 @@ namespace Engine.Utils
                     ignoreTextures ? RenderEngine.BlackTexture : (RenderEngine.ShowBlankTexture ? RenderEngine.DimTexture : mat.Texture ?? RenderEngine.ErrorTexture),
                     ignoreTextures ? RenderEngine.BlackTexture : (mat.Specular ?? RenderEngine.WhiteTexture),
                     ignoreTextures ? RenderEngine.WhiteTexture : (mat.Normal ?? RenderEngine.WhiteTexture),
-                    mat.reflectivity,
+                    mat.Reflectivity,
                     transparent
                 );
 
@@ -1271,7 +1271,7 @@ namespace Engine.Utils
                         : mat.Texture);
                     Shader.Param("SpecTex").SetValue(mat.Specular);
                     Shader.Param("NormalTex").SetValue(mat.Normal);
-                    Shader.Param("shine").SetValue(mat.reflectivity);
+                    Shader.Param("shine").SetValue(mat.Reflectivity);
                 }
                 Shader.Param("Transparent").SetValue(transparent);
             }
@@ -1382,7 +1382,7 @@ namespace Engine.Utils
         }
         public void SetBodygroupMaterial(int bodygroupID, string materialName)
         {
-            int newIndex = GlobalMapData.materialNameToIndex[materialName];
+            int newIndex = GlobalMapData.MaterialNameToIndex[materialName];
             Model.Bodygroups[bodygroupID].MaterialID = newIndex;
             TextureMipGenerator.ReserveMaterial(newIndex);
         }

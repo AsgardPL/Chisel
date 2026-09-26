@@ -20,18 +20,18 @@ internal class GBufferGeometryBuilder
         for (int i = 0; i < brushes.Length; i++)
         {
             int entityGroup = TriangleOccluder.GetBrushEntityGroup(i);
-            for (int f = 0; f < brushes[i].faces.Length; f++)
+            for (int f = 0; f < brushes[i].Faces.Length; f++)
             {
-                var face = brushes[i].faces[f];
+                var face = brushes[i].Faces[f];
                 if (face.toolFace) continue;
 
                 var faceLoop = SmoothGroups.BuildFaceLoop(brushes[i], f);
-                for (int t = 0; t < face.indices.Length; t += 3)
+                for (int t = 0; t < face.Indices.Length; t += 3)
                 {
                     for (int c = 0; c < 3; c++)
                     {
-                        int vi = face.indices[t + c];
-                        Vector3 worldPos = brushes[i].vertices[vi] + brushes[i].position;
+                        int vi = face.Indices[t + c];
+                        Vector3 worldPos = brushes[i].Vertices[vi] + brushes[i].Position;
                         var vd = SmoothGroups.SampleAt(brushes[i], i, f, worldPos, smoothedNormals, faceLoop);
 
                         verts.Add(new GBufferVertex
@@ -41,7 +41,7 @@ internal class GBufferGeometryBuilder
                             Basis1 = vd.Basis1,
                             Basis2 = vd.Basis2,
                             Basis3 = vd.Basis3,
-                            LightmapUV = brushes[i].lightmapUvs[vi],
+                            LightmapUV = brushes[i].LightmapUVs[vi],
                             SourceBrush = i,
                             EntityGroup = entityGroup
                         });
@@ -52,12 +52,12 @@ internal class GBufferGeometryBuilder
 
         for (int ti = 0; ti < terrains.Length; ti++)
         {
-            for (int t = 0; t < terrains[ti].triangles.Length; t += 3)
+            for (int t = 0; t < terrains[ti].Triangles.Length; t += 3)
             {
                 for (int c = 0; c < 3; c++)
                 {
-                    int vi = terrains[ti].triangles[t + c];
-                    var vert = terrains[ti].vertices[vi];
+                    int vi = terrains[ti].Triangles[t + c];
+                    var vert = terrains[ti].Vertices[vi];
                     Vector3 normal = vert.Normal;
                     Vector4 tangent4 = vert.Tangent.ToVector4();
                     Vector3 tRaw = Vector3.Normalize(new Vector3(tangent4.X, tangent4.Y, tangent4.Z));

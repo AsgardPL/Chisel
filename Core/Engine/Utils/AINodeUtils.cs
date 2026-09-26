@@ -7,7 +7,7 @@ namespace Engine.Utils
 {
     public class AINodeUtils
     {
-        static NodeGraph graph => GlobalMapData.activeMap.nodegraph;
+        static NodeGraph graph => GlobalMapData.ActiveMap.Nodegraph;
 
         private const float FloorScanDepth = 0.25f;
 
@@ -23,11 +23,11 @@ namespace Engine.Utils
             int fallbackNode = 0;
 
             var hit = BSPRoot.TraceRay(new Ray(p, Vector3.Down), 100f, false);
-            if (hit.hit) p = hit.point;
+            if (hit.Hit) p = hit.Point;
 
-            for (int i = 0; i < graph.nodes.Length; i++)
+            for (int i = 0; i < graph.Nodes.Length; i++)
             {
-                Vector3 nodepos = graph.nodes[i].position;
+                Vector3 nodepos = graph.Nodes[i].Position;
                 float dist = Vector3.Distance(nodepos, p);
 
                 // Always track the closest by raw distance as a fallback
@@ -38,7 +38,7 @@ namespace Engine.Utils
                 }
 
                 hit = BSPRoot.TraceRay(new Ray(nodepos + Vector3.Up * 0.02f, Vector3.Normalize(p - nodepos)), dist);
-                if (dist < closestDist && !hit.hit)
+                if (dist < closestDist && !hit.Hit)
                 {
                     closestDist = dist;
                     targNode = i;
@@ -66,7 +66,7 @@ namespace Engine.Utils
             dir /= dist;
 
             var hit = BSPRoot.TraceRay(new Ray(a + Vector3.Up * (height??WallRayHeight), dir), dist);
-            return !hit.hit;
+            return !hit.Hit;
         }
 
         /// <summary>
@@ -117,12 +117,12 @@ namespace Engine.Utils
         static bool TestPointWalkable(Vector3 p)
         {
             var hit = BSPRoot.TraceRay(new Ray(p + Vector3.Up * 0.01f, Vector3.Down), FloorScanDepth);
-            return hit.hit;
+            return hit.Hit;
         }
 
         public static int[] Search(int startNode, int endNode)
         {
-            int nodeCount = graph.nodes.Length;
+            int nodeCount = graph.Nodes.Length;
 
             if (nodeCount == 0) return new[] { startNode, endNode };
 
@@ -165,17 +165,17 @@ namespace Engine.Utils
                     return [.. path];
                 }
 
-                for (int i = 0; i < graph.nodes[node].connections.Length; i++)
+                for (int i = 0; i < graph.Nodes[node].Connections.Length; i++)
                 {
-                    int neighbor = graph.nodes[node].connections[i];
+                    int neighbor = graph.Nodes[node].Connections[i];
                     if (closed.Contains(neighbor)) continue;
 
-                    int newG = (int)Vector3.DistanceSquared(graph.nodes[node].position, graph.nodes[neighbor].position) + gCosts[node];
+                    int newG = (int)Vector3.DistanceSquared(graph.Nodes[node].Position, graph.Nodes[neighbor].Position) + gCosts[node];
 
                     if (newG < gCosts[neighbor] || !open.Contains(neighbor))
                     {
                         gCosts[neighbor] = newG;
-                        hCosts[neighbor] = (int)Vector3.DistanceSquared(graph.nodes[endNode].position, graph.nodes[neighbor].position);
+                        hCosts[neighbor] = (int)Vector3.DistanceSquared(graph.Nodes[endNode].Position, graph.Nodes[neighbor].Position);
                         parents[neighbor] = node;
                         if (!open.Contains(neighbor)) open.Add(neighbor);
                     }

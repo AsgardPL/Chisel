@@ -18,7 +18,7 @@ public static class MaterialLoader
     public static void MountMaterials(string pathToRoot)
     {
         List<Material> materials = new List<Material>();
-        Dictionary<string, int> matNames = GlobalMapData.materialNameToIndex?.ToDictionary() ?? new Dictionary<string, int>();
+        Dictionary<string, int> matNames = GlobalMapData.MaterialNameToIndex?.ToDictionary() ?? new Dictionary<string, int>();
 
         int count = 0;
         foreach (var file in Directory.EnumerateFiles(pathToRoot, "*.cmt", SearchOption.AllDirectories))
@@ -26,13 +26,13 @@ public static class MaterialLoader
             var mat = JsonConvert.DeserializeObject<Material>(File.ReadAllText(file));
             materials.Add(mat);
 
-            matNames.Add(mat.name, GlobalMapData.loadedMaterials?.Length ?? 0 + count);
+            matNames.Add(mat.Name, GlobalMapData.LoadedMaterials?.Length ?? 0 + count);
             count++;
         }
 
-        if (GlobalMapData.loadedMaterials == null) GlobalMapData.loadedMaterials = materials.ToArray();
-        else GlobalMapData.loadedMaterials = GlobalMapData.loadedMaterials.Concat(materials).ToArray();
+        if (GlobalMapData.LoadedMaterials == null) GlobalMapData.LoadedMaterials = materials.ToArray();
+        else GlobalMapData.LoadedMaterials = GlobalMapData.LoadedMaterials.Concat(materials).ToArray();
 
-        GlobalMapData.materialNameToIndex = matNames;
+        GlobalMapData.MaterialNameToIndex = matNames;
     }
 }

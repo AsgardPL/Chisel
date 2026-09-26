@@ -132,8 +132,8 @@ public class ClippingTool : Tool
             worldPos = Vector3.Round(worldPos / Transformable.GridSize) * Transformable.GridSize;
 
             var b = MapTools.Brushes[mapHit.brush];
-            var f = b.faces[mapHit.face];
-            Vector3 faceNormal = f.normal;
+            var f = b.Faces[mapHit.face];
+            Vector3 faceNormal = f.Normal;
 
             worldNormal = faceNormal;
 
@@ -265,7 +265,7 @@ public class ClippingTool : Tool
 
         var selectedBrushes = Toolbelt.SelectedObjects
             .Select(o => o is BrushMoveable bm ? bm.brush : o is FaceMoveable fm ? fm.brush :
-                         o is TerrainMoveable tm && tm.terrain >= 0 && tm.terrain < MapTools.Terrains.Length ? MapTools.Terrains[tm.terrain].brushSource : -1)
+                         o is TerrainMoveable tm && tm.terrain >= 0 && tm.terrain < MapTools.Terrains.Length ? MapTools.Terrains[tm.terrain].BrushSource : -1)
             .Where(id => id >= 0)
             .Distinct()
             .ToList();
@@ -276,7 +276,7 @@ public class ClippingTool : Tool
         if (splits.Count == 0) return;
 
         var terrainsBySource = selectedBrushes
-            .SelectMany(bi => Enumerable.Range(0, MapTools.Terrains.Length).Where(ti => MapTools.Terrains[ti].brushSource == bi))
+            .SelectMany(bi => Enumerable.Range(0, MapTools.Terrains.Length).Where(ti => MapTools.Terrains[ti].BrushSource == bi))
             .Select(ti => MapTools.Terrains[ti])
             .ToList();
 
@@ -312,11 +312,11 @@ public class ClippingTool : Tool
                 if (s.owner != null) MapTools.AddBrushToEntity(s.owner, backIdx.Value);
             }
 
-            foreach (var terrain in terrainsBySource.Where(t => t.brushSource == s.sourceBrushIndex))
+            foreach (var terrain in terrainsBySource.Where(t => t.BrushSource == s.sourceBrushIndex))
             {
-                if (terrain.faceSource < 0 || terrain.faceSource >= s.original.faces.Length) continue;
+                if (terrain.FaceSource < 0 || terrain.FaceSource >= s.original.Faces.Length) continue;
 
-                var oldFace = s.original.faces[terrain.faceSource];
+                var oldFace = s.original.Faces[terrain.FaceSource];
                 var oldFaceCorners = BrushOperations.GetUniqueFaceCorners(s.original, oldFace);
                 if (oldFaceCorners.Length != 4) continue;
 
@@ -351,8 +351,8 @@ public class ClippingTool : Tool
 
         var piece = MapTools.Brushes[pieceBrushIndex.Value];
 
-        int faceIdx = Array.FindIndex(piece.faces, f =>
-            Vector3.Dot(f.normal, originalTerrain.sourceNormal) > 0.99f &&
+        int faceIdx = Array.FindIndex(piece.Faces, f =>
+            Vector3.Dot(f.Normal, originalTerrain.SourceNormal) > 0.99f &&
             BrushOperations.GetUniqueFaceCorners(piece, f).Length == 4);
 
         if (faceIdx == -1) return false;

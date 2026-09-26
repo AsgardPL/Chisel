@@ -383,13 +383,13 @@ namespace Rockwall
         public static Terrain? CreateTerrainFromFace(int brushID, int faceID, int power)
         {
             var brush = MapTools.Brushes[brushID];
-            var face = MapTools.Brushes[brushID].faces[faceID];
+            var face = MapTools.Brushes[brushID].Faces[faceID];
 
             // Collect unique vertices
             HashSet<Vector3> uniqueVertices = new HashSet<Vector3>();
-            for (int i = 0; i < face.indices.Length; i++)
+            for (int i = 0; i < face.Indices.Length; i++)
             {
-                uniqueVertices.Add(brush.vertices[face.indices[i]] + brush.position);
+                uniqueVertices.Add(brush.Vertices[face.Indices[i]] + brush.Position);
             }
             // Ensure we have exactly 4 unique vertices
             if (uniqueVertices.Count != 4)
@@ -408,7 +408,7 @@ namespace Rockwall
                 float dot = Vector3.Dot(cross, normal);
                 return dot > 0 ? -1 : 1; // Counterclockwise order
             });
-            return CreateTerrain(corners[0], corners[1], corners[2], corners[3], face.surface, power, face.normal, brushID, faceID);
+            return CreateTerrain(corners[0], corners[1], corners[2], corners[3], face.Surface, power, face.Normal, brushID, faceID);
         }
         public static Terrain CreateTerrain(Vector3 corner0, Vector3 corner1, Vector3 corner2, Vector3 corner3,
             int surface, int power, Vector3 normal, int brushID, int faceID)
@@ -465,13 +465,13 @@ namespace Rockwall
 
             return new Terrain
             {
-                vertices = vertices.ToArray(),
-                triangles = triangles.ToArray(),
-                surface = surface,
-                bounds = new BoundingBox(min, max),
-                brushSource = brushID,
-                faceSource = faceID,
-                sourceNormal = normal,
+                Vertices = vertices.ToArray(),
+                Triangles = triangles.ToArray(),
+                Surface = surface,
+                Bounds = new BoundingBox(min, max),
+                BrushSource = brushID,
+                FaceSource = faceID,
+                SourceNormal = normal,
             };
         }
 
@@ -480,9 +480,9 @@ namespace Rockwall
         /// </summary>
         public static void MoveTerrain(ref Terrain terrain, Vector3 moveAmount)
         {
-            for (int v = 0; v < terrain.vertices.Length; v++)
+            for (int v = 0; v < terrain.Vertices.Length; v++)
             {
-                terrain.vertices[v].Position += moveAmount;
+                terrain.Vertices[v].Position += moveAmount;
             }
             UpdateTerrain(ref terrain);
         }
@@ -504,13 +504,13 @@ namespace Rockwall
 
         public static Vector3[] TerrainReferenceCorners(Terrain terrain)
         {
-            int resolution = (int)MathF.Round(MathF.Sqrt(terrain.vertices.Length));
+            int resolution = (int)MathF.Round(MathF.Sqrt(terrain.Vertices.Length));
             return new Vector3[]
             {
-                terrain.vertices[0].Position,
-                terrain.vertices[resolution - 1].Position,
-                terrain.vertices[resolution * resolution - 1].Position,
-                terrain.vertices[(resolution - 1) * resolution].Position,
+                terrain.Vertices[0].Position,
+                terrain.Vertices[resolution - 1].Position,
+                terrain.Vertices[resolution * resolution - 1].Position,
+                terrain.Vertices[(resolution - 1) * resolution].Position,
             };
         }
 
@@ -549,10 +549,10 @@ namespace Rockwall
             for (int i = 0; i < MapTools.Terrains.Length; i++)
             {
                 var terrain = MapTools.Terrains[i];
-                if (terrain.brushSource != brushIndex) continue;
-                if (terrain.faceSource < 0 || terrain.faceSource >= brush.faces.Length) continue;
+                if (terrain.BrushSource != brushIndex) continue;
+                if (terrain.FaceSource < 0 || terrain.FaceSource >= brush.Faces.Length) continue;
 
-                var face = brush.faces[terrain.faceSource];
+                var face = brush.Faces[terrain.FaceSource];
                 if (GetUniqueFaceCorners(brush, face).Length != 4) continue;
 
                 var faceCorners = GetUniqueFaceCorners(brush, face);
@@ -587,13 +587,13 @@ namespace Rockwall
                 if (entry.terrainIndex < 0 || entry.terrainIndex >= MapTools.Terrains.Length) continue;
 
                 var terrain = MapTools.Terrains[entry.terrainIndex];
-                if (terrain.faceSource < 0 || terrain.faceSource >= brush.faces.Length)
+                if (terrain.FaceSource < 0 || terrain.FaceSource >= brush.Faces.Length)
                 {
                     brokenTerrains.Add(entry.terrainIndex);
                     continue;
                 }
 
-                var face = brush.faces[terrain.faceSource];
+                var face = brush.Faces[terrain.FaceSource];
                 if (GetUniqueFaceCorners(brush, face).Length != 4)
                     brokenTerrains.Add(entry.terrainIndex);
             }
@@ -608,7 +608,7 @@ namespace Rockwall
                 for (int c = 0; c < 4; c++)
                     if (entry.cornerMoved[c]) newCorners[c] += delta;
 
-                int resolution = (int)MathF.Round(MathF.Sqrt(terrain.vertices.Length));
+                int resolution = (int)MathF.Round(MathF.Sqrt(terrain.Vertices.Length));
                 for (int z = 0; z < resolution; z++)
                 {
                     float v = (float)z / (resolution - 1);
@@ -620,7 +620,7 @@ namespace Rockwall
                         Vector3 oldFlat = BilinearQuad(entry.oldCorners, u, v);
                         Vector3 newFlat = BilinearQuad(newCorners, u, v);
 
-                        terrain.vertices[idx].Position += newFlat - oldFlat;
+                        terrain.Vertices[idx].Position += newFlat - oldFlat;
                     }
                 }
 
@@ -643,12 +643,12 @@ namespace Rockwall
             {
                 if (entry.terrainIndex < 0 || entry.terrainIndex >= MapTools.Terrains.Length) continue;
                 var terrain = MapTools.Terrains[entry.terrainIndex];
-                if (terrain.faceSource < 0 || terrain.faceSource >= brush.faces.Length)
+                if (terrain.FaceSource < 0 || terrain.FaceSource >= brush.Faces.Length)
                 {
                     brokenTerrains.Add(entry.terrainIndex);
                     continue;
                 }
-                var face = brush.faces[terrain.faceSource];
+                var face = brush.Faces[terrain.FaceSource];
                 if (GetUniqueFaceCorners(brush, face).Length != 4)
                     brokenTerrains.Add(entry.terrainIndex);
             }
@@ -663,7 +663,7 @@ namespace Rockwall
                 for (int c = 0; c < 4; c++)
                     newCorners[c] = transform(entry.oldCorners[c]);
 
-                int resolution = (int)MathF.Round(MathF.Sqrt(terrain.vertices.Length));
+                int resolution = (int)MathF.Round(MathF.Sqrt(terrain.Vertices.Length));
                 for (int z = 0; z < resolution; z++)
                 {
                     float v = (float)z / (resolution - 1);
@@ -675,7 +675,7 @@ namespace Rockwall
                         Vector3 oldFlat = BilinearQuad(entry.oldCorners, u, v);
                         Vector3 newFlat = BilinearQuad(newCorners, u, v);
 
-                        terrain.vertices[idx].Position += newFlat - oldFlat;
+                        terrain.Vertices[idx].Position += newFlat - oldFlat;
                     }
                 }
 
@@ -689,13 +689,13 @@ namespace Rockwall
         public static Terrain? ResampleTerrainOntoFace(Terrain original, Vector3[] originalFaceCorners, int newBrushIndex, int newFaceIndex)
         {
             var brush = MapTools.Brushes[newBrushIndex];
-            var face = brush.faces[newFaceIndex];
+            var face = brush.Faces[newFaceIndex];
             if (GetUniqueFaceCorners(brush, face).Length != 4) return null;
 
             var newCornersRaw = GetUniqueFaceCorners(brush, face);
             var newCorners = MatchCornersToReference(newCornersRaw, originalFaceCorners);
 
-            int resolution = (int)MathF.Round(MathF.Sqrt(original.vertices.Length));
+            int resolution = (int)MathF.Round(MathF.Sqrt(original.Vertices.Length));
 
             var oldRes = resolution;
             Vector3 SampleOriginal(float u, float v)
@@ -711,10 +711,10 @@ namespace Rockwall
                 float tx = Math.Clamp(gx - x0, 0f, 1f);
                 float tz = Math.Clamp(gz - z0, 0f, 1f);
 
-                Vector3 p00 = original.vertices[z0 * oldRes + x0].Position;
-                Vector3 p10 = original.vertices[z0 * oldRes + x1].Position;
-                Vector3 p01 = original.vertices[z1 * oldRes + x0].Position;
-                Vector3 p11 = original.vertices[z1 * oldRes + x1].Position;
+                Vector3 p00 = original.Vertices[z0 * oldRes + x0].Position;
+                Vector3 p10 = original.Vertices[z0 * oldRes + x1].Position;
+                Vector3 p01 = original.Vertices[z1 * oldRes + x0].Position;
+                Vector3 p11 = original.Vertices[z1 * oldRes + x1].Position;
 
                 return Vector3.Lerp(Vector3.Lerp(p00, p10, tx), Vector3.Lerp(p01, p11, tx), tz);
             }
@@ -772,14 +772,14 @@ namespace Rockwall
 
             return new Terrain
             {
-                vertices = vertices.ToArray(),
-                triangles = triangles.ToArray(),
-                surface = original.surface,
-                blendedSurface = original.blendedSurface,
-                bounds = new BoundingBox(min, max),
-                brushSource = newBrushIndex,
-                faceSource = newFaceIndex,
-                sourceNormal = face.normal,
+                Vertices = vertices.ToArray(),
+                Triangles = triangles.ToArray(),
+                Surface = original.Surface,
+                BlendedSurface = original.BlendedSurface,
+                Bounds = new BoundingBox(min, max),
+                BrushSource = newBrushIndex,
+                FaceSource = newFaceIndex,
+                SourceNormal = face.Normal,
             };
         }
 
@@ -819,12 +819,12 @@ namespace Rockwall
         public static Vector3[] GetUniqueFaceCorners(Brush brush, Face face)
         {
             var unique = new List<Vector3>();
-            if (face.indices != null)
+            if (face.Indices != null)
             {
-                foreach (var idx in face.indices)
+                foreach (var idx in face.Indices)
                 {
-                    if (idx < 0 || idx >= brush.vertices.Length) continue;
-                    var pos = brush.vertices[idx] + brush.position;
+                    if (idx < 0 || idx >= brush.Vertices.Length) continue;
+                    var pos = brush.Vertices[idx] + brush.Position;
                     if (!unique.Any(p => Vector3.DistanceSquared(p, pos) < 0.0001f))
                         unique.Add(pos);
                 }
@@ -873,47 +873,47 @@ namespace Rockwall
                     new Vector3(width, 0, 0),
                     new Vector3(width, 0, length)
                 };
-            int surf = GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture];
+            int surf = GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture];
             Face[] faces = new[]
             {
-                    new Face{normal = new Vector3(0,  0, -1), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                    new Face{normal = new Vector3(0,  0,  1), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                    new Face{normal = new Vector3(0,  1,  0), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                    new Face{normal = new Vector3(0, -1,  0), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                    new Face{normal = new Vector3(-1, 0,  0), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                    new Face{normal = new Vector3(1,  0,  0), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f}
+                    new Face{Normal = new Vector3(0,  0, -1), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                    new Face{Normal = new Vector3(0,  0,  1), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                    new Face{Normal = new Vector3(0,  1,  0), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                    new Face{Normal = new Vector3(0, -1,  0), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                    new Face{Normal = new Vector3(-1, 0,  0), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                    new Face{Normal = new Vector3(1,  0,  0), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f}
                 };
             Brush brush = new Brush
             {
-                position = start,
-                vertices = vertices,
-                width = width,
-                height = height,
-                length = length,
+                Position = start,
+                Vertices = vertices,
+                Width = width,
+                Height = height,
+                Length = length,
             };
             for (int h = 0; h < faces.Length; h++)
             {
-                faces[h].tScaleX = 1;
-                faces[h].tScaleY = 1;
-                faces[h].indices = new int[6];
+                faces[h].TScaleX = 1;
+                faces[h].TScaleY = 1;
+                faces[h].Indices = new int[6];
                 for (int i = 0; i < 6; i++)
                 {
                     int triIndex = i + h * 6;
-                    faces[h].indices[i] = tri[triIndex];
+                    faces[h].Indices[i] = tri[triIndex];
                 }
             }
-            brush.faces = faces;
+            brush.Faces = faces;
             Vector2[] uvs = CreateUVs(brush);
-            brush.vertices = vertices;
-            brush.uvs = uvs;
+            brush.Vertices = vertices;
+            brush.UVs = uvs;
             for (int h = 0; h < faces.Length; h++)
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    brush.faces[h].editorVerts.Add(new VertexLightmapped(brush.vertices[brush.faces[h].indices[i]], brush.faces[h].normal, brush.uvs[brush.faces[h].indices[i]], Vector2.Zero));
+                    brush.Faces[h].editorVerts.Add(new VertexLightmapped(brush.Vertices[brush.Faces[h].Indices[i]], brush.Faces[h].Normal, brush.UVs[brush.Faces[h].Indices[i]], Vector2.Zero));
                 }
-                brush.faces[h].vertexBuffer = new VertexBuffer(Rockwall3DView.Instance.GraphicsDevice, typeof(VertexLightmapped), brush.faces[h].editorVerts.Count, BufferUsage.WriteOnly);
-                brush.faces[h].vertexBuffer.SetData(brush.faces[h].editorVerts.ToArray());
+                brush.Faces[h].vertexBuffer = new VertexBuffer(Rockwall3DView.Instance.GraphicsDevice, typeof(VertexLightmapped), brush.Faces[h].editorVerts.Count, BufferUsage.WriteOnly);
+                brush.Faces[h].vertexBuffer.SetData(brush.Faces[h].editorVerts.ToArray());
             }
 
             RecalculateBrushPlanes(ref brush);
@@ -937,29 +937,29 @@ namespace Rockwall
             {
                 faces[i] = new Face
                 {
-                    plane = planes[i],
-                    normal = Vector3.Normalize(planes[i].Normal),
-                    drawn = true,
-                    materialName = materialName,
-                    surface = surface,
-                    tScaleX = 1,
-                    tScaleY = 1,
-                    luxelScale = 1f,
+                    Plane = planes[i],
+                    Normal = Vector3.Normalize(planes[i].Normal),
+                    Drawn = true,
+                    MaterialName = materialName,
+                    Surface = surface,
+                    TScaleX = 1,
+                    TScaleY = 1,
+                    LuxelScale = 1f,
                     editorVerts = new List<VertexLightmapped>(),
-                    indices = new int[0]
+                    Indices = new int[0]
                 };
             }
 
             var result = new Brush
             {
-                position = Vector3.Zero,
-                faces = faces,
-                vertices = new Vector3[0],
-                uvs = new Vector2[0],
+                Position = Vector3.Zero,
+                Faces = faces,
+                Vertices = new Vector3[0],
+                UVs = new Vector2[0],
             };
 
             RebuildBrush(ref result);
-            return result.faces.Length == 0 || result.vertices.Length == 0 ? null : result;
+            return result.Faces.Length == 0 || result.Vertices.Length == 0 ? null : result;
         }
 
         /// <summary>
@@ -1013,27 +1013,27 @@ namespace Rockwall
             for (int i = 0; i < vertices.Length; i++)
                 vertices[i] -= position;
 
-            int surf = GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture];
+            int surf = GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture];
             Face[] faces = new[]
             {
-                new Face{normal = Vector3.Normalize(Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0])), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                new Face{normal = Vector3.Normalize(Vector3.Cross(vertices[5] - vertices[4], vertices[6] - vertices[4])), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                new Face{normal = Vector3.Normalize(Vector3.Cross(vertices[9] - vertices[8], vertices[10] - vertices[8])), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                new Face{normal = Vector3.Normalize(Vector3.Cross(vertices[13] - vertices[12], vertices[14] - vertices[12])), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                new Face{normal = Vector3.Normalize(Vector3.Cross(vertices[17] - vertices[16], vertices[18] - vertices[16])), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f},
-                new Face{normal = Vector3.Normalize(Vector3.Cross(vertices[21] - vertices[20], vertices[22] - vertices[20])), drawn = true, editorVerts = new List<VertexLightmapped>(), materialName = Toolbelt.ActiveTexture, surface = surf, luxelScale = 1f}
+                new Face{Normal = Vector3.Normalize(Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0])), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                new Face{Normal = Vector3.Normalize(Vector3.Cross(vertices[5] - vertices[4], vertices[6] - vertices[4])), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                new Face{Normal = Vector3.Normalize(Vector3.Cross(vertices[9] - vertices[8], vertices[10] - vertices[8])), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                new Face{Normal = Vector3.Normalize(Vector3.Cross(vertices[13] - vertices[12], vertices[14] - vertices[12])), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                new Face{Normal = Vector3.Normalize(Vector3.Cross(vertices[17] - vertices[16], vertices[18] - vertices[16])), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f},
+                new Face{Normal = Vector3.Normalize(Vector3.Cross(vertices[21] - vertices[20], vertices[22] - vertices[20])), Drawn = true, editorVerts = new List<VertexLightmapped>(), MaterialName = Toolbelt.ActiveTexture, Surface = surf, LuxelScale = 1f}
             };
 
             // Assign indices for each face using tri array (6 indices per face)
             for (int h = 0; h < faces.Length; h++)
             {
-                faces[h].tScaleX = 1;
-                faces[h].tScaleY = 1;
-                faces[h].indices = new int[6];
+                faces[h].TScaleX = 1;
+                faces[h].TScaleY = 1;
+                faces[h].Indices = new int[6];
                 for (int i = 0; i < 6; i++)
                 {
                     int triIndex = i + h * 6;
-                    faces[h].indices[i] = tri[triIndex];
+                    faces[h].Indices[i] = tri[triIndex];
                 }
             }
 
@@ -1050,31 +1050,31 @@ namespace Rockwall
 
             Brush brush = new Brush
             {
-                position = position,
-                vertices = vertices,
-                width = width,
-                height = height,
-                length = length,
+                Position = position,
+                Vertices = vertices,
+                Width = width,
+                Height = height,
+                Length = length,
             };
-            brush.faces = faces;
+            brush.Faces = faces;
             Vector2[] uvs = CreateUVs(brush);
-            brush.uvs = uvs;
+            brush.UVs = uvs;
             for (int h = 0; h < faces.Length; h++)
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    brush.faces[h].editorVerts.Add(new VertexLightmapped(brush.vertices[brush.faces[h].indices[i]], brush.faces[h].normal, brush.uvs[brush.faces[h].indices[i]], Vector2.Zero));
+                    brush.Faces[h].editorVerts.Add(new VertexLightmapped(brush.Vertices[brush.Faces[h].Indices[i]], brush.Faces[h].Normal, brush.UVs[brush.Faces[h].Indices[i]], Vector2.Zero));
                 }
-                brush.faces[h].vertexBuffer = new VertexBuffer(Rockwall3DView.Instance.GraphicsDevice, typeof(VertexLightmapped), brush.faces[h].editorVerts.Count, BufferUsage.WriteOnly);
-                brush.faces[h].vertexBuffer.SetData(brush.faces[h].editorVerts.ToArray());
+                brush.Faces[h].vertexBuffer = new VertexBuffer(Rockwall3DView.Instance.GraphicsDevice, typeof(VertexLightmapped), brush.Faces[h].editorVerts.Count, BufferUsage.WriteOnly);
+                brush.Faces[h].vertexBuffer.SetData(brush.Faces[h].editorVerts.ToArray());
             }
-            brush.abnormal = true;
+            brush.Abnormal = true;
 
             // Lets just make sure everything is all kosher
             RebuildBrush(ref brush);
 
             uvs = CreateUVs(brush);
-            brush.uvs = uvs;
+            brush.UVs = uvs;
 
             RebuildBrush(ref brush);
 
@@ -1094,23 +1094,23 @@ namespace Rockwall
 
             // Find all vertices by intersecting sets of 3 planes
             List<Vector3> vertices = new List<Vector3>();
-            List<int>[] faceIndices = new List<int>[brush.faces.Length];
+            List<int>[] faceIndices = new List<int>[brush.Faces.Length];
 
-            for (int i = 0; i < brush.faces.Length; i++)
+            for (int i = 0; i < brush.Faces.Length; i++)
             {
                 faceIndices[i] = new List<int>();
             }
 
             // For each combination of 3 planes, find intersection point
-            for (int i = 0; i < brush.faces.Length - 2; i++)
+            for (int i = 0; i < brush.Faces.Length - 2; i++)
             {
-                for (int j = i + 1; j < brush.faces.Length - 1; j++)
+                for (int j = i + 1; j < brush.Faces.Length - 1; j++)
                 {
-                    for (int k = j + 1; k < brush.faces.Length; k++)
+                    for (int k = j + 1; k < brush.Faces.Length; k++)
                     {
-                        var planeI = brush.faces[i].plane;
-                        var planeJ = brush.faces[j].plane;
-                        var planeK = brush.faces[k].plane;
+                        var planeI = brush.Faces[i].Plane;
+                        var planeJ = brush.Faces[j].Plane;
+                        var planeK = brush.Faces[k].Plane;
                         if (!planeI.HasValue || !planeJ.HasValue || !planeK.HasValue)
                             continue;
 
@@ -1128,10 +1128,10 @@ namespace Rockwall
 
                             // Check if this vertex is inside all other planes
                             bool inside = true;
-                            for (int p = 0; p < brush.faces.Length; p++)
+                            for (int p = 0; p < brush.Faces.Length; p++)
                             {
                                 if (p == i || p == j || p == k) continue;
-                                var otherPlane = brush.faces[p].plane;
+                                var otherPlane = brush.Faces[p].Plane;
                                 if (!otherPlane.HasValue) continue;
 
                                 float dist = otherPlane.Value.DotCoordinate(v);
@@ -1164,31 +1164,31 @@ namespace Rockwall
                     }
                 }
             }
-            for (int i = 0; i < brush.faces.Length; i++)
+            for (int i = 0; i < brush.Faces.Length; i++)
             {
                 if (faceIndices[i].Count < 3)
                 {
-                    brush.faces[i].indices = new int[0]; // will be stripped by RebuildBrush
+                    brush.Faces[i].Indices = new int[0]; // will be stripped by RebuildBrush
                     continue;
                 }
 
-                var facePlane = brush.faces[i].plane;
+                var facePlane = brush.Faces[i].Plane;
                 if (!facePlane.HasValue)
                 {
-                    brush.faces[i].indices = new int[0];
+                    brush.Faces[i].Indices = new int[0];
                     continue;
                 }
 
                 SortVerticesCCW(vertices, faceIndices[i], facePlane.Value);
-                brush.faces[i].indices = TriangulateFace(faceIndices[i]);
+                brush.Faces[i].Indices = TriangulateFace(faceIndices[i]);
             }
 
             // Create per-face-unique vertex list so no vertices are shared between faces (flat shading)
             List<Vector3> perFaceUniqueVerts = new List<Vector3>();
 
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
-                var oldIndices = brush.faces[f].indices;
+                var oldIndices = brush.Faces[f].Indices;
                 if (oldIndices == null || oldIndices.Length == 0) continue;
 
                 int[] newIndices = new int[oldIndices.Length];
@@ -1200,11 +1200,11 @@ namespace Rockwall
                     newIndices[i] = perFaceUniqueVerts.Count - 1;
                 }
 
-                brush.faces[f].indices = newIndices;
+                brush.Faces[f].Indices = newIndices;
             }
 
-            brush.vertices = perFaceUniqueVerts.ToArray();
-            brush.abnormal = true;
+            brush.Vertices = perFaceUniqueVerts.ToArray();
+            brush.Abnormal = true;
         }
         /// <summary>
         /// Finds the intersection point of three planes
@@ -1304,9 +1304,9 @@ namespace Rockwall
         /// </summary>
         private static bool AllFacesHavePlanes(Brush brush)
         {
-            foreach (var face in brush.faces)
+            foreach (var face in brush.Faces)
             {
-                if (!face.plane.HasValue)
+                if (!face.Plane.HasValue)
                     return false;
             }
             return true;
@@ -1318,12 +1318,12 @@ namespace Rockwall
         /// <param name="brush"></param>
         private static void ConvertLegacyBrush(ref Brush brush)
         {
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
                 // This is a legacy map with the old brush method. Convert
-                if (brush.faces[f].plane == null)
+                if (brush.Faces[f].Plane == null)
                 {
-                    brush.faces[f].plane = new Plane(brush.vertices[brush.faces[f].indices[0]], brush.faces[f].normal);
+                    brush.Faces[f].Plane = new Plane(brush.Vertices[brush.Faces[f].Indices[0]], brush.Faces[f].Normal);
                 }
             }
         }
@@ -1336,32 +1336,32 @@ namespace Rockwall
             const float minEdgeDistanceSqr = 1e-8f;   // edges shorter than ~1e-4 units considered coincident
             const float minCrossLengthSqr = 1e-10f;   // cross product squared length threshold for near-zero area
 
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
-                var face = brush.faces[f];
+                var face = brush.Faces[f];
 
                 // Must have at least 3 indices to define a plane
-                if (face.indices == null || face.indices.Length < 3)
+                if (face.Indices == null || face.Indices.Length < 3)
                 {
                     continue;
                 }
                 bool valid = false;
-                for (int triOffset = 0; triOffset < face.indices.Length / 3; triOffset++)
+                for (int triOffset = 0; triOffset < face.Indices.Length / 3; triOffset++)
                 {
-                    int i0 = face.indices[0 + (triOffset * 3)];
-                    int i1 = face.indices[1 + (triOffset * 3)];
-                    int i2 = face.indices[2 + (triOffset * 3)];
+                    int i0 = face.Indices[0 + (triOffset * 3)];
+                    int i1 = face.Indices[1 + (triOffset * 3)];
+                    int i2 = face.Indices[2 + (triOffset * 3)];
 
                     // Validate indices are in range
                     if (i0 < 0 || i1 < 0 || i2 < 0 ||
-                        i0 >= brush.vertices.Length || i1 >= brush.vertices.Length || i2 >= brush.vertices.Length)
+                        i0 >= brush.Vertices.Length || i1 >= brush.Vertices.Length || i2 >= brush.Vertices.Length)
                     {
                         continue;
                     }
 
-                    Vector3 v0 = brush.vertices[i0];
-                    Vector3 v1 = brush.vertices[i1];
-                    Vector3 v2 = brush.vertices[i2];
+                    Vector3 v0 = brush.Vertices[i0];
+                    Vector3 v1 = brush.Vertices[i1];
+                    Vector3 v2 = brush.Vertices[i2];
 
                     // Check for coincident vertices (all three nearly the same point)
                     float d01 = Vector3.DistanceSquared(v0, v1);
@@ -1384,7 +1384,7 @@ namespace Rockwall
 
                     valid = true;
 
-                    face.plane = new Plane(v0, v1, v2);
+                    face.Plane = new Plane(v0, v1, v2);
                     break;
                 }
 
@@ -1392,7 +1392,7 @@ namespace Rockwall
                 if (valid) faces.Add(face);
             }
 
-            brush.faces = faces.ToArray();
+            brush.Faces = faces.ToArray();
         }
         /// <summary>
         /// Rebuilds a brush's UVs, normals, tangents, and binormals. If the brush is not abnormal, recalculates its geometry.
@@ -1401,69 +1401,69 @@ namespace Rockwall
         {
             RecalculateBrushGeometry(ref brush);
 
-            brush.faces = brush.faces
-                .Where(f => f.indices != null && f.indices.Length >= 3)
+            brush.Faces = brush.Faces
+                .Where(f => f.Indices != null && f.Indices.Length >= 3)
                 .ToArray();
 
-            if (brush.faces.Length == 0) return;
+            if (brush.Faces.Length == 0) return;
 
             Vector2[] uvs = CreateUVs(brush);
-            brush.uvs = uvs;
+            brush.UVs = uvs;
 
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
-                if (GlobalMapData.materialNameToIndex != null && brush.faces[f].materialName != null)
+                if (GlobalMapData.MaterialNameToIndex != null && brush.Faces[f].MaterialName != null)
                 {
-                    if (GlobalMapData.materialNameToIndex.TryGetValue(brush.faces[f].materialName, out int surf))
-                        brush.faces[f].surface = surf;
+                    if (GlobalMapData.MaterialNameToIndex.TryGetValue(brush.Faces[f].MaterialName, out int surf))
+                        brush.Faces[f].Surface = surf;
                     else
-                        brush.faces[f].surface = GlobalMapData.materialNameToIndex.FirstOrDefault(kv => kv.Key.StartsWith("Dev")).Value;
+                        brush.Faces[f].Surface = GlobalMapData.MaterialNameToIndex.FirstOrDefault(kv => kv.Key.StartsWith("Dev")).Value;
                 }
 
-                if (brush.faces[f].tScaleX == 0) brush.faces[f].tScaleX = 1;
-                if (brush.faces[f].tScaleY == 0) brush.faces[f].tScaleY = 1;
+                if (brush.Faces[f].TScaleX == 0) brush.Faces[f].TScaleX = 1;
+                if (brush.Faces[f].TScaleY == 0) brush.Faces[f].TScaleY = 1;
 
-                Face face = brush.faces[f];
-                if (face.plane.HasValue)
+                Face face = brush.Faces[f];
+                if (face.Plane.HasValue)
                 {
-                    brush.faces[f].normal = Vector3.Normalize(face.plane.Value.Normal);
+                    brush.Faces[f].Normal = Vector3.Normalize(face.Plane.Value.Normal);
                 }
                 else
                 {
                     Vector3 newell = Vector3.Zero;
-                    for (int i = 0; i < face.indices.Length; i += 3)
+                    for (int i = 0; i < face.Indices.Length; i += 3)
                     {
-                        Vector3 a = brush.vertices[face.indices[i]];
-                        Vector3 b = brush.vertices[face.indices[i + 1]];
-                        Vector3 c = brush.vertices[face.indices[i + 2]];
+                        Vector3 a = brush.Vertices[face.Indices[i]];
+                        Vector3 b = brush.Vertices[face.Indices[i + 1]];
+                        Vector3 c = brush.Vertices[face.Indices[i + 2]];
                         newell += Vector3.Cross(b - a, c - b);
                     }
-                    brush.faces[f].normal = Vector3.Normalize(newell);
+                    brush.Faces[f].Normal = Vector3.Normalize(newell);
                 }
 
-                UvCalculator.GetUVAxes(brush.faces[f], out Vector3 uAxis, out Vector3 vAxis);
-                Vector3 n = brush.faces[f].normal;
-                brush.faces[f].tangent = Vector3.Normalize(uAxis - n * Vector3.Dot(uAxis, n));
-                brush.faces[f].binormal = Vector3.Normalize(vAxis - n * Vector3.Dot(vAxis, n));
+                UvCalculator.GetUVAxes(brush.Faces[f], out Vector3 uAxis, out Vector3 vAxis);
+                Vector3 n = brush.Faces[f].Normal;
+                brush.Faces[f].Tangent = Vector3.Normalize(uAxis - n * Vector3.Dot(uAxis, n));
+                brush.Faces[f].Binormal = Vector3.Normalize(vAxis - n * Vector3.Dot(vAxis, n));
 
-                brush.isLightNodeVolume = brush.faces[f].materialName == "tool_lightnodevolume";
-                brush.isTrigger = brush.faces[f].materialName == "tool_trigger" || brush.isTrigger;
-                brush.isClip = brush.faces[f].materialName == "tool_clip" || brush.isTrigger;
+                brush.IsLightNodeVolume = brush.Faces[f].MaterialName == "tool_lightnodevolume";
+                brush.IsTrigger = brush.Faces[f].MaterialName == "tool_trigger" || brush.IsTrigger;
+                brush.IsClip = brush.Faces[f].MaterialName == "tool_clip" || brush.IsTrigger;
 #if rockwall
                 if (face.editorVerts == null)
                 {
-                    brush.faces[f].editorVerts = new List<VertexLightmapped>();
+                    brush.Faces[f].editorVerts = new List<VertexLightmapped>();
                 }
                 else
                 {
-                    brush.faces[f].editorVerts.Clear();
+                    brush.Faces[f].editorVerts.Clear();
                 }
-                for (int i = 0; i < face.indices.Length; i++)
+                for (int i = 0; i < face.Indices.Length; i++)
                 {
-                    brush.faces[f].editorVerts.Add(new VertexLightmapped(brush.vertices[face.indices[i]], face.normal, uvs.Length < brush.vertices.Length ? Vector2.One : uvs[face.indices[i]], Vector2.Zero));
+                    brush.Faces[f].editorVerts.Add(new VertexLightmapped(brush.Vertices[face.Indices[i]], face.Normal, uvs.Length < brush.Vertices.Length ? Vector2.One : uvs[face.Indices[i]], Vector2.Zero));
                 }
-                brush.faces[f].vertexBuffer = new VertexBuffer(Rockwall3DView.Instance.GraphicsDevice, typeof(VertexLightmapped), brush.faces[f].editorVerts.Count, BufferUsage.WriteOnly);
-                brush.faces[f].vertexBuffer.SetData(brush.faces[f].editorVerts.ToArray());
+                brush.Faces[f].vertexBuffer = new VertexBuffer(Rockwall3DView.Instance.GraphicsDevice, typeof(VertexLightmapped), brush.Faces[f].editorVerts.Count, BufferUsage.WriteOnly);
+                brush.Faces[f].vertexBuffer.SetData(brush.Faces[f].editorVerts.ToArray());
 #endif
             }
         }
@@ -1474,34 +1474,34 @@ namespace Rockwall
         /// </summary>
         public static Brush DuplicateBrush(Brush brush, bool offset = true)
         {
-            Brush b = CreateBrush(brush.width, brush.height, brush.length);
-            b.position = brush.position;
-            b.isClip = brush.isClip;
-            b.vertices = new Vector3[brush.vertices.Length];
-            b.faces = new Face[brush.faces.Length];
-            b.uvs = new Vector2[brush.uvs.Length];
-            for (int i = 0; i < brush.vertices.Length; i++)
+            Brush b = CreateBrush(brush.Width, brush.Height, brush.Length);
+            b.Position = brush.Position;
+            b.IsClip = brush.IsClip;
+            b.Vertices = new Vector3[brush.Vertices.Length];
+            b.Faces = new Face[brush.Faces.Length];
+            b.UVs = new Vector2[brush.UVs.Length];
+            for (int i = 0; i < brush.Vertices.Length; i++)
             {
-                b.vertices[i] = brush.vertices[i];
-                b.uvs[i] = brush.uvs[i];
+                b.Vertices[i] = brush.Vertices[i];
+                b.UVs[i] = brush.UVs[i];
             }
-            for (int i = 0; i < brush.faces.Length; i++)
+            for (int i = 0; i < brush.Faces.Length; i++)
             {
-                b.faces[i].decals = brush.faces[i].decals;
-                b.faces[i].drawn = brush.faces[i].drawn;
-                b.faces[i].luxelScale = brush.faces[i].luxelScale;
-                b.faces[i].tScaleX = brush.faces[i].tScaleX;
-                b.faces[i].tScaleY = brush.faces[i].tScaleY;
-                b.faces[i].tOffX = brush.faces[i].tOffX;
-                b.faces[i].tOffY = brush.faces[i].tOffY;
-                b.faces[i].uvRotation = brush.faces[i].uvRotation;
-                b.faces[i].uvProjectionMode = brush.faces[i].uvProjectionMode;
-                b.faces[i].normal = brush.faces[i].normal;
-                b.faces[i].surface = brush.faces[i].surface;
-                b.faces[i].indices = brush.faces[i].indices;
-                b.faces[i].materialName = brush.faces[i].materialName;
+                b.Faces[i].Decals = brush.Faces[i].Decals;
+                b.Faces[i].Drawn = brush.Faces[i].Drawn;
+                b.Faces[i].LuxelScale = brush.Faces[i].LuxelScale;
+                b.Faces[i].TScaleX = brush.Faces[i].TScaleX;
+                b.Faces[i].TScaleY = brush.Faces[i].TScaleY;
+                b.Faces[i].TOffX = brush.Faces[i].TOffX;
+                b.Faces[i].TOffY = brush.Faces[i].TOffY;
+                b.Faces[i].UvRotation = brush.Faces[i].UvRotation;
+                b.Faces[i].UvProjectionMode = brush.Faces[i].UvProjectionMode;
+                b.Faces[i].Normal = brush.Faces[i].Normal;
+                b.Faces[i].Surface = brush.Faces[i].Surface;
+                b.Faces[i].Indices = brush.Faces[i].Indices;
+                b.Faces[i].MaterialName = brush.Faces[i].MaterialName;
             }
-            if (offset) b.position += Vector3.Up;
+            if (offset) b.Position += Vector3.Up;
             RebuildBrush(ref b);
             return b;
         }
@@ -1513,7 +1513,7 @@ namespace Rockwall
         public static Vector2[] CreateUVs(Brush brush)
         {
             Vector2[] uvs = UvCalculator.CalculateUVs(brush);
-            brush.uvs = uvs;
+            brush.UVs = uvs;
             return uvs;
         }
 #if rockwall
@@ -1524,12 +1524,12 @@ namespace Rockwall
         {
             Brush brush = MapTools.Brushes[brushNum];
 
-            if (!brush.faces[faceNum].plane.HasValue)
+            if (!brush.Faces[faceNum].Plane.HasValue)
             {
                 return;
             }
 
-            Plane plane = brush.faces[faceNum].plane.Value;
+            Plane plane = brush.Faces[faceNum].Plane.Value;
 
             var oldPlane = plane;
 
@@ -1542,12 +1542,12 @@ namespace Rockwall
         }
         public static void MoveFace(ref Brush brush, int faceNum, Vector3 moveAmount)
         {
-            if (!brush.faces[faceNum].plane.HasValue)
+            if (!brush.Faces[faceNum].Plane.HasValue)
             {
                 return;
             }
 
-            Plane plane = brush.faces[faceNum].plane.Value;
+            Plane plane = brush.Faces[faceNum].Plane.Value;
 
             var oldPlane = plane;
 
@@ -1559,20 +1559,20 @@ namespace Rockwall
         public static void MoveFace(int b, int faceNum, float delta) => MoveFace(ref MapTools.Brushes[b], faceNum, delta);
         public static float SnapMoveDistanceForFace(Brush brush, int faceNum, float moveDistance)
         {
-            var face = brush.faces[faceNum];
-            if (!face.plane.HasValue) return moveDistance;
+            var face = brush.Faces[faceNum];
+            if (!face.Plane.HasValue) return moveDistance;
 
             bool isIncidentEdge(int v1, int v2)
             {
-                Vector3 p1 = brush.vertices[v1];
-                Vector3 p2 = brush.vertices[v2];
-                bool v1OnFace = face.indices.Any(i => Vector3.DistanceSquared(brush.vertices[i], p1) < 0.001f);
-                bool v2OnFace = face.indices.Any(i => Vector3.DistanceSquared(brush.vertices[i], p2) < 0.001f);
+                Vector3 p1 = brush.Vertices[v1];
+                Vector3 p2 = brush.Vertices[v2];
+                bool v1OnFace = face.Indices.Any(i => Vector3.DistanceSquared(brush.Vertices[i], p1) < 0.001f);
+                bool v2OnFace = face.Indices.Any(i => Vector3.DistanceSquared(brush.Vertices[i], p2) < 0.001f);
                 return v1OnFace ^ v2OnFace;
             }
 
             var edges = OtherMath.GetUniqueEdges(brush);
-            var moveDirection = face.normal;
+            var moveDirection = face.Normal;
             var snappedMoveDistance = float.MaxValue;
             bool flip = moveDistance < 0;
 
@@ -1580,9 +1580,9 @@ namespace Rockwall
             {
                 if (!isIncidentEdge(edge.Item1, edge.Item2)) continue;
 
-                Vector3 p1 = brush.vertices[edge.Item1];
-                Vector3 p2 = brush.vertices[edge.Item2];
-                bool firstOnFace = face.indices.Any(i => Vector3.DistanceSquared(brush.vertices[i], p1) < 0.001f);
+                Vector3 p1 = brush.Vertices[edge.Item1];
+                Vector3 p2 = brush.Vertices[edge.Item2];
+                bool firstOnFace = face.Indices.Any(i => Vector3.DistanceSquared(brush.Vertices[i], p1) < 0.001f);
                 var v1 = firstOnFace ? p2 : p1;
                 var v2 = firstOnFace ? p1 : p2;
 
@@ -1614,15 +1614,15 @@ namespace Rockwall
         public static void ApplyFaceMoveExact(ref Brush b, int faceNum, float exactDistance)
         {
             var brush = b;
-            if (!brush.faces[faceNum].plane.HasValue) return;
+            if (!brush.Faces[faceNum].Plane.HasValue) return;
 
-            var oldPlane = brush.faces[faceNum].plane.Value;
+            var oldPlane = brush.Faces[faceNum].Plane.Value;
             var plane = oldPlane;
             plane.D -= exactDistance;
-            brush.faces[faceNum].plane = plane;
+            brush.Faces[faceNum].Plane = plane;
 
             if (!IsValidBrush(ref brush))
-                brush.faces[faceNum].plane = oldPlane;
+                brush.Faces[faceNum].Plane = oldPlane;
 
             b = brush;
             RebuildBrush(ref b);
@@ -1636,29 +1636,29 @@ namespace Rockwall
 
         public static bool IsValidBrush(ref Brush brush)
         {
-            if (brush.faces.Length < 4) return false;
+            if (brush.Faces.Length < 4) return false;
 
             // Find all vertices by intersecting triples of planes
             var vertices = new List<Vector3>();
-            for (int i = 0; i < brush.faces.Length - 2; i++)
+            for (int i = 0; i < brush.Faces.Length - 2; i++)
             {
-                for (int j = i + 1; j < brush.faces.Length - 1; j++)
+                for (int j = i + 1; j < brush.Faces.Length - 1; j++)
                 {
-                    for (int k = j + 1; k < brush.faces.Length; k++)
+                    for (int k = j + 1; k < brush.Faces.Length; k++)
                     {
                         var v = IntersectThreePlanes(
-                            brush.faces[i].plane.Value,
-                            brush.faces[j].plane.Value,
-                            brush.faces[k].plane.Value);
+                            brush.Faces[i].Plane.Value,
+                            brush.Faces[j].Plane.Value,
+                            brush.Faces[k].Plane.Value);
 
                         if (!v.HasValue) continue;
 
                         // Vertex is valid only if it's behind or on every other plane
                         bool valid = true;
-                        for (int p = 0; p < brush.faces.Length; p++)
+                        for (int p = 0; p < brush.Faces.Length; p++)
                         {
                             if (p == i || p == j || p == k) continue;
-                            if (brush.faces[p].plane.Value.DotCoordinate(v.Value) > 0.001f)
+                            if (brush.Faces[p].Plane.Value.DotCoordinate(v.Value) > 0.001f)
                             {
                                 valid = false;
                                 break;
@@ -1679,11 +1679,11 @@ namespace Rockwall
                         return false;
 
             // Each face must have at least 3 vertices on it
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
                 int count = 0;
                 foreach (var v in vertices)
-                    if (MathF.Abs(brush.faces[f].plane.Value.DotCoordinate(v)) <= 0.001f)
+                    if (MathF.Abs(brush.Faces[f].Plane.Value.DotCoordinate(v)) <= 0.001f)
                         count++;
 
                 if (count < 3) return false;
@@ -1698,15 +1698,15 @@ namespace Rockwall
 
             // Collect unique world-space verts from both faces
             var verts = new List<Vector3>();
-            foreach (int vi in brushA.faces[faceAIdx].indices)
+            foreach (int vi in brushA.Faces[faceAIdx].Indices)
             {
-                var wp = brushA.vertices[vi] + brushA.position;
+                var wp = brushA.Vertices[vi] + brushA.Position;
                 if (!verts.Any(v => Vector3.DistanceSquared(v, wp) < 0.001f))
                     verts.Add(wp);
             }
-            foreach (int vi in brushB.faces[faceBIdx].indices)
+            foreach (int vi in brushB.Faces[faceBIdx].Indices)
             {
-                var wp = brushB.vertices[vi] + brushB.position;
+                var wp = brushB.Vertices[vi] + brushB.Position;
                 if (!verts.Any(v => Vector3.DistanceSquared(v, wp) < 0.001f))
                     verts.Add(wp);
             }
@@ -1745,24 +1745,24 @@ namespace Rockwall
 
                             // Check not already added
                             bool duplicate = hullFaces.Any(f =>
-                                f.plane.HasValue &&
-                                Vector3.DistanceSquared(f.plane.Value.Normal, n) < 0.001f &&
-                                MathF.Abs(f.plane.Value.D - d) < 0.001f);
+                                f.Plane.HasValue &&
+                                Vector3.DistanceSquared(f.Plane.Value.Normal, n) < 0.001f &&
+                                MathF.Abs(f.Plane.Value.D - d) < 0.001f);
 
                             if (!duplicate)
                             {
                                 hullFaces.Add(new Face
                                 {
-                                    plane = new Plane(n, d),
-                                    normal = n,
-                                    drawn = true,
-                                    materialName = brushA.faces[faceAIdx].materialName,
-                                    surface = brushA.faces[faceAIdx].surface,
-                                    tScaleX = 1,
-                                    tScaleY = 1,
-                                    luxelScale = 1f,
+                                    Plane = new Plane(n, d),
+                                    Normal = n,
+                                    Drawn = true,
+                                    MaterialName = brushA.Faces[faceAIdx].MaterialName,
+                                    Surface = brushA.Faces[faceAIdx].Surface,
+                                    TScaleX = 1,
+                                    TScaleY = 1,
+                                    LuxelScale = 1f,
                                     editorVerts = new List<VertexLightmapped>(),
-                                    indices = new int[0]
+                                    Indices = new int[0]
                                 });
                             }
                         }
@@ -1772,14 +1772,14 @@ namespace Rockwall
 
             var result = new Brush
             {
-                position = Vector3.Zero,
-                faces = hullFaces.ToArray(),
-                vertices = new Vector3[0],
-                uvs = new Vector2[0],
+                Position = Vector3.Zero,
+                Faces = hullFaces.ToArray(),
+                Vertices = new Vector3[0],
+                UVs = new Vector2[0],
             };
 
             RebuildBrush(ref result);
-            return result.faces.Length == 0 ? null : result;
+            return result.Faces.Length == 0 ? null : result;
         }
 
         /// <summary>
@@ -1788,19 +1788,19 @@ namespace Rockwall
         public static void MoveVert(int bnum, int v, Vector3 moveAmount)
         {
             Brush brush = MapTools.Brushes[bnum];
-            Vector3 vert = brush.vertices[v];
+            Vector3 vert = brush.Vertices[v];
             List<int> toMove = new List<int>();
-            for (int i = 0; i < brush.vertices.Length; i++)
+            for (int i = 0; i < brush.Vertices.Length; i++)
             {
-                if (Vector3.Distance(brush.vertices[i], vert) > 0.0001f) continue;
+                if (Vector3.Distance(brush.Vertices[i], vert) > 0.0001f) continue;
                 if (!toMove.Contains(i))
                     toMove.Add(i);
             }
             foreach (int move in toMove)
             {
-                brush.vertices[move] += moveAmount;
+                brush.Vertices[move] += moveAmount;
             }
-            brush.abnormal = true;
+            brush.Abnormal = true;
             MapTools.Brushes[bnum] = brush;
 
             RecalculateBrushPlanes(ref MapTools.Brushes[bnum]);
@@ -1815,16 +1815,16 @@ namespace Rockwall
         {
             min = new Vector3(float.MaxValue);
             max = new Vector3(float.MinValue);
-            foreach (Vector3 vertice in brush.vertices)
+            foreach (Vector3 vertice in brush.Vertices)
             {
-                min = Vector3.Min(vertice + brush.position, min);
-                max = Vector3.Max(vertice + brush.position, max);
+                min = Vector3.Min(vertice + brush.Position, min);
+                max = Vector3.Max(vertice + brush.Position, max);
             }
-            foreach (Vector3 vertice in brush.vertices)
+            foreach (Vector3 vertice in brush.Vertices)
             {
-                if ((vertice.X + brush.position.X > min.X && vertice.X + brush.position.X < max.X) ||
-                    (vertice.Y + brush.position.Y > min.Y && vertice.Y + brush.position.Y < max.Y) ||
-                    (vertice.Z + brush.position.Z > min.Z && vertice.Z + brush.position.Z < max.Z)) return true;
+                if ((vertice.X + brush.Position.X > min.X && vertice.X + brush.Position.X < max.X) ||
+                    (vertice.Y + brush.Position.Y > min.Y && vertice.Y + brush.Position.Y < max.Y) ||
+                    (vertice.Z + brush.Position.Z > min.Z && vertice.Z + brush.Position.Z < max.Z)) return true;
             }
             return false;
         }
@@ -1834,9 +1834,9 @@ namespace Rockwall
         /// </summary>
         public static bool PointInsideBrush(Vector3 point, int brush, ref Brush[] brushes)
         {
-            for (int i = 0; i < brushes[brush].faces.Length; i++)
+            for (int i = 0; i < brushes[brush].Faces.Length; i++)
             {
-                if (Vector3.Dot(point - brushes[brush].vertices[brushes[brush].faces[i].indices[0]], brushes[brush].faces[i].normal) > 0)
+                if (Vector3.Dot(point - brushes[brush].Vertices[brushes[brush].Faces[i].Indices[0]], brushes[brush].Faces[i].Normal) > 0)
                 {
                     return false;
                 }
@@ -1853,12 +1853,12 @@ namespace Rockwall
             float? result = null;
             BoundingBox box = bounds[brush];
             result = ray.Intersects(box);
-            if (result != null && brushes[brush].abnormal)
+            if (result != null && brushes[brush].Abnormal)
             {
                 float min = float.MaxValue;
-                for (int i = 0; i < brushes[brush].faces.Length; i++)
+                for (int i = 0; i < brushes[brush].Faces.Length; i++)
                 {
-                    float distance = RayVsFace(ref ray, brushes[brush], brushes[brush].faces[i]);
+                    float distance = RayVsFace(ref ray, brushes[brush], brushes[brush].Faces[i]);
                     if (distance > 0 && distance < min) min = distance;
                 }
                 if (min < float.MaxValue && min > 0)
@@ -1880,16 +1880,16 @@ namespace Rockwall
         /// </summary>
         public static float RayVsFace(ref Ray ray, Brush brush, Face face)
         {
-            if (face.indices.Length > 3)
+            if (face.Indices.Length > 3)
             {
                 return Math.Max(
-                    IntersectRayTriangle(brush.vertices[face.indices[0]] + brush.position, brush.vertices[face.indices[1]] + brush.position, brush.vertices[face.indices[2]] + brush.position, ray),
-                    IntersectRayTriangle(brush.vertices[face.indices[3]] + brush.position, brush.vertices[face.indices[4]] + brush.position, brush.vertices[face.indices[5]] + brush.position, ray)
+                    IntersectRayTriangle(brush.Vertices[face.Indices[0]] + brush.Position, brush.Vertices[face.Indices[1]] + brush.Position, brush.Vertices[face.Indices[2]] + brush.Position, ray),
+                    IntersectRayTriangle(brush.Vertices[face.Indices[3]] + brush.Position, brush.Vertices[face.Indices[4]] + brush.Position, brush.Vertices[face.Indices[5]] + brush.Position, ray)
                 );
             }
             else
             {
-                return IntersectRayTriangle(brush.vertices[face.indices[0]] + brush.position, brush.vertices[face.indices[1]] + brush.position, brush.vertices[face.indices[2]] + brush.position, ray);
+                return IntersectRayTriangle(brush.Vertices[face.Indices[0]] + brush.Position, brush.Vertices[face.Indices[1]] + brush.Position, brush.Vertices[face.Indices[2]] + brush.Position, ray);
             }
         }
 
@@ -2032,16 +2032,16 @@ namespace Rockwall
             back = null;
 
             bool anyFront = false, anyBack = false;
-            foreach (var v in brush.vertices)
+            foreach (var v in brush.Vertices)
             {
-                float d = splitPlane.DotCoordinate(v + brush.position);
+                float d = splitPlane.DotCoordinate(v + brush.Position);
                 if (d > 0.001f) anyFront = true;
                 if (d < -0.001f) anyBack = true;
             }
 
             if (!anyFront || !anyBack) return false;
 
-            float positionOffset = Vector3.Dot(splitPlane.Normal, brush.position);
+            float positionOffset = Vector3.Dot(splitPlane.Normal, brush.Position);
             Plane localSplitPlane = new Plane(splitPlane.Normal, splitPlane.D + positionOffset);
             Plane localFlippedPlane = new Plane(-localSplitPlane.Normal, -localSplitPlane.D);
 
@@ -2069,52 +2069,52 @@ namespace Rockwall
             // (the flipped plane cuts off the front piece on the split side)
             Brush frontBrush = DeepCopyBrush(brush);
             frontBrush.GroupingID = null;
-            var frontFaces = frontBrush.faces.ToList();
-            if (!frontFaces.Any(f => f.plane.HasValue && PlanesEqual(f.plane.Value, localFlippedPlane)))
+            var frontFaces = frontBrush.Faces.ToList();
+            if (!frontFaces.Any(f => f.Plane.HasValue && PlanesEqual(f.Plane.Value, localFlippedPlane)))
             {
-                var src = brush.faces[sourceFaceHint];
+                var src = brush.Faces[sourceFaceHint];
                 frontFaces.Add(new Face
                 {
-                    plane = localFlippedPlane,
-                    normal = Vector3.Normalize(localFlippedPlane.Normal),
-                    drawn = true,
+                    Plane = localFlippedPlane,
+                    Normal = Vector3.Normalize(localFlippedPlane.Normal),
+                    Drawn = true,
                     editorVerts = new List<VertexLightmapped>(),
-                    materialName = src.materialName,
-                    surface = src.surface,
-                    tScaleX = src.tScaleX,
-                    tScaleY = src.tScaleY,
-                    uvRotation = src.uvRotation,
-                    uvProjectionMode = src.uvProjectionMode,
-                    luxelScale = src.luxelScale,
-                    indices = new int[0]
+                    MaterialName = src.MaterialName,
+                    Surface = src.Surface,
+                    TScaleX = src.TScaleX,
+                    TScaleY = src.TScaleY,
+                    UvRotation = src.UvRotation,
+                    UvProjectionMode = src.UvProjectionMode,
+                    LuxelScale = src.LuxelScale,
+                    Indices = new int[0]
                 });
             }
-            frontBrush.faces = frontFaces.ToArray();
+            frontBrush.Faces = frontFaces.ToArray();
 
             // Back brush gets all original planes + the split plane as cap
             Brush backBrush = DeepCopyBrush(brush);
             backBrush.GroupingID = null;
-            var backFaces = backBrush.faces.ToList();
-            if (!backFaces.Any(f => f.plane.HasValue && PlanesEqual(f.plane.Value, localSplitPlane)))
+            var backFaces = backBrush.Faces.ToList();
+            if (!backFaces.Any(f => f.Plane.HasValue && PlanesEqual(f.Plane.Value, localSplitPlane)))
             {
-                var src = brush.faces[sourceFaceHint];
+                var src = brush.Faces[sourceFaceHint];
                 backFaces.Add(new Face
                 {
-                    plane = localSplitPlane,
-                    normal = Vector3.Normalize(localSplitPlane.Normal),
-                    drawn = true,
+                    Plane = localSplitPlane,
+                    Normal = Vector3.Normalize(localSplitPlane.Normal),
+                    Drawn = true,
                     editorVerts = new List<VertexLightmapped>(),
-                    materialName = src.materialName,
-                    surface = src.surface,
-                    tScaleX = src.tScaleX,
-                    tScaleY = src.tScaleY,
-                    uvRotation = src.uvRotation,
-                    uvProjectionMode = src.uvProjectionMode,
-                    luxelScale = src.luxelScale,
-                    indices = new int[0]
+                    MaterialName = src.MaterialName,
+                    Surface = src.Surface,
+                    TScaleX = src.TScaleX,
+                    TScaleY = src.TScaleY,
+                    UvRotation = src.UvRotation,
+                    UvProjectionMode = src.UvProjectionMode,
+                    LuxelScale = src.LuxelScale,
+                    Indices = new int[0]
                 });
             }
-            backBrush.faces = backFaces.ToArray();
+            backBrush.Faces = backFaces.ToArray();
 
             RebuildBrush(ref frontBrush);
             RebuildBrush(ref backBrush);
@@ -2129,34 +2129,34 @@ namespace Rockwall
         /// </summary>
         private static Brush DeepCopyBrush(Brush src)
         {
-            Face[] newFaces = new Face[src.faces.Length];
-            for (int i = 0; i < src.faces.Length; i++)
+            Face[] newFaces = new Face[src.Faces.Length];
+            for (int i = 0; i < src.Faces.Length; i++)
             {
                 newFaces[i] = new Face
                 {
-                    plane = src.faces[i].plane,
-                    normal = src.faces[i].normal,
-                    drawn = src.faces[i].drawn,
-                    materialName = src.faces[i].materialName,
-                    surface = src.faces[i].surface,
-                    luxelScale = src.faces[i].luxelScale,
-                    tScaleX = src.faces[i].tScaleX,
-                    tScaleY = src.faces[i].tScaleY,
-                    tOffX = src.faces[i].tOffX,
-                    tOffY = src.faces[i].tOffY,
-                    uvRotation = src.faces[i].uvRotation,
-                    uvProjectionMode = src.faces[i].uvProjectionMode,
+                    Plane = src.Faces[i].Plane,
+                    Normal = src.Faces[i].Normal,
+                    Drawn = src.Faces[i].Drawn,
+                    MaterialName = src.Faces[i].MaterialName,
+                    Surface = src.Faces[i].Surface,
+                    LuxelScale = src.Faces[i].LuxelScale,
+                    TScaleX = src.Faces[i].TScaleX,
+                    TScaleY = src.Faces[i].TScaleY,
+                    TOffX = src.Faces[i].TOffX,
+                    TOffY = src.Faces[i].TOffY,
+                    UvRotation = src.Faces[i].UvRotation,
+                    UvProjectionMode = src.Faces[i].UvProjectionMode,
                     editorVerts = new List<VertexLightmapped>(),
-                    indices = new int[0]
+                    Indices = new int[0]
                 };
             }
             return new Brush
             {
-                position = src.position,
-                faces = newFaces,
+                Position = src.Position,
+                Faces = newFaces,
                 // geometry gets rebuilt by RebuildBrush
-                vertices = new Vector3[0],
-                uvs = new Vector2[0],
+                Vertices = new Vector3[0],
+                UVs = new Vector2[0],
                 isUsedForTerrain = src.isUsedForTerrain
             };
         }
@@ -2220,16 +2220,16 @@ namespace Rockwall
             List<Vector3> vertTex = new List<Vector3>();
             Vector3 min = new Vector3(float.MaxValue), max = new Vector3(float.MinValue);
 
-            for (int v = 0; v < terrain.vertices.Length; v++)
+            for (int v = 0; v < terrain.Vertices.Length; v++)
             {
-                vertPos.Add(terrain.vertices[v].Position);
-                vertTex.Add(terrain.vertices[v].TextureCoordinate);
-                min = Vector3.Min(min, terrain.vertices[v].Position);
-                max = Vector3.Max(max, terrain.vertices[v].Position);
+                vertPos.Add(terrain.Vertices[v].Position);
+                vertTex.Add(terrain.Vertices[v].TextureCoordinate);
+                min = Vector3.Min(min, terrain.Vertices[v].Position);
+                max = Vector3.Max(max, terrain.Vertices[v].Position);
             }
 
-            var uvs = UvCalculator.CalculateUVs(vertPos.ToArray(), terrain.triangles, 4f, projectionNormal: terrain.sourceNormal);
-            var triList = new List<short>(terrain.triangles);
+            var uvs = UvCalculator.CalculateUVs(vertPos.ToArray(), terrain.Triangles, 4f, projectionNormal: terrain.SourceNormal);
+            var triList = new List<short>(terrain.Triangles);
             var (normals, tangents, handedness) = ComputeNormalsAndTangents(vertPos, triList, uvs);
 
             List<TerrainVertex> vertices = new List<TerrainVertex>();
@@ -2237,42 +2237,42 @@ namespace Rockwall
                 vertices.Add(new TerrainVertex(vertPos[v], Vector2.Zero, normals[v],
                                                new Vector3(uvs[v], vertTex[v].Z), tangents[v], handedness[v]));
 
-            terrain.vertices = vertices.ToArray();
-            terrain.bounds = new BoundingBox(min, max);
+            terrain.Vertices = vertices.ToArray();
+            terrain.Bounds = new BoundingBox(min, max);
 
-            if (terrain.surfaceName == null)
+            if (terrain.SurfaceName == null)
             {
-                terrain.surfaceName = GlobalMapData.loadedMaterials[terrain.surface].name;
-                terrain.blendedSurfaceName = GlobalMapData.loadedMaterials[terrain.blendedSurface].name;
+                terrain.SurfaceName = GlobalMapData.LoadedMaterials[terrain.Surface].Name;
+                terrain.BlendedSurfaceName = GlobalMapData.LoadedMaterials[terrain.BlendedSurface].Name;
             }
 
-            terrain.surface = GlobalMapData.materialNameToIndex[terrain.surfaceName];
-            terrain.blendedSurface = GlobalMapData.materialNameToIndex[terrain.blendedSurfaceName];
+            terrain.Surface = GlobalMapData.MaterialNameToIndex[terrain.SurfaceName];
+            terrain.BlendedSurface = GlobalMapData.MaterialNameToIndex[terrain.BlendedSurfaceName];
         }
     }
     public static class UvCalculator
     {
         public static Vector2[] CalculateUVs(Brush brush)
         {
-            int vertCount = brush.vertices.Length;
+            int vertCount = brush.Vertices.Length;
             var uvs = new Vector2[vertCount];
             var lmUvs = new Vector2[vertCount];
 
-            foreach (var face in brush.faces)
+            foreach (var face in brush.Faces)
             {
-                if (face.indices == null || face.indices.Length == 0) continue;
+                if (face.Indices == null || face.Indices.Length == 0) continue;
 
                 GetUVAxes(face, out Vector3 uAxis, out Vector3 vAxis);
 
-                foreach (int vi in face.indices)
+                foreach (int vi in face.Indices)
                 {
-                    Vector3 worldPos = brush.vertices[vi] + brush.position;
+                    Vector3 worldPos = brush.Vertices[vi] + brush.Position;
 
                     float u = Vector3.Dot(worldPos, uAxis);
                     float v = Vector3.Dot(worldPos, vAxis);
 
-                    float sx = face.tScaleX;
-                    float sy = face.tScaleY;
+                    float sx = face.TScaleX;
+                    float sy = face.TScaleY;
                     u /= sx;
                     v /= sy;
 
@@ -2281,8 +2281,8 @@ namespace Rockwall
                     u /= texSize.X / texelsPerUnit;
                     v /= texSize.Y / texelsPerUnit;
 
-                    u += face.tOffX / texSize.X;
-                    v += face.tOffY / texSize.Y;
+                    u += face.TOffX / texSize.X;
+                    v += face.TOffY / texSize.Y;
 
                     uvs[vi] = new Vector2(u, v);
 
@@ -2293,7 +2293,7 @@ namespace Rockwall
                 }
             }
 
-            brush.lightmapUvs = lmUvs;
+            brush.LightmapUVs = lmUvs;
 
             return uvs;
         }
@@ -2353,14 +2353,14 @@ namespace Rockwall
             float uMin = float.MaxValue, uMax = float.MinValue;
             float vMin = float.MaxValue, vMax = float.MinValue;
 
-            float sx = MathF.Abs(face.tScaleX);
-            float sy = MathF.Abs(face.tScaleY);
+            float sx = MathF.Abs(face.TScaleX);
+            float sy = MathF.Abs(face.TScaleY);
             Vector2 texSize = GetTextureSize(face);
             float texelsPerUnit = GetTexelsPerUnit(face);
 
-            foreach (int vi in face.indices)
+            foreach (int vi in face.Indices)
             {
-                Vector3 worldPos = brush.vertices[vi] + brush.position;
+                Vector3 worldPos = brush.Vertices[vi] + brush.Position;
 
                 // Project without offset/scale so we're working in raw texel space
                 float u = Vector3.Dot(worldPos, uAxis) / (sx * (texSize.X / texelsPerUnit));
@@ -2378,40 +2378,40 @@ namespace Rockwall
             switch (mode)
             {
                 case JustifyMode.Left:
-                    face.tOffX = -uMin * texSize.X;
+                    face.TOffX = -uMin * texSize.X;
                     break;
                 case JustifyMode.Right:
-                    face.tOffX = -(uMin + uExtent) * texSize.X;
+                    face.TOffX = -(uMin + uExtent) * texSize.X;
                     break;
                 case JustifyMode.Top:
-                    face.tOffY = -vMin * texSize.Y;
+                    face.TOffY = -vMin * texSize.Y;
                     break;
                 case JustifyMode.Bottom:
-                    face.tOffY = -(vMin + vExtent) * texSize.Y;
+                    face.TOffY = -(vMin + vExtent) * texSize.Y;
                     break;
                 case JustifyMode.Center:
-                    face.tOffX = -(uMin + uExtent * 0.5f) * texSize.X;
-                    face.tOffY = -(vMin + vExtent * 0.5f) * texSize.Y;
+                    face.TOffX = -(uMin + uExtent * 0.5f) * texSize.X;
+                    face.TOffY = -(vMin + vExtent * 0.5f) * texSize.Y;
                     break;
                 case JustifyMode.Fit:
                     // Scale so the face polygon fills exactly one texture tile.
                     // Preserve flip sign.
-                    float signX = face.tScaleX < 0 ? -1f : 1f;
-                    float signY = face.tScaleY < 0 ? -1f : 1f;
-                    face.tScaleX = signX * (uExtent > 0f ? sx * uExtent : sx);
-                    face.tScaleY = signY * (vExtent > 0f ? sy * vExtent : sy);
-                    face.tOffX = -uMin * texSize.X;
-                    face.tOffY = -vMin * texSize.Y;
+                    float signX = face.TScaleX < 0 ? -1f : 1f;
+                    float signY = face.TScaleY < 0 ? -1f : 1f;
+                    face.TScaleX = signX * (uExtent > 0f ? sx * uExtent : sx);
+                    face.TScaleY = signY * (vExtent > 0f ? sy * vExtent : sy);
+                    face.TOffX = -uMin * texSize.X;
+                    face.TOffY = -vMin * texSize.Y;
                     break;
             }
         }
 
         public static void GetUVAxes(Face face, out Vector3 uAxis, out Vector3 vAxis)
         {
-            Vector3 normal = Vector3.Normalize(face.normal);
+            Vector3 normal = Vector3.Normalize(face.Normal);
             GetAxialAxes(normal, out uAxis, out vAxis);
 
-            if (face.uvProjectionMode == UVProjectionMode.Face)
+            if (face.UvProjectionMode == UVProjectionMode.Face)
             {
                 // Project axes onto the face plane so they're always parallel to it.
                 // v' = normalize(v - (v·n)n)
@@ -2420,16 +2420,16 @@ namespace Rockwall
             }
 
             // Apply rotation inside the face plane
-            if (MathF.Abs(face.uvRotation) > 0.001f)
-                RotateAxesAroundNormal(normal, face.uvRotation, ref uAxis, ref vAxis);
+            if (MathF.Abs(face.UvRotation) > 0.001f)
+                RotateAxesAroundNormal(normal, face.UvRotation, ref uAxis, ref vAxis);
         }
         public static void SetUVAxes(ref Face face, Vector3 desiredU, Vector3 desiredV)
         {
-            Vector3 normal = Vector3.Normalize(face.normal);
+            Vector3 normal = Vector3.Normalize(face.Normal);
 
             GetAxialAxes(normal, out Vector3 baseU, out Vector3 baseV);
 
-            if (face.uvProjectionMode == UVProjectionMode.Face)
+            if (face.UvProjectionMode == UVProjectionMode.Face)
             {
                 baseU = ProjectOntoPlane(baseU, normal);
                 baseV = ProjectOntoPlane(baseV, normal);
@@ -2442,13 +2442,13 @@ namespace Rockwall
             float cross = Vector3.Dot(Vector3.Cross(baseU, desiredU), normal);
             float angle = MathF.Atan2(cross, dot);
 
-            face.uvRotation = -MathHelper.ToDegrees(angle);
+            face.UvRotation = -MathHelper.ToDegrees(angle);
 
             Vector3 impliedV = baseV;
-            RotateAxesAroundNormal(normal, face.uvRotation, ref baseU, ref impliedV);
+            RotateAxesAroundNormal(normal, face.UvRotation, ref baseU, ref impliedV);
             if (Vector3.Dot(impliedV, desiredV) < 0f)
             {
-                face.tScaleY = -MathF.Abs(face.tScaleY);
+                face.TScaleY = -MathF.Abs(face.TScaleY);
             }
         }
         private static void GetAxialAxes(Vector3 normal, out Vector3 u, out Vector3 v)
@@ -2497,23 +2497,23 @@ namespace Rockwall
 
         private static Vector2 GetTextureSize(Face face)
         {
-            if (GlobalMapData.loadedMaterials == null) return new Vector2(512f, 512f);
-            if (face.materialName == null) return new Vector2(512f, 512f);
-            if (!GlobalMapData.materialNameToIndex.TryGetValue(face.materialName, out int idx))
+            if (GlobalMapData.LoadedMaterials == null) return new Vector2(512f, 512f);
+            if (face.MaterialName == null) return new Vector2(512f, 512f);
+            if (!GlobalMapData.MaterialNameToIndex.TryGetValue(face.MaterialName, out int idx))
                 return new Vector2(512f, 512f);
 
-            var tex = GlobalMapData.loadedMaterials[idx].Texture;
+            var tex = GlobalMapData.LoadedMaterials[idx].Texture;
             if (tex == null) return new Vector2(512f, 512f);
             return new Vector2(tex.Width, tex.Height);
         }
         private static float GetTexelsPerUnit(Face face)
         {
-            if (GlobalMapData.loadedMaterials == null) return 512f;
-            if (face.materialName == null) return 512f;
-            if (!GlobalMapData.materialNameToIndex.TryGetValue(face.materialName, out int idx))
+            if (GlobalMapData.LoadedMaterials == null) return 512f;
+            if (face.MaterialName == null) return 512f;
+            if (!GlobalMapData.MaterialNameToIndex.TryGetValue(face.MaterialName, out int idx))
                 return 512f;
 
-            return GlobalMapData.loadedMaterials[idx].TexelsPerUnit;
+            return GlobalMapData.LoadedMaterials[idx].EffectiveTexelsPerUnit;
         }
         private static Vector2 ProjectLegacy(Vector3 pos, Vector3 u, Vector3 v, float scale)
         {
@@ -2525,30 +2525,30 @@ namespace Rockwall
     {
         private static float GetTexelsPerUnit(Face face)
         {
-            if (GlobalMapData.loadedMaterials == null) return 512f;
-            if (face.materialName == null) return 512f;
-            if (!GlobalMapData.materialNameToIndex.TryGetValue(face.materialName, out int idx))
+            if (GlobalMapData.LoadedMaterials == null) return 512f;
+            if (face.MaterialName == null) return 512f;
+            if (!GlobalMapData.MaterialNameToIndex.TryGetValue(face.MaterialName, out int idx))
                 return 512f;
 
-            return GlobalMapData.loadedMaterials[idx].TexelsPerUnit;
+            return GlobalMapData.LoadedMaterials[idx].EffectiveTexelsPerUnit;
         }
         public static void Solve(Brush srcBrush, int srcFaceIdx, ref Brush dstBrush, int dstFaceIdx)
         {
-            var srcFace = srcBrush.faces[srcFaceIdx];
-            ref var dstFace = ref dstBrush.faces[dstFaceIdx];
+            var srcFace = srcBrush.Faces[srcFaceIdx];
+            ref var dstFace = ref dstBrush.Faces[dstFaceIdx];
 
-            dstFace.uvProjectionMode = srcFace.uvProjectionMode;
-            dstFace.tScaleX = srcFace.tScaleX;
-            dstFace.tScaleY = srcFace.tScaleY;
-            dstFace.uvRotation = srcFace.uvRotation;
-            dstFace.luxelScale = srcFace.luxelScale;
-            dstFace.materialName = srcFace.materialName;
-            dstFace.surface = srcFace.surface;
+            dstFace.UvProjectionMode = srcFace.UvProjectionMode;
+            dstFace.TScaleX = srcFace.TScaleX;
+            dstFace.TScaleY = srcFace.TScaleY;
+            dstFace.UvRotation = srcFace.UvRotation;
+            dstFace.LuxelScale = srcFace.LuxelScale;
+            dstFace.MaterialName = srcFace.MaterialName;
+            dstFace.Surface = srcFace.Surface;
 
             UvCalculator.GetUVAxes(srcFace, out Vector3 srcU, out Vector3 srcV);
 
-            Vector3 srcNormal = Vector3.Normalize(srcFace.normal);
-            Vector3 dstNormal = Vector3.Normalize(dstFace.normal);
+            Vector3 srcNormal = Vector3.Normalize(srcFace.Normal);
+            Vector3 dstNormal = Vector3.Normalize(dstFace.Normal);
 
             Vector3 rotatedU = RotateVectorToPlane(srcU, srcNormal, dstNormal);
             Vector3 rotatedV = RotateVectorToPlane(srcV, srcNormal, dstNormal);
@@ -2560,8 +2560,8 @@ namespace Rockwall
 
             UvCalculator.SetUVAxes(ref dstFace, rotatedU, rotatedV);
 
-            dstFace.tScaleX = srcFace.tScaleX;
-            dstFace.tScaleY = srcFace.tScaleY;
+            dstFace.TScaleX = srcFace.TScaleX;
+            dstFace.TScaleY = srcFace.TScaleY;
 
             Vector3 anchor = FindAnchorPoint(srcBrush, srcFaceIdx, dstBrush, dstFaceIdx);
 
@@ -2570,21 +2570,21 @@ namespace Rockwall
             float normX = texSize.X / texelsPerUnit;
             float normY = texSize.Y / texelsPerUnit;
 
-            float srcFinalU = Vector3.Dot(anchor, srcU) / (srcFace.tScaleX * normX)
-                            + srcFace.tOffX / texSize.X;
-            float srcFinalV = Vector3.Dot(anchor, srcV) / (srcFace.tScaleY * normY)
-                            + srcFace.tOffY / texSize.Y;
+            float srcFinalU = Vector3.Dot(anchor, srcU) / (srcFace.TScaleX * normX)
+                            + srcFace.TOffX / texSize.X;
+            float srcFinalV = Vector3.Dot(anchor, srcV) / (srcFace.TScaleY * normY)
+                            + srcFace.TOffY / texSize.Y;
 
             UvCalculator.GetUVAxes(dstFace, out Vector3 finalDstU, out Vector3 finalDstV);
 
-            float dstRawU = Vector3.Dot(anchor, finalDstU) / (dstFace.tScaleX * normX);
-            float dstRawV = Vector3.Dot(anchor, finalDstV) / (dstFace.tScaleY * normY);
+            float dstRawU = Vector3.Dot(anchor, finalDstU) / (dstFace.TScaleX * normX);
+            float dstRawV = Vector3.Dot(anchor, finalDstV) / (dstFace.TScaleY * normY);
 
             float rawOffX = (srcFinalU - dstRawU) * texSize.X;
             float rawOffY = (srcFinalV - dstRawV) * texSize.Y;
 
-            dstFace.tOffX = ((rawOffX % texSize.X) + texSize.X) % texSize.X;
-            dstFace.tOffY = ((rawOffY % texSize.Y) + texSize.Y) % texSize.Y;
+            dstFace.TOffX = ((rawOffX % texSize.X) + texSize.X) % texSize.X;
+            dstFace.TOffY = ((rawOffY % texSize.Y) + texSize.Y) % texSize.Y;
         }
 
         private static Vector3 RotateVectorToPlane(
@@ -2615,8 +2615,8 @@ namespace Rockwall
             Brush srcBrush, int srcFaceIdx,
             Brush dstBrush, int dstFaceIdx)
         {
-            var srcFace = srcBrush.faces[srcFaceIdx];
-            var dstFace = dstBrush.faces[dstFaceIdx];
+            var srcFace = srcBrush.Faces[srcFaceIdx];
+            var dstFace = dstBrush.Faces[dstFaceIdx];
 
             var srcVerts = UniqueWorldVerts(srcBrush, srcFace);
             var dstVerts = UniqueWorldVerts(dstBrush, dstFace);
@@ -2671,9 +2671,9 @@ namespace Rockwall
         {
             var seen = new List<Vector3>();
 
-            foreach (int vi in face.indices)
+            foreach (int vi in face.Indices)
             {
-                Vector3 wp = brush.vertices[vi] + brush.position;
+                Vector3 wp = brush.Vertices[vi] + brush.Position;
                 bool found = false;
 
                 foreach (var s in seen)
@@ -2693,11 +2693,11 @@ namespace Rockwall
 
         private static Vector2 GetTextureSize(Face face)
         {
-            if (GlobalMapData.loadedMaterials == null) return new Vector2(512f, 512f);
-            if (face.materialName == null) return new Vector2(512f, 512f);
-            if (!GlobalMapData.materialNameToIndex.TryGetValue(face.materialName, out int idx))
+            if (GlobalMapData.LoadedMaterials == null) return new Vector2(512f, 512f);
+            if (face.MaterialName == null) return new Vector2(512f, 512f);
+            if (!GlobalMapData.MaterialNameToIndex.TryGetValue(face.MaterialName, out int idx))
                 return new Vector2(512f, 512f);
-            var tex = GlobalMapData.loadedMaterials[idx].Texture;
+            var tex = GlobalMapData.LoadedMaterials[idx].Texture;
             if (tex == null) return new Vector2(512f, 512f);
             return new Vector2(tex.Width, tex.Height);
         }

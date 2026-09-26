@@ -203,8 +203,8 @@ public static class LightGroupRuntime
             if (!string.IsNullOrEmpty(kvp.Value.styleName) && LightStyleRegistry.TryGet(kvp.Value.styleName, out var style))
             {
                 var sample = LightPageResolver.Evaluate(style, Now - kvp.Value.styleStartTime);
-                styleMul = sample.intensity;
-                styleTint = sample.tint;
+                styleMul = sample.Intensity;
+                styleTint = sample.Tint;
             }
 
             var colorTint = new Vector3(

@@ -26,7 +26,7 @@ public static class TransparentRenderQueue
     {
         if (leafRanks.Length < size)
         {
-            int newSize = Math.Max(size, VisRoot.visLeaves?.Length ?? size);
+            int newSize = Math.Max(size, VisRoot.VisLeaves?.Length ?? size);
             Array.Resize(ref leafRanks, newSize);
             Array.Resize(ref leafRankVersions, newSize);
         }
@@ -38,7 +38,7 @@ public static class TransparentRenderQueue
 
         if (!LoadedMapHasVis) return;
 
-        var pvs = VisRoot.visLeaves[cameraLeaf].pvs;
+        var pvs = VisRoot.VisLeaves[cameraLeaf].PVS;
 
         EnsureCapacity((int)cameraLeaf + 1);
 

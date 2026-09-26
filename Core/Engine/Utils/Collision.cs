@@ -443,11 +443,11 @@ namespace Engine.Utils
 
             if (!skipWorld)
             {
-                for (int i = 0; i < GlobalMapData.activeMap.brushes.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Brushes.Length; i++)
                 {
                     if (i == ex) continue;
-                    if (GlobalMapData.activeMap.brushes[i].isTrigger) continue;
-                    if (skipBrushEntities && GlobalMapData.activeMap.brushes[i].isEntity) continue;
+                    if (GlobalMapData.ActiveMap.Brushes[i].IsTrigger) continue;
+                    if (skipBrushEntities && GlobalMapData.ActiveMap.Brushes[i].IsEntity) continue;
                     if (CheckBrushBound(testBounds, i)) return true;
                 }
             }
@@ -465,10 +465,10 @@ namespace Engine.Utils
         {
             if(!skipWorld)
             {
-                for (int i = 0; i < GlobalMapData.activeMap.brushes.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Brushes.Length; i++)
                 {
                     if (i == ex) continue;
-                    if (skipBrushEntities && GlobalMapData.activeMap.brushes[i].isEntity) continue;
+                    if (skipBrushEntities && GlobalMapData.ActiveMap.Brushes[i].IsEntity) continue;
                     if (CheckBrushBound(entity, i)) return true;
                 }
             }
@@ -515,7 +515,7 @@ namespace Engine.Utils
 
         public static void GatherLeaves(uint nodeID, BoundingBox box, ulong[] leavesOut)
         {
-            var node = BSPRoot.nodes[nodeID];
+            var node = BSPRoot.Nodes[nodeID];
 
             if (!node.split)
             {
@@ -523,7 +523,7 @@ namespace Engine.Utils
                 return;
             }
 
-            Plane splitPlane = node.splittingPlane;
+            Plane splitPlane = node.SplittingPlane;
 
             Vector3 center = (box.Min + box.Max) * 0.5f;
             Vector3 extents = (box.Max - box.Min) * 0.5f;
@@ -551,26 +551,26 @@ namespace Engine.Utils
 
         private static bool BrushIntersectsBounds(BoundingBox testBounds, int brushIndex)
         {
-            ref readonly var brush = ref GlobalMapData.activeMap.brushes[brushIndex];
-            BrushEntity owner = brush.isEntity ? brush.entity as BrushEntity : null;
+            ref readonly var brush = ref GlobalMapData.ActiveMap.Brushes[brushIndex];
+            BrushEntity owner = brush.IsEntity ? brush.Entity as BrushEntity : null;
 
             BoundingBox brushBounds = owner != null
-                ? TransformBrushBounds(GlobalMapData.activeMap.brushBounds[brushIndex], owner)
-                : GlobalMapData.activeMap.brushBounds[brushIndex];
+                ? TransformBrushBounds(GlobalMapData.ActiveMap.BrushBounds[brushIndex], owner)
+                : GlobalMapData.ActiveMap.BrushBounds[brushIndex];
 
             if (!Intersects(testBounds, brushBounds))
             {
                 return false;
             }
 
-            var verts = brush.vertices;
+            var verts = brush.Vertices;
 
-            foreach (ref readonly var face in brush.faces.AsSpan())
+            foreach (ref readonly var face in brush.Faces.AsSpan())
             {
-                if (face.indices.Length == 0) continue;
+                if (face.Indices.Length == 0) continue;
 
-                Vector3 normal = face.normal;
-                Vector3 pointOnFace = verts[face.indices[0]] + brush.position;
+                Vector3 normal = face.Normal;
+                Vector3 pointOnFace = verts[face.Indices[0]] + brush.Position;
 
                 if (owner != null)
                 {
@@ -589,34 +589,34 @@ namespace Engine.Utils
         }
         public static bool CheckBrushBound(WorldEntity entity, int i)
         {
-            BoundingBox brush = GlobalMapData.activeMap.brushBounds[i];
+            BoundingBox brush = GlobalMapData.ActiveMap.BrushBounds[i];
 
-            if (GlobalMapData.activeMap.brushes[i].isTrigger) return false;
+            if (GlobalMapData.ActiveMap.Brushes[i].IsTrigger) return false;
 
             bool intersection = Intersects(entity.Bounds, brush);
 
             if (!intersection) return false;
 
-            if (GlobalMapData.activeMap.brushes[i].abnormal && ResolveBrushCollision(entity, i, Vector3.Zero, MainEngine.PreviousFrameDelta, out _).move.LengthSquared() > 0) return true;
+            if (GlobalMapData.ActiveMap.Brushes[i].Abnormal && ResolveBrushCollision(entity, i, Vector3.Zero, MainEngine.PreviousFrameDelta, out _).move.LengthSquared() > 0) return true;
 
-            if (intersection && !GlobalMapData.activeMap.brushes[i].abnormal) return true;
+            if (intersection && !GlobalMapData.ActiveMap.Brushes[i].Abnormal) return true;
 
             return false;
         }
         public static bool CheckBrushBound(BoundingBox box, int i)
         {
-            BoundingBox brush = GlobalMapData.activeMap.brushBounds[i];
+            BoundingBox brush = GlobalMapData.ActiveMap.BrushBounds[i];
 
-            if (GlobalMapData.activeMap.brushes[i].isTrigger) return false;
-            if (GlobalMapData.activeMap.brushes[i].isEntity && !GlobalMapData.activeMap.brushes[i].isDetail) return false;
+            if (GlobalMapData.ActiveMap.Brushes[i].IsTrigger) return false;
+            if (GlobalMapData.ActiveMap.Brushes[i].IsEntity && !GlobalMapData.ActiveMap.Brushes[i].IsDetail) return false;
 
             bool intersection = Intersects(box, brush);
 
             if (!intersection) return false;
 
-            if (GlobalMapData.activeMap.brushes[i].abnormal && ResolveBrushCollision(box, i, out _).move.LengthSquared() > 0) return true;
+            if (GlobalMapData.ActiveMap.Brushes[i].Abnormal && ResolveBrushCollision(box, i, out _).move.LengthSquared() > 0) return true;
 
-            if (intersection && !GlobalMapData.activeMap.brushes[i].abnormal) return true;
+            if (intersection && !GlobalMapData.ActiveMap.Brushes[i].Abnormal) return true;
 
             return false;
         }
@@ -648,16 +648,16 @@ namespace Engine.Utils
             Vector3 move = Vector3.Zero;
             Vector3 normal = Vector3.Zero;
 
-            if (!GlobalMapData.activeMap.terrains[terrain].bounds.Intersects(a)) return (move, normal);
+            if (!GlobalMapData.ActiveMap.Terrains[terrain].Bounds.Intersects(a)) return (move, normal);
 
             Vector3 boxCenter = (a.Min + a.Max) / 2f;
             Vector3 extents = (a.Max - a.Min) / 2f;
 
             float minDot = float.MaxValue;
 
-            var tris = GlobalMapData.activeMap.terrains[terrain].triangles;
-            var verts = GlobalMapData.activeMap.terrains[terrain].vertices;
-            for (int j = 0; j < GlobalMapData.activeMap.terrains[terrain].triangles.Length; j += 3)
+            var tris = GlobalMapData.ActiveMap.Terrains[terrain].Triangles;
+            var verts = GlobalMapData.ActiveMap.Terrains[terrain].Vertices;
+            for (int j = 0; j < GlobalMapData.ActiveMap.Terrains[terrain].Triangles.Length; j += 3)
             {
                 Vector3 v0 = verts[tris[j + 0]].Position;
                 Vector3 v1 = verts[tris[j + 1]].Position;
@@ -690,16 +690,16 @@ namespace Engine.Utils
             Vector3 move = Vector3.Zero;
             Vector3 normal = Vector3.Zero;
 
-            if (!GlobalMapData.activeMap.terrains[terrain].bounds.Intersects(a)) return (move, normal);
+            if (!GlobalMapData.ActiveMap.Terrains[terrain].Bounds.Intersects(a)) return (move, normal);
 
             Vector3 boxCenter = (a.Min + a.Max) / 2f;
             Vector3 extents = (a.Max - a.Min) / 2f;
 
             float minDot = float.MaxValue;
 
-            var tris = GlobalMapData.activeMap.terrains[terrain].triangles;
-            var verts = GlobalMapData.activeMap.terrains[terrain].vertices;
-            for (int j = 0; j < GlobalMapData.activeMap.terrains[terrain].triangles.Length; j += 3)
+            var tris = GlobalMapData.ActiveMap.Terrains[terrain].Triangles;
+            var verts = GlobalMapData.ActiveMap.Terrains[terrain].Vertices;
+            for (int j = 0; j < GlobalMapData.ActiveMap.Terrains[terrain].Triangles.Length; j += 3)
             {
                 Vector3 v0 = verts[tris[j + 0]].Position;
                 Vector3 v1 = verts[tris[j + 1]].Position;
@@ -735,7 +735,7 @@ namespace Engine.Utils
         }
         public static (Vector3 move, Vector3 normal) ResolveBrushCollision(BoundingBox box, int brush, out float depth)
         {
-            if (GlobalMapData.activeMap.brushes[brush].abnormal)
+            if (GlobalMapData.ActiveMap.Brushes[brush].Abnormal)
             {
                 BoundingBox a = box;
                 Vector3 move = Vector3.Zero;
@@ -747,28 +747,28 @@ namespace Engine.Utils
                 float minDot = float.MaxValue;
                 depth = 0;
 
-                for (int i = 0; i < GlobalMapData.activeMap.brushes[brush].faces.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Brushes[brush].Faces.Length; i++)
                 {
-                    var face = GlobalMapData.activeMap.brushes[brush].faces[i];
+                    var face = GlobalMapData.ActiveMap.Brushes[brush].Faces[i];
 
-                    for (int j = 0; j < face.indices.Length; j += 3)
+                    for (int j = 0; j < face.Indices.Length; j += 3)
                     {
-                        var verts = GlobalMapData.activeMap.brushes[brush].vertices;
-                        Vector3 v0 = verts[face.indices[j + 0]] + GlobalMapData.activeMap.brushes[brush].position;
-                        Vector3 v1 = verts[face.indices[j + 1]] + GlobalMapData.activeMap.brushes[brush].position;
-                        Vector3 v2 = verts[face.indices[j + 2]] + GlobalMapData.activeMap.brushes[brush].position;
+                        var verts = GlobalMapData.ActiveMap.Brushes[brush].Vertices;
+                        Vector3 v0 = verts[face.Indices[j + 0]] + GlobalMapData.ActiveMap.Brushes[brush].Position;
+                        Vector3 v1 = verts[face.Indices[j + 1]] + GlobalMapData.ActiveMap.Brushes[brush].Position;
+                        Vector3 v2 = verts[face.Indices[j + 2]] + GlobalMapData.ActiveMap.Brushes[brush].Position;
 
                         if (!Intersects(v0, v1, v2, a, out float minproj, out Vector3 minaxis))
                             continue;
 
-                        float dot = -new Plane(v0, face.normal).DotCoordinate(boxCenter);
+                        float dot = -new Plane(v0, face.Normal).DotCoordinate(boxCenter);
 
                         if (dot < minDot)
                         {
                             minDot = dot;
-                            move = minproj * face.normal;
+                            move = minproj * face.Normal;
                             depth = minproj;
-                            normal = face.normal;
+                            normal = face.Normal;
                         }
                     }
                 }
@@ -777,12 +777,12 @@ namespace Engine.Utils
             }
             else
             {
-                return ResolveCollision(box, GlobalMapData.activeMap.brushBounds[brush], out depth);
+                return ResolveCollision(box, GlobalMapData.ActiveMap.BrushBounds[brush], out depth);
             }
         }
         public static (Vector3 move, Vector3 normal) ResolveBrushCollision(WorldEntity ent, int brush, Vector3 velocity, float delta, out float depth)
         {
-            if (GlobalMapData.activeMap.brushes[brush].abnormal)
+            if (GlobalMapData.ActiveMap.Brushes[brush].Abnormal)
             {
                 BoundingBox a = ent.Bounds;
                 Vector3 move = Vector3.Zero;
@@ -794,28 +794,28 @@ namespace Engine.Utils
                 float minDot = float.MaxValue;
                 depth = 0;
 
-                for (int i = 0; i < GlobalMapData.activeMap.brushes[brush].faces.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Brushes[brush].Faces.Length; i++)
                 {
-                    var face = GlobalMapData.activeMap.brushes[brush].faces[i];
+                    var face = GlobalMapData.ActiveMap.Brushes[brush].Faces[i];
 
-                    for (int j = 0; j < face.indices.Length; j += 3)
+                    for (int j = 0; j < face.Indices.Length; j += 3)
                     {
-                        var verts = GlobalMapData.activeMap.brushes[brush].vertices;
-                        Vector3 v0 = verts[face.indices[j + 0]] + GlobalMapData.activeMap.brushes[brush].position;
-                        Vector3 v1 = verts[face.indices[j + 1]] + GlobalMapData.activeMap.brushes[brush].position;
-                        Vector3 v2 = verts[face.indices[j + 2]] + GlobalMapData.activeMap.brushes[brush].position;
+                        var verts = GlobalMapData.ActiveMap.Brushes[brush].Vertices;
+                        Vector3 v0 = verts[face.Indices[j + 0]] + GlobalMapData.ActiveMap.Brushes[brush].Position;
+                        Vector3 v1 = verts[face.Indices[j + 1]] + GlobalMapData.ActiveMap.Brushes[brush].Position;
+                        Vector3 v2 = verts[face.Indices[j + 2]] + GlobalMapData.ActiveMap.Brushes[brush].Position;
 
                         if (!Intersects(v0, v1, v2, a, out float minproj, out Vector3 minaxis))
                             continue;
 
-                        float dot = -new Plane(v0, face.normal).DotCoordinate(boxCenter);
+                        float dot = -new Plane(v0, face.Normal).DotCoordinate(boxCenter);
 
                         if (dot < minDot)
                         {
                             minDot = dot;
-                            move = minproj * face.normal;
+                            move = minproj * face.Normal;
                             depth = minproj;
-                            normal = face.normal;
+                            normal = face.Normal;
                         }
                     }
                 }
@@ -824,7 +824,7 @@ namespace Engine.Utils
             }
             else
             {
-                return ent.AxisAlignedBox ? ResolveCollision(ent.Bounds, GlobalMapData.activeMap.brushBounds[brush], out depth) : ResolveCollision(ent.OrientedBounds, new OrientedBoundingBox(GlobalMapData.activeMap.brushBounds[brush]), out depth);
+                return ent.AxisAlignedBox ? ResolveCollision(ent.Bounds, GlobalMapData.ActiveMap.BrushBounds[brush], out depth) : ResolveCollision(ent.OrientedBounds, new OrientedBoundingBox(GlobalMapData.ActiveMap.BrushBounds[brush]), out depth);
             }
         }
         private static (Vector3 move, Vector3 normal) ResolveCollision(BoundingBox a, BoundingBox b, out float depth)
@@ -884,9 +884,9 @@ namespace Engine.Utils
 
         public static bool PointInsideBrush(Vector3 point, int brush)
         {
-            for (int i = 0; i < GlobalMapData.activeMap.brushes[brush].faces.Length; i++)
+            for (int i = 0; i < GlobalMapData.ActiveMap.Brushes[brush].Faces.Length; i++)
             {
-                if (Vector3.Dot(point - GlobalMapData.activeMap.brushes[brush].vertices[GlobalMapData.activeMap.brushes[brush].faces[i].indices[0]], GlobalMapData.activeMap.brushes[brush].faces[i].normal) > 0)
+                if (Vector3.Dot(point - GlobalMapData.ActiveMap.Brushes[brush].Vertices[GlobalMapData.ActiveMap.Brushes[brush].Faces[i].Indices[0]], GlobalMapData.ActiveMap.Brushes[brush].Faces[i].Normal) > 0)
                 {
                     return false;
                 }

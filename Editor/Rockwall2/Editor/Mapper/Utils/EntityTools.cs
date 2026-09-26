@@ -9,7 +9,7 @@ public static class EntityTools
 {
     public static float GetFloatProperty(EntityReference entity, string name, float defaultValue)
     {
-        var prop = entity.properties.FirstOrDefault(p => p.Name == name);
+        var prop = entity.Properties.FirstOrDefault(p => p.Name == name);
         if (string.IsNullOrWhiteSpace(prop.Value))
             return defaultValue;
 
@@ -20,7 +20,7 @@ public static class EntityTools
 
     public static Color GetColorProperty(EntityReference entity, string name, Color defaultValue)
     {
-        var prop = entity.properties.FirstOrDefault(p => p.Name == name);
+        var prop = entity.Properties.FirstOrDefault(p => p.Name == name);
         if (string.IsNullOrWhiteSpace(prop.Value))
             return defaultValue;
 

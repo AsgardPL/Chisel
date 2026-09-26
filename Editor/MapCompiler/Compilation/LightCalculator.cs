@@ -31,27 +31,27 @@ namespace MapCompiler
             Vector3 basis1, Vector3 basis2, Vector3 basis3,
             bool inShadow)
         {
-            float dist = Vector3.Distance(point, light.position);
-            if (dist > light.range || dist == 0f)
+            float dist = Vector3.Distance(point, light.Position);
+            if (dist > light.Range || dist == 0f)
                 return default;
 
             float shadowLight = inShadow ? 0f : 1f;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float dot = float.Clamp(Vector3.Dot(L, basis1), 0f, 1f);
             float tdot = float.Clamp(Vector3.Dot(L, basis2), 0f, 1f);
             float bdot = float.Clamp(Vector3.Dot(L, basis3), 0f, 1f);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 3f);
-            float intensityTotal = light.intensity * dot * attn * shadowLight;
-            float intensityTangent = light.intensity * tdot * attn * shadowLight;
-            float intensityBinorm = light.intensity * bdot * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 3f);
+            float intensityTotal = light.Intensity * dot * attn * shadowLight;
+            float intensityTangent = light.Intensity * tdot * attn * shadowLight;
+            float intensityBinorm = light.Intensity * bdot * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * intensityTotal, light.color.G * intensityTotal, light.color.B * intensityTotal),
-                B2 = new LightmapColor(light.color.R * intensityTangent, light.color.G * intensityTangent, light.color.B * intensityTangent),
-                B3 = new LightmapColor(light.color.R * intensityBinorm, light.color.G * intensityBinorm, light.color.B * intensityBinorm),
+                B1 = new LightmapColor(light.Color.R * intensityTotal, light.Color.G * intensityTotal, light.Color.B * intensityTotal),
+                B2 = new LightmapColor(light.Color.R * intensityTangent, light.Color.G * intensityTangent, light.Color.B * intensityTangent),
+                B3 = new LightmapColor(light.Color.R * intensityBinorm, light.Color.G * intensityBinorm, light.Color.B * intensityBinorm),
             };
         }
 
@@ -60,15 +60,15 @@ namespace MapCompiler
             Vector3 basis1, Vector3 basis2, Vector3 basis3,
             bool inShadow)
         {
-            float dot = float.Clamp(Vector3.Dot(basis1, light.rotation), 0f, 1f);
-            float tdot = float.Clamp(Vector3.Dot(basis2, light.rotation), 0f, 1f);
-            float bdot = float.Clamp(Vector3.Dot(basis3, light.rotation), 0f, 1f);
+            float dot = float.Clamp(Vector3.Dot(basis1, light.Rotation), 0f, 1f);
+            float tdot = float.Clamp(Vector3.Dot(basis2, light.Rotation), 0f, 1f);
+            float bdot = float.Clamp(Vector3.Dot(basis3, light.Rotation), 0f, 1f);
 
-            float shadowLight = inShadow ? 0f : light.intensity;
+            float shadowLight = inShadow ? 0f : light.Intensity;
 
-            var lCol = new LightmapColor(light.color.R * (shadowLight * dot), light.color.G * (shadowLight * dot), light.color.B * (shadowLight * dot));
-            var tCol = new LightmapColor(light.color.R * (shadowLight * tdot), light.color.G * (shadowLight * tdot), light.color.B * (shadowLight * tdot));
-            var bCol = new LightmapColor(light.color.R * (shadowLight * bdot), light.color.G * (shadowLight * bdot), light.color.B * (shadowLight * bdot));
+            var lCol = new LightmapColor(light.Color.R * (shadowLight * dot), light.Color.G * (shadowLight * dot), light.Color.B * (shadowLight * dot));
+            var tCol = new LightmapColor(light.Color.R * (shadowLight * tdot), light.Color.G * (shadowLight * tdot), light.Color.B * (shadowLight * tdot));
+            var bCol = new LightmapColor(light.Color.R * (shadowLight * bdot), light.Color.G * (shadowLight * bdot), light.Color.B * (shadowLight * bdot));
 
             return new LightSample
             {
@@ -83,13 +83,13 @@ namespace MapCompiler
             Vector3 basis1, Vector3 basis2, Vector3 basis3,
             bool inShadow)
         {
-            float pdot = Vector3.Dot(Vector3.Normalize(point - light.position), -light.rotation);
+            float pdot = Vector3.Dot(Vector3.Normalize(point - light.Position), -light.Rotation);
             float angle = (float)Math.Acos(pdot);
-            float maxAng = MathHelper.ToRadians(light.angle);
-            float innerAng = MathHelper.ToRadians(light.innerAngle);
-            float dist = Vector3.Distance(point, light.position);
+            float maxAng = MathHelper.ToRadians(light.Angle);
+            float innerAng = MathHelper.ToRadians(light.InnerAngle);
+            float dist = Vector3.Distance(point, light.Position);
 
-            if (angle > maxAng || dist > light.range || dist == 0f)
+            if (angle > maxAng || dist > light.Range || dist == 0f)
                 return default;
 
             float falloff = angle > innerAng
@@ -97,21 +97,21 @@ namespace MapCompiler
                 : 1f;
             float shadowLight = inShadow ? 0f : falloff;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float ndot = Vector3.Dot(basis1, L);
             float tdot = Vector3.Dot(basis2, L);
             float bdot = Vector3.Dot(basis3, L);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 3f);
-            float intensityTotal = light.intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
-            float intensityTangent = light.intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
-            float intensityBinorm = light.intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 3f);
+            float intensityTotal = light.Intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
+            float intensityTangent = light.Intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float intensityBinorm = light.Intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * intensityTotal, light.color.G * intensityTotal, light.color.B * intensityTotal),
-                B2 = new LightmapColor(light.color.R * intensityTangent, light.color.G * intensityTangent, light.color.B * intensityTangent),
-                B3 = new LightmapColor(light.color.R * intensityBinorm, light.color.G * intensityBinorm, light.color.B * intensityBinorm),
+                B1 = new LightmapColor(light.Color.R * intensityTotal, light.Color.G * intensityTotal, light.Color.B * intensityTotal),
+                B2 = new LightmapColor(light.Color.R * intensityTangent, light.Color.G * intensityTangent, light.Color.B * intensityTangent),
+                B3 = new LightmapColor(light.Color.R * intensityBinorm, light.Color.G * intensityBinorm, light.Color.B * intensityBinorm),
             };
         }
 
@@ -119,26 +119,26 @@ namespace MapCompiler
     Light light, Vector3 point,
     Vector3 basis1, Vector3 basis2, Vector3 basis3, bool inShadow)
         {
-            float dist = Vector3.Distance(point, light.position);
-            if (dist > light.range || dist == 0f) return default;
+            float dist = Vector3.Distance(point, light.Position);
+            if (dist > light.Range || dist == 0f) return default;
 
             float shadowLight = inShadow ? 0f : 1f;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float dot = float.Clamp(Vector3.Dot(L, basis1), 0f, 1f);
             float tdot = float.Clamp(Vector3.Dot(L, basis2), 0f, 1f);
             float bdot = float.Clamp(Vector3.Dot(L, basis3), 0f, 1f);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 2);
-            float i1 = light.intensity * dot * attn * shadowLight;
-            float i2 = light.intensity * tdot * attn * shadowLight;
-            float i3 = light.intensity * bdot * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 2);
+            float i1 = light.Intensity * dot * attn * shadowLight;
+            float i2 = light.Intensity * tdot * attn * shadowLight;
+            float i3 = light.Intensity * bdot * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * i1, light.color.G * i1, light.color.B * i1),
-                B2 = new LightmapColor(light.color.R * i2, light.color.G * i2, light.color.B * i2),
-                B3 = new LightmapColor(light.color.R * i3, light.color.G * i3, light.color.B * i3),
+                B1 = new LightmapColor(light.Color.R * i1, light.Color.G * i1, light.Color.B * i1),
+                B2 = new LightmapColor(light.Color.R * i2, light.Color.G * i2, light.Color.B * i2),
+                B3 = new LightmapColor(light.Color.R * i3, light.Color.G * i3, light.Color.B * i3),
             };
         }
 
@@ -146,17 +146,17 @@ namespace MapCompiler
             Light light, Vector3 point,
             Vector3 basis1, Vector3 basis2, Vector3 basis3, bool inShadow)
         {
-            float shadowLight = inShadow ? 0f : light.intensity;
+            float shadowLight = inShadow ? 0f : light.Intensity;
 
-            float dot = float.Clamp(Vector3.Dot(basis1, light.rotation), 0f, 1f);
-            float tdot = float.Clamp(Vector3.Dot(basis2, light.rotation), 0f, 1f);
-            float bdot = float.Clamp(Vector3.Dot(basis3, light.rotation), 0f, 1f);
+            float dot = float.Clamp(Vector3.Dot(basis1, light.Rotation), 0f, 1f);
+            float tdot = float.Clamp(Vector3.Dot(basis2, light.Rotation), 0f, 1f);
+            float bdot = float.Clamp(Vector3.Dot(basis3, light.Rotation), 0f, 1f);
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * (shadowLight * dot) / 255f, light.color.G * (shadowLight * dot) / 255f, light.color.B * (shadowLight * dot) / 255f),
-                B2 = new LightmapColor(light.color.R * (shadowLight * tdot) / 255f, light.color.G * (shadowLight * tdot) / 255f, light.color.B * (shadowLight * tdot) / 255f),
-                B3 = new LightmapColor(light.color.R * (shadowLight * bdot) / 255f, light.color.G * (shadowLight * bdot) / 255f, light.color.B * (shadowLight * bdot) / 255f),
+                B1 = new LightmapColor(light.Color.R * (shadowLight * dot) / 255f, light.Color.G * (shadowLight * dot) / 255f, light.Color.B * (shadowLight * dot) / 255f),
+                B2 = new LightmapColor(light.Color.R * (shadowLight * tdot) / 255f, light.Color.G * (shadowLight * tdot) / 255f, light.Color.B * (shadowLight * tdot) / 255f),
+                B3 = new LightmapColor(light.Color.R * (shadowLight * bdot) / 255f, light.Color.G * (shadowLight * bdot) / 255f, light.Color.B * (shadowLight * bdot) / 255f),
             };
         }
 
@@ -164,34 +164,34 @@ namespace MapCompiler
             Light light, Vector3 point,
             Vector3 basis1, Vector3 basis2, Vector3 basis3, bool inShadow)
         {
-            float pdot = Vector3.Dot(Vector3.Normalize(point - light.position), -light.rotation);
+            float pdot = Vector3.Dot(Vector3.Normalize(point - light.Position), -light.Rotation);
             float angle = (float)Math.Acos(pdot);
-            float maxAng = MathHelper.ToRadians(light.angle);
-            float innerAng = MathHelper.ToRadians(light.innerAngle);
-            float dist = Vector3.Distance(point, light.position);
+            float maxAng = MathHelper.ToRadians(light.Angle);
+            float innerAng = MathHelper.ToRadians(light.InnerAngle);
+            float dist = Vector3.Distance(point, light.Position);
 
-            if (angle > maxAng || dist > light.range || dist == 0f) return default;
+            if (angle > maxAng || dist > light.Range || dist == 0f) return default;
 
             float falloff = angle > innerAng
                 ? ((maxAng - innerAng) - (angle - innerAng)) / (maxAng - innerAng)
                 : 1f;
             float shadowLight = inShadow ? 0f : falloff;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float ndot = Vector3.Dot(basis1, L);
             float tdot = Vector3.Dot(basis2, L);
             float bdot = Vector3.Dot(basis3, L);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 1.5f);
-            float i1 = light.intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
-            float i2 = light.intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
-            float i3 = light.intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 1.5f);
+            float i1 = light.Intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
+            float i2 = light.Intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float i3 = light.Intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * i1, light.color.G * i1, light.color.B * i1),
-                B2 = new LightmapColor(light.color.R * i2, light.color.G * i2, light.color.B * i2),
-                B3 = new LightmapColor(light.color.R * i3, light.color.G * i3, light.color.B * i3),
+                B1 = new LightmapColor(light.Color.R * i1, light.Color.G * i1, light.Color.B * i1),
+                B2 = new LightmapColor(light.Color.R * i2, light.Color.G * i2, light.Color.B * i2),
+                B3 = new LightmapColor(light.Color.R * i3, light.Color.G * i3, light.Color.B * i3),
             };
         }
 
@@ -203,15 +203,15 @@ namespace MapCompiler
             var minDist = float.MaxValue;
             var shadowLight = 0f;
 
-            float dist = Vector3.Distance(point, light.position);
-            if (dist > light.range || dist == 0f)
+            float dist = Vector3.Distance(point, light.Position);
+            if (dist > light.Range || dist == 0f)
                 return default;
 
             // Trace from surface point toward the light, excluding self-brush
-            var ray = new Ray(point, light.position - point);
+            var ray = new Ray(point, light.Position - point);
             BSPHit hit = BSPRoot.TraceRay(ray, dist, default, brushIdx);
-            if (hit.hit)
-                minDist = Vector3.Distance(hit.point, point);
+            if (hit.Hit)
+                minDist = Vector3.Distance(hit.Point, point);
 
             bool inShadow = minDist < dist;
 
@@ -223,20 +223,20 @@ namespace MapCompiler
 
             shadowLight = inShadow ? 0f : 1f;
 
-            float dot = float.Clamp(Vector3.Dot(-Vector3.Normalize(point - light.position), brushes[brushIdx].faces[faceIdx].basis1), 0f, 1f);
-            float tdot = float.Clamp(Vector3.Dot(-Vector3.Normalize(point - light.position), brushes[brushIdx].faces[faceIdx].basis2), 0f, 1f);
-            float bdot = float.Clamp(Vector3.Dot(-Vector3.Normalize(point - light.position), brushes[brushIdx].faces[faceIdx].basis3), 0f, 1f);
+            float dot = float.Clamp(Vector3.Dot(-Vector3.Normalize(point - light.Position), brushes[brushIdx].Faces[faceIdx].Basis1), 0f, 1f);
+            float tdot = float.Clamp(Vector3.Dot(-Vector3.Normalize(point - light.Position), brushes[brushIdx].Faces[faceIdx].Basis2), 0f, 1f);
+            float bdot = float.Clamp(Vector3.Dot(-Vector3.Normalize(point - light.Position), brushes[brushIdx].Faces[faceIdx].Basis3), 0f, 1f);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 2);
-            float intensityTotal = light.intensity * (dot) * attn * shadowLight;
-            float intensityTangent = light.intensity * (tdot) * attn * shadowLight;
-            float intensityBinorm = light.intensity * (bdot) * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 2);
+            float intensityTotal = light.Intensity * (dot) * attn * shadowLight;
+            float intensityTangent = light.Intensity * (tdot) * attn * shadowLight;
+            float intensityBinorm = light.Intensity * (bdot) * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * intensityTotal, light.color.G * intensityTotal, light.color.B * intensityTotal),
-                B2 = new LightmapColor(light.color.R * intensityTangent, light.color.G * intensityTangent, light.color.B * intensityTangent),
-                B3 = new LightmapColor(light.color.R * intensityBinorm, light.color.G * intensityBinorm, light.color.B * intensityBinorm),
+                B1 = new LightmapColor(light.Color.R * intensityTotal, light.Color.G * intensityTotal, light.Color.B * intensityTotal),
+                B2 = new LightmapColor(light.Color.R * intensityTangent, light.Color.G * intensityTangent, light.Color.B * intensityTangent),
+                B3 = new LightmapColor(light.Color.R * intensityBinorm, light.Color.G * intensityBinorm, light.Color.B * intensityBinorm),
             };
         }
 
@@ -248,16 +248,16 @@ namespace MapCompiler
             var shadowLight = 0f;
             var minDist = float.MaxValue;
 
-            var ray = new Ray(point, light.rotation);
+            var ray = new Ray(point, light.Rotation);
             bool inShadow = true;
 
             BSPHit hit = BSPRoot.TraceRay(ray, 512f);
-            if (hit.hit)
-                inShadow = BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode;
+            if (hit.Hit)
+                inShadow = BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode;
 
-            float dot = float.Clamp(Vector3.Dot(brushes[brushIdx].faces[faceIdx].basis1, light.rotation), 0f, 1f);
-            float tdot = float.Clamp(Vector3.Dot(brushes[brushIdx].faces[faceIdx].basis2, light.rotation), 0f, 1f);
-            float bdot = float.Clamp(Vector3.Dot(brushes[brushIdx].faces[faceIdx].basis3, light.rotation), 0f, 1f);
+            float dot = float.Clamp(Vector3.Dot(brushes[brushIdx].Faces[faceIdx].Basis1, light.Rotation), 0f, 1f);
+            float tdot = float.Clamp(Vector3.Dot(brushes[brushIdx].Faces[faceIdx].Basis2, light.Rotation), 0f, 1f);
+            float bdot = float.Clamp(Vector3.Dot(brushes[brushIdx].Faces[faceIdx].Basis3, light.Rotation), 0f, 1f);
 
             // Also check non-BSP occluders (terrains, detail brushes)
             if (!inShadow)
@@ -265,11 +265,11 @@ namespace MapCompiler
                 inShadow = TriangleOccluder.TraceRay(ray, minDist, selfEntityGroup: TriangleOccluder.GetBrushEntityGroup(brushIdx));
             }
 
-            shadowLight = inShadow ? 0f : light.intensity;
+            shadowLight = inShadow ? 0f : light.Intensity;
 
-            var lCol = new LightmapColor(light.color.R * (shadowLight * dot), light.color.G * (shadowLight * dot), light.color.B * (shadowLight * dot));
-            var tCol = new LightmapColor(light.color.R * (shadowLight * tdot), light.color.G * (shadowLight * tdot), light.color.B * (shadowLight * tdot));
-            var bCol = new LightmapColor(light.color.R * (shadowLight * bdot), light.color.G * (shadowLight * bdot), light.color.B * (shadowLight * bdot));
+            var lCol = new LightmapColor(light.Color.R * (shadowLight * dot), light.Color.G * (shadowLight * dot), light.Color.B * (shadowLight * dot));
+            var tCol = new LightmapColor(light.Color.R * (shadowLight * tdot), light.Color.G * (shadowLight * tdot), light.Color.B * (shadowLight * tdot));
+            var bCol = new LightmapColor(light.Color.R * (shadowLight * bdot), light.Color.G * (shadowLight * bdot), light.Color.B * (shadowLight * bdot));
 
             return new LightSample
             {
@@ -287,20 +287,20 @@ namespace MapCompiler
             var minDist = float.MaxValue;
             var shadowLight = 0f;
 
-            float pdot = Vector3.Dot(Vector3.Normalize(point - light.position), -light.rotation);
+            float pdot = Vector3.Dot(Vector3.Normalize(point - light.Position), -light.Rotation);
             float angle = (float)Math.Acos(pdot);
-            float maxAng = MathHelper.ToRadians(light.angle);
-            float innerAng = MathHelper.ToRadians(light.innerAngle);
-            float dist = Vector3.Distance(point, light.position);
+            float maxAng = MathHelper.ToRadians(light.Angle);
+            float innerAng = MathHelper.ToRadians(light.InnerAngle);
+            float dist = Vector3.Distance(point, light.Position);
 
-            if (angle > maxAng || dist > light.range || dist == 0f)
+            if (angle > maxAng || dist > light.Range || dist == 0f)
                 return default;
 
             // Trace from surface point toward light, excluding self-brush
-            var ray = new Ray(point, light.position - point);
+            var ray = new Ray(point, light.Position - point);
             BSPHit hit = BSPRoot.TraceRay(ray, dist, default, brushIdx);
-            if (hit.hit)
-                minDist = Vector3.Distance(hit.point, point);
+            if (hit.Hit)
+                minDist = Vector3.Distance(hit.Point, point);
 
             bool inShadow = minDist < dist;
 
@@ -315,20 +315,20 @@ namespace MapCompiler
                 : 1f;
             shadowLight = inShadow ? 0f : falloff;
 
-            float ndot = Vector3.Dot(brushes[brushIdx].faces[faceIdx].basis1, -Vector3.Normalize(point - light.position));
-            float tdot = Vector3.Dot(brushes[brushIdx].faces[faceIdx].basis2, -Vector3.Normalize(point - light.position));
-            float bdot = Vector3.Dot(brushes[brushIdx].faces[faceIdx].basis3, -Vector3.Normalize(point - light.position));
+            float ndot = Vector3.Dot(brushes[brushIdx].Faces[faceIdx].Basis1, -Vector3.Normalize(point - light.Position));
+            float tdot = Vector3.Dot(brushes[brushIdx].Faces[faceIdx].Basis2, -Vector3.Normalize(point - light.Position));
+            float bdot = Vector3.Dot(brushes[brushIdx].Faces[faceIdx].Basis3, -Vector3.Normalize(point - light.Position));
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 1.5f);
-            float intensityTotal = light.intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
-            float intensityTangent = light.intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
-            float intensityBinorm = light.intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 1.5f);
+            float intensityTotal = light.Intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
+            float intensityTangent = light.Intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float intensityBinorm = light.Intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * intensityTotal, light.color.G * intensityTotal, light.color.B * intensityTotal),
-                B2 = new LightmapColor(light.color.R * intensityTangent, light.color.G * intensityTangent, light.color.B * intensityTangent),
-                B3 = new LightmapColor(light.color.R * intensityBinorm, light.color.G * intensityBinorm, light.color.B * intensityBinorm),
+                B1 = new LightmapColor(light.Color.R * intensityTotal, light.Color.G * intensityTotal, light.Color.B * intensityTotal),
+                B2 = new LightmapColor(light.Color.R * intensityTangent, light.Color.G * intensityTangent, light.Color.B * intensityTangent),
+                B3 = new LightmapColor(light.Color.R * intensityBinorm, light.Color.G * intensityBinorm, light.Color.B * intensityBinorm),
             };
         }
 
@@ -336,12 +336,12 @@ namespace MapCompiler
             Light light, Vector3 point,
             Vector3 basis1, Vector3 basis2, Vector3 basis3, int excludeTerrain = -1)
         {
-            float dist = Vector3.Distance(point, light.position);
-            if (dist > light.range || dist == 0f) return default;
+            float dist = Vector3.Distance(point, light.Position);
+            if (dist > light.Range || dist == 0f) return default;
 
-            var ray = new Ray(point, light.position - point);
+            var ray = new Ray(point, light.Position - point);
             BSPHit hit = BSPRoot.TraceRay(ray, dist);
-            bool inShadow = hit.hit && Vector3.Distance(hit.point, point) < dist;
+            bool inShadow = hit.Hit && Vector3.Distance(hit.Point, point) < dist;
 
             // Also check non-BSP occluders (terrains, detail brushes)
             if (!inShadow)
@@ -350,21 +350,21 @@ namespace MapCompiler
             }
             float shadowLight = inShadow ? 0f : 1f;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float dot = float.Clamp(Vector3.Dot(L, basis1), 0f, 1f);
             float tdot = float.Clamp(Vector3.Dot(L, basis2), 0f, 1f);
             float bdot = float.Clamp(Vector3.Dot(L, basis3), 0f, 1f);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 2);
-            float i1 = light.intensity * dot * attn * shadowLight;
-            float i2 = light.intensity * tdot * attn * shadowLight;
-            float i3 = light.intensity * bdot * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 2);
+            float i1 = light.Intensity * dot * attn * shadowLight;
+            float i2 = light.Intensity * tdot * attn * shadowLight;
+            float i3 = light.Intensity * bdot * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * i1, light.color.G * i1, light.color.B * i1),
-                B2 = new LightmapColor(light.color.R * i2, light.color.G * i2, light.color.B * i2),
-                B3 = new LightmapColor(light.color.R * i3, light.color.G * i3, light.color.B * i3),
+                B1 = new LightmapColor(light.Color.R * i1, light.Color.G * i1, light.Color.B * i1),
+                B2 = new LightmapColor(light.Color.R * i2, light.Color.G * i2, light.Color.B * i2),
+                B3 = new LightmapColor(light.Color.R * i3, light.Color.G * i3, light.Color.B * i3),
             };
         }
 
@@ -372,30 +372,30 @@ namespace MapCompiler
             Light light, Vector3 point,
             Vector3 basis1, Vector3 basis2, Vector3 basis3, int excludeTerrain = -1)
         {
-            var ray = new Ray(point, light.rotation);
+            var ray = new Ray(point, light.Rotation);
             BSPHit hit = BSPRoot.TraceRay(ray, 512f);
-            bool inShadow = hit.hit && BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode;
+            bool inShadow = hit.Hit && BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode;
             if (!inShadow)
             {
                 inShadow = TriangleOccluder.TraceRay(ray, 512f, excludeTerrain);
             }
-            float shadowLight = inShadow ? 0f : light.intensity;
+            float shadowLight = inShadow ? 0f : light.Intensity;
 
-            float dot = float.Clamp(Vector3.Dot(basis1, light.rotation), 0f, 1f);
-            float tdot = float.Clamp(Vector3.Dot(basis2, light.rotation), 0f, 1f);
-            float bdot = float.Clamp(Vector3.Dot(basis3, light.rotation), 0f, 1f);
+            float dot = float.Clamp(Vector3.Dot(basis1, light.Rotation), 0f, 1f);
+            float tdot = float.Clamp(Vector3.Dot(basis2, light.Rotation), 0f, 1f);
+            float bdot = float.Clamp(Vector3.Dot(basis3, light.Rotation), 0f, 1f);
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * (shadowLight * dot),
-                                       light.color.G * (shadowLight * dot),
-                                       light.color.B * (shadowLight * dot)),
-                B2 = new LightmapColor(light.color.R * (shadowLight * tdot),
-                                       light.color.G * (shadowLight * tdot),
-                                       light.color.B * (shadowLight * tdot)),
-                B3 = new LightmapColor(light.color.R * (shadowLight * bdot),
-                                       light.color.G * (shadowLight * bdot),
-                                       light.color.B * (shadowLight * bdot)),
+                B1 = new LightmapColor(light.Color.R * (shadowLight * dot),
+                                       light.Color.G * (shadowLight * dot),
+                                       light.Color.B * (shadowLight * dot)),
+                B2 = new LightmapColor(light.Color.R * (shadowLight * tdot),
+                                       light.Color.G * (shadowLight * tdot),
+                                       light.Color.B * (shadowLight * tdot)),
+                B3 = new LightmapColor(light.Color.R * (shadowLight * bdot),
+                                       light.Color.G * (shadowLight * bdot),
+                                       light.Color.B * (shadowLight * bdot)),
             };
         }
 
@@ -403,17 +403,17 @@ namespace MapCompiler
             Light light, Vector3 point,
             Vector3 basis1, Vector3 basis2, Vector3 basis3, int excludeTerrain = -1)
         {
-            float pdot = Vector3.Dot(Vector3.Normalize(point - light.position), -light.rotation);
+            float pdot = Vector3.Dot(Vector3.Normalize(point - light.Position), -light.Rotation);
             float angle = (float)Math.Acos(pdot);
-            float maxAng = MathHelper.ToRadians(light.angle);
-            float innerAng = MathHelper.ToRadians(light.innerAngle);
-            float dist = Vector3.Distance(point, light.position);
+            float maxAng = MathHelper.ToRadians(light.Angle);
+            float innerAng = MathHelper.ToRadians(light.InnerAngle);
+            float dist = Vector3.Distance(point, light.Position);
 
-            if (angle > maxAng || dist > light.range || dist == 0f) return default;
+            if (angle > maxAng || dist > light.Range || dist == 0f) return default;
 
-            var ray = new Ray(point, light.position - point);
+            var ray = new Ray(point, light.Position - point);
             BSPHit hit = BSPRoot.TraceRay(ray, dist);
-            bool inShadow = hit.hit && Vector3.Distance(hit.point, point) < dist;
+            bool inShadow = hit.Hit && Vector3.Distance(hit.Point, point) < dist;
 
             if (!inShadow)
             {
@@ -425,21 +425,21 @@ namespace MapCompiler
                 : 1f;
             float shadowLight = inShadow ? 0f : falloff;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float ndot = Vector3.Dot(basis1, L);
             float tdot = Vector3.Dot(basis2, L);
             float bdot = Vector3.Dot(basis3, L);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 1.5f);
-            float i1 = light.intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
-            float i2 = light.intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
-            float i3 = light.intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 1.5f);
+            float i1 = light.Intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
+            float i2 = light.Intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float i3 = light.Intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * i1, light.color.G * i1, light.color.B * i1),
-                B2 = new LightmapColor(light.color.R * i2, light.color.G * i2, light.color.B * i2),
-                B3 = new LightmapColor(light.color.R * i3, light.color.G * i3, light.color.B * i3),
+                B1 = new LightmapColor(light.Color.R * i1, light.Color.G * i1, light.Color.B * i1),
+                B2 = new LightmapColor(light.Color.R * i2, light.Color.G * i2, light.Color.B * i2),
+                B3 = new LightmapColor(light.Color.R * i3, light.Color.G * i3, light.Color.B * i3),
             };
         }
         public static LightSample FromPointBrush(
@@ -449,14 +449,14 @@ namespace MapCompiler
         {
             var minDist = float.MaxValue;
 
-            float dist = Vector3.Distance(point, light.position);
-            if (dist > light.range || dist == 0f)
+            float dist = Vector3.Distance(point, light.Position);
+            if (dist > light.Range || dist == 0f)
                 return default;
 
-            var ray = new Ray(point, light.position - point);
+            var ray = new Ray(point, light.Position - point);
             BSPHit hit = BSPRoot.TraceRay(ray, dist, default, excludeBrush);
-            if (hit.hit)
-                minDist = Vector3.Distance(hit.point, point);
+            if (hit.Hit)
+                minDist = Vector3.Distance(hit.Point, point);
 
             bool inShadow = minDist < dist;
 
@@ -467,21 +467,21 @@ namespace MapCompiler
 
             float shadowLight = inShadow ? 0f : 1f;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float dot = float.Clamp(Vector3.Dot(L, basis1), 0f, 1f);
             float tdot = float.Clamp(Vector3.Dot(L, basis2), 0f, 1f);
             float bdot = float.Clamp(Vector3.Dot(L, basis3), 0f, 1f);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 3f);
-            float intensityTotal = light.intensity * dot * attn * shadowLight;
-            float intensityTangent = light.intensity * tdot * attn * shadowLight;
-            float intensityBinorm = light.intensity * bdot * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 3f);
+            float intensityTotal = light.Intensity * dot * attn * shadowLight;
+            float intensityTangent = light.Intensity * tdot * attn * shadowLight;
+            float intensityBinorm = light.Intensity * bdot * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * intensityTotal, light.color.G * intensityTotal, light.color.B * intensityTotal),
-                B2 = new LightmapColor(light.color.R * intensityTangent, light.color.G * intensityTangent, light.color.B * intensityTangent),
-                B3 = new LightmapColor(light.color.R * intensityBinorm, light.color.G * intensityBinorm, light.color.B * intensityBinorm),
+                B1 = new LightmapColor(light.Color.R * intensityTotal, light.Color.G * intensityTotal, light.Color.B * intensityTotal),
+                B2 = new LightmapColor(light.Color.R * intensityTangent, light.Color.G * intensityTangent, light.Color.B * intensityTangent),
+                B3 = new LightmapColor(light.Color.R * intensityBinorm, light.Color.G * intensityBinorm, light.Color.B * intensityBinorm),
             };
         }
 
@@ -490,16 +490,16 @@ namespace MapCompiler
             Vector3 basis1, Vector3 basis2, Vector3 basis3,
             int excludeBrush)
         {
-            var ray = new Ray(point, light.rotation);
+            var ray = new Ray(point, light.Rotation);
             bool inShadow = true;
 
             BSPHit hit = BSPRoot.TraceRay(ray, 512f, default, excludeBrush);
-            if (hit.hit)
-                inShadow = BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode;
+            if (hit.Hit)
+                inShadow = BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode;
 
-            float dot = float.Clamp(Vector3.Dot(basis1, light.rotation), 0f, 1f);
-            float tdot = float.Clamp(Vector3.Dot(basis2, light.rotation), 0f, 1f);
-            float bdot = float.Clamp(Vector3.Dot(basis3, light.rotation), 0f, 1f);
+            float dot = float.Clamp(Vector3.Dot(basis1, light.Rotation), 0f, 1f);
+            float tdot = float.Clamp(Vector3.Dot(basis2, light.Rotation), 0f, 1f);
+            float bdot = float.Clamp(Vector3.Dot(basis3, light.Rotation), 0f, 1f);
 
             // Also check non-BSP occluders (terrains, detail brushes)
             if (!inShadow)
@@ -507,11 +507,11 @@ namespace MapCompiler
                 inShadow = TriangleOccluder.TraceRay(ray, 512f, selfEntityGroup: TriangleOccluder.GetBrushEntityGroup(excludeBrush));
             }
 
-            float shadowLight = inShadow ? 0f : light.intensity;
+            float shadowLight = inShadow ? 0f : light.Intensity;
 
-            var lCol = new LightmapColor(light.color.R * (shadowLight * dot), light.color.G * (shadowLight * dot), light.color.B * (shadowLight * dot));
-            var tCol = new LightmapColor(light.color.R * (shadowLight * tdot), light.color.G * (shadowLight * tdot), light.color.B * (shadowLight * tdot));
-            var bCol = new LightmapColor(light.color.R * (shadowLight * bdot), light.color.G * (shadowLight * bdot), light.color.B * (shadowLight * bdot));
+            var lCol = new LightmapColor(light.Color.R * (shadowLight * dot), light.Color.G * (shadowLight * dot), light.Color.B * (shadowLight * dot));
+            var tCol = new LightmapColor(light.Color.R * (shadowLight * tdot), light.Color.G * (shadowLight * tdot), light.Color.B * (shadowLight * tdot));
+            var bCol = new LightmapColor(light.Color.R * (shadowLight * bdot), light.Color.G * (shadowLight * bdot), light.Color.B * (shadowLight * bdot));
 
             return new LightSample
             {
@@ -528,20 +528,20 @@ namespace MapCompiler
         {
             var minDist = float.MaxValue;
 
-            float pdot = Vector3.Dot(Vector3.Normalize(point - light.position), -light.rotation);
+            float pdot = Vector3.Dot(Vector3.Normalize(point - light.Position), -light.Rotation);
             float angle = (float)Math.Acos(pdot);
-            float maxAng = MathHelper.ToRadians(light.angle);
-            float innerAng = MathHelper.ToRadians(light.innerAngle);
-            float dist = Vector3.Distance(point, light.position);
+            float maxAng = MathHelper.ToRadians(light.Angle);
+            float innerAng = MathHelper.ToRadians(light.InnerAngle);
+            float dist = Vector3.Distance(point, light.Position);
 
-            if (angle > maxAng || dist > light.range || dist == 0f)
+            if (angle > maxAng || dist > light.Range || dist == 0f)
                 return default;
 
             // Trace from surface point toward light, excluding self-brush
-            var ray = new Ray(point, light.position - point);
+            var ray = new Ray(point, light.Position - point);
             BSPHit hit = BSPRoot.TraceRay(ray, dist, default, excludeBrush);
-            if (hit.hit)
-                minDist = Vector3.Distance(hit.point, point);
+            if (hit.Hit)
+                minDist = Vector3.Distance(hit.Point, point);
 
             bool inShadow = minDist < dist;
 
@@ -556,21 +556,21 @@ namespace MapCompiler
                 : 1f;
             float shadowLight = inShadow ? 0f : falloff;
 
-            Vector3 L = -Vector3.Normalize(point - light.position);
+            Vector3 L = -Vector3.Normalize(point - light.Position);
             float ndot = Vector3.Dot(basis1, L);
             float tdot = Vector3.Dot(basis2, L);
             float bdot = Vector3.Dot(basis3, L);
 
-            float attn = (float)Math.Pow((light.range - dist) / light.range, 3f);
-            float intensityTotal = light.intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
-            float intensityTangent = light.intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
-            float intensityBinorm = light.intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float attn = (float)Math.Pow((light.Range - dist) / light.Range, 3f);
+            float intensityTotal = light.Intensity * (Math.Abs(ndot) * 0.4f + 0.6f) * attn * shadowLight;
+            float intensityTangent = light.Intensity * (Math.Abs(tdot) * 0.4f + 0.6f) * attn * shadowLight;
+            float intensityBinorm = light.Intensity * (Math.Abs(bdot) * 0.4f + 0.6f) * attn * shadowLight;
 
             return new LightSample
             {
-                B1 = new LightmapColor(light.color.R * intensityTotal, light.color.G * intensityTotal, light.color.B * intensityTotal),
-                B2 = new LightmapColor(light.color.R * intensityTangent, light.color.G * intensityTangent, light.color.B * intensityTangent),
-                B3 = new LightmapColor(light.color.R * intensityBinorm, light.color.G * intensityBinorm, light.color.B * intensityBinorm),
+                B1 = new LightmapColor(light.Color.R * intensityTotal, light.Color.G * intensityTotal, light.Color.B * intensityTotal),
+                B2 = new LightmapColor(light.Color.R * intensityTangent, light.Color.G * intensityTangent, light.Color.B * intensityTangent),
+                B3 = new LightmapColor(light.Color.R * intensityBinorm, light.Color.G * intensityBinorm, light.Color.B * intensityBinorm),
             };
         }
         [ThreadStatic] private static int _threadRandIdx;
@@ -610,7 +610,7 @@ namespace MapCompiler
                             + cosT * normal;
 
                 BSPHit hit = BSPRoot.TraceRay(new Ray(point, dir), 256f);
-                if (!hit.hit || BSPRoot.nodes[hit.node].nodeFlag == BSPNode.SkyboxNode)
+                if (!hit.Hit || BSPRoot.Nodes[hit.Node].nodeFlag == BSPNode.SkyboxNode)
                     visible += InvNumSamples;
             }
 
@@ -657,9 +657,9 @@ namespace MapCompiler
 
                     visible += InvNumSamples * ((MaxDist - dst) * InvMaxDist);
                 }
-                if ((hit.hit && BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode))
+                if ((hit.Hit && BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode))
                 {
-                    float dst = Vector3.Distance(hit.point, point);
+                    float dst = Vector3.Distance(hit.Point, point);
 
                     visible += InvNumSamples * ((MaxDist - dst) * InvMaxDist);
                 }
@@ -699,9 +699,9 @@ namespace MapCompiler
 
                     visible += InvNumSamples * ((MaxDist - dst) * InvMaxDist);
                 }
-                if (hit.hit && BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode)
+                if (hit.Hit && BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode)
                 {
-                    float dst = Vector3.Distance(hit.point, point);
+                    float dst = Vector3.Distance(hit.Point, point);
 
                     visible += InvNumSamples * ((MaxDist - dst) * InvMaxDist);
                 }
@@ -714,39 +714,39 @@ namespace MapCompiler
         public static float CastCheckAmbientDir(Vector3 point, Vector3 direction)
         {
             BSPHit hit = BSPRoot.TraceRay(new Ray(point, direction), 256f);
-            return (!hit.hit || BSPRoot.nodes[hit.node].nodeFlag == BSPNode.SkyboxNode) ? 1f : 0f;
+            return (!hit.Hit || BSPRoot.Nodes[hit.Node].nodeFlag == BSPNode.SkyboxNode) ? 1f : 0f;
         }
         public static bool TestPointOcclusion(Light light, Vector3 pos)
         {
-            switch (light.type)
+            switch (light.Type)
             {
                 case Light.LightType.Point:
                     {
-                        float dist = Vector3.Distance(pos, light.position);
-                        if (dist > light.range || dist == 0f) return false;
-                        float mindist = light.range;
-                        var r = new Ray(light.position, pos - light.position);
+                        float dist = Vector3.Distance(pos, light.Position);
+                        if (dist > light.Range || dist == 0f) return false;
+                        float mindist = light.Range;
+                        var r = new Ray(light.Position, pos - light.Position);
                         var hit = BSPRoot.TraceRay(r, mindist);
-                        if (hit.hit) mindist = Vector3.Distance(hit.point, light.position);
+                        if (hit.Hit) mindist = Vector3.Distance(hit.Point, light.Position);
                         var nonBSPhit = TriangleOccluder.TraceRay(r, mindist);
                         return mindist < dist && MathF.Abs(dist - mindist) > 0.1f && mindist > 0.1f || nonBSPhit;
                     }
                 case Light.LightType.Directional:
                     {
-                        var hit = BSPRoot.TraceRay(new Ray(pos, light.rotation), float.MaxValue);
-                        var nonBSPhit = TriangleOccluder.TraceRay(new Ray(pos, light.rotation), Vector3.Distance(hit.point, pos));
-                        return hit.hit && BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode || nonBSPhit;
+                        var hit = BSPRoot.TraceRay(new Ray(pos, light.Rotation), float.MaxValue);
+                        var nonBSPhit = TriangleOccluder.TraceRay(new Ray(pos, light.Rotation), Vector3.Distance(hit.Point, pos));
+                        return hit.Hit && BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode || nonBSPhit;
                     }
                 case Light.LightType.SpotLight:
                     {
-                        float dist = Vector3.Distance(pos, light.position);
-                        float pdot = Vector3.Dot(Vector3.Normalize(pos - light.position), -light.rotation);
+                        float dist = Vector3.Distance(pos, light.Position);
+                        float pdot = Vector3.Dot(Vector3.Normalize(pos - light.Position), -light.Rotation);
                         float angle = MathF.Acos(pdot);
-                        if (dist > light.range || dist == 0f || angle > MathHelper.ToRadians(light.angle)) return false;
-                        float mindist = light.range;
-                        var r = new Ray(light.position, pos - light.position);
+                        if (dist > light.Range || dist == 0f || angle > MathHelper.ToRadians(light.Angle)) return false;
+                        float mindist = light.Range;
+                        var r = new Ray(light.Position, pos - light.Position);
                         var hit = BSPRoot.TraceRay(r, mindist);
-                        if (hit.hit) mindist = Vector3.Distance(hit.point, light.position);
+                        if (hit.Hit) mindist = Vector3.Distance(hit.Point, light.Position);
                         var nonBSPhit = TriangleOccluder.TraceRay(r, mindist);
                         return mindist < dist && MathF.Abs(dist - mindist) > 0.1f && mindist > 0.1f || nonBSPhit;
                     }

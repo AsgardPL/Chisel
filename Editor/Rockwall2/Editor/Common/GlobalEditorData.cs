@@ -23,7 +23,7 @@ public static class GlobalEditorData
     {
         if (texturesLoaded && !forceReload) return;
         if (!Directory.Exists(WorkingDirectory)) return;
-        if (GlobalMapData.loadedMaterials == null) return;
+        if (GlobalMapData.LoadedMaterials == null) return;
 
         var relativePaths = new Dictionary<string, string>();
         string materialsRoot = Path.Combine(ContentPath, "Materials");
@@ -36,7 +36,7 @@ public static class GlobalEditorData
                 try
                 {
                     var mat = JsonConvert.DeserializeObject<Material>(File.ReadAllText(file));
-                    name = mat.name;
+                    name = mat.Name;
                 }
                 catch
                 {
@@ -55,19 +55,19 @@ public static class GlobalEditorData
 
         const int thumbnailSize = 128;
 
-        TexturesAsImages = new TextureItem[GlobalMapData.loadedMaterials.Length];
-        for (int i = 0; i < GlobalMapData.loadedMaterials.Length; i++)
+        TexturesAsImages = new TextureItem[GlobalMapData.LoadedMaterials.Length];
+        for (int i = 0; i < GlobalMapData.LoadedMaterials.Length; i++)
         {
-            var mat = GlobalMapData.loadedMaterials[i];
-            relativePaths.TryGetValue(mat.name, out string relPath);
+            var mat = GlobalMapData.LoadedMaterials[i];
+            relativePaths.TryGetValue(mat.Name, out string relPath);
 
             Bitmap bmp;
-            using (var stream = File.OpenRead($"{WorkingDirectory}/{mat.texture}.png"))
+            using (var stream = File.OpenRead($"{WorkingDirectory}/{mat.TextureName}.png"))
             {
                 bmp = Bitmap.DecodeToWidth(stream, thumbnailSize);
             }
 
-            TexturesAsImages[i] = new TextureItem(bmp, mat.name, i, relPath ?? "");
+            TexturesAsImages[i] = new TextureItem(bmp, mat.Name, i, relPath ?? "");
         }
 
         texturesLoaded = true;

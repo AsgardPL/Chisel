@@ -208,14 +208,14 @@ public static class GizmoScale
         {
             if (bi == -1) continue;
             var b = MapTools.Brushes[bi];
-            origBrushes.Add((bi, (Vector3[])b.vertices.Clone(), b.position));
+            origBrushes.Add((bi, (Vector3[])b.Vertices.Clone(), b.Position));
             terrainSyncContexts[bi] = BrushOperations.CaptureTerrainSync(bi, Array.Empty<Vector3>());
         }
 
         origEntities = new List<(int, Vector3)>();
         foreach (var obj in Toolbelt.SelectedObjects.OfType<EntityMoveable>())
         {
-            origEntities.Add((obj.entity, MapTools.Entities[obj.entity].position));
+            origEntities.Add((obj.entity, MapTools.Entities[obj.entity].Position));
         }
 
         undoEntitySnapshot = new AllEntitySnapshot(MapTools.Entities);
@@ -235,7 +235,7 @@ public static class GizmoScale
             for (int v = 0; v < origVerts.Length; v++)
             {
                 var world = origVerts[v] + origPos;
-                brush.vertices[v] = TransformPoint(dragAnchor, world, vp, scaleRight, scaleUp) - origPos;
+                brush.Vertices[v] = TransformPoint(dragAnchor, world, vp, scaleRight, scaleUp) - origPos;
             }
             BrushOperations.RecalculateBrushPlanes(ref brush);
             BrushOperations.RebuildBrush(ref brush);
@@ -244,7 +244,7 @@ public static class GizmoScale
 
         foreach (var (ei, origPos) in origEntities)
         {
-            MapTools.Entities[ei].position = TransformPoint(dragAnchor, origPos, vp, scaleRight, scaleUp);
+            MapTools.Entities[ei].Position = TransformPoint(dragAnchor, origPos, vp, scaleRight, scaleUp);
         }
     }
 

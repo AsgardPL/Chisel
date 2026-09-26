@@ -56,10 +56,10 @@ internal class ModelDisplay
         shader.Parameters["View"].SetValue(view);
         shader.Parameters["Projection"].SetValue(projection);
 
-        shader.Parameters["MainTex"].SetValue(GlobalMapData.loadedMaterials[material].Texture);
-        shader.Parameters["SpecTex"].SetValue(GlobalMapData.loadedMaterials[material].Specular);
-        shader.Parameters["NormalTex"]?.SetValue(GlobalMapData.loadedMaterials[material].Normal);
-        shader.Parameters["shine"].SetValue(GlobalMapData.loadedMaterials[material].reflectivity);
+        shader.Parameters["MainTex"].SetValue(GlobalMapData.LoadedMaterials[material].Texture);
+        shader.Parameters["SpecTex"].SetValue(GlobalMapData.LoadedMaterials[material].Specular);
+        shader.Parameters["NormalTex"]?.SetValue(GlobalMapData.LoadedMaterials[material].Normal);
+        shader.Parameters["shine"].SetValue(GlobalMapData.LoadedMaterials[material].Reflectivity);
 
         shader.Parameters["cameraPos"]?.SetValue(view.Translation);
         shader.Parameters["cameraForward"]?.SetValue(view.Forward);

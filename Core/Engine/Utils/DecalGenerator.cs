@@ -415,43 +415,43 @@ namespace Engine.Utils
                 }
             }
 
-            for (int i = 0; i < GlobalMapData.activeMap.brushes.Length; i++)
+            for (int i = 0; i < GlobalMapData.ActiveMap.Brushes.Length; i++)
             {
                 int brushID = i;
 
-                if (decalAABB.Contains(GlobalMapData.activeMap.brushBounds[brushID]) == ContainmentType.Disjoint)
+                if (decalAABB.Contains(GlobalMapData.ActiveMap.BrushBounds[brushID]) == ContainmentType.Disjoint)
                 {
                     continue;
                 }
 
-                Brush brush = GlobalMapData.activeMap.brushes[brushID];
+                Brush brush = GlobalMapData.ActiveMap.Brushes[brushID];
 
-                if (brush.isClip || (brush.isEntity && !brush.isDetail) || brush.isLightNodeVolume)
+                if (brush.IsClip || (brush.IsEntity && !brush.IsDetail) || brush.IsLightNodeVolume)
                 {
                     continue;
                 }
 
-                for (int f = 0; f < GlobalMapData.activeMap.brushes[brushID].faces.Length; f++)
+                for (int f = 0; f < GlobalMapData.ActiveMap.Brushes[brushID].Faces.Length; f++)
                 {
-                    Face face = GlobalMapData.activeMap.brushes[brushID].faces[f];
+                    Face face = GlobalMapData.ActiveMap.Brushes[brushID].Faces[f];
 
-                    if (Vector3.Dot(face.normal, decalBounds.Transformation.Forward) < 0)
+                    if (Vector3.Dot(face.Normal, decalBounds.Transformation.Forward) < 0)
                         continue;
 
-                    if (face.indices.Length < 3) continue;
+                    if (face.Indices.Length < 3) continue;
 
-                    Vector3 p0 = brush.vertices[face.indices[0]] + brush.position;
-                    Vector3 p1 = brush.vertices[face.indices[1]] + brush.position;
-                    Vector3 p2 = brush.vertices[face.indices[2]] + brush.position;
-                    Vector2 uv0 = brush.lightmapUvs[face.indices[0]];
-                    Vector2 uv1 = brush.lightmapUvs[face.indices[1]];
-                    Vector2 uv2 = brush.lightmapUvs[face.indices[2]];
+                    Vector3 p0 = brush.Vertices[face.Indices[0]] + brush.Position;
+                    Vector3 p1 = brush.Vertices[face.Indices[1]] + brush.Position;
+                    Vector3 p2 = brush.Vertices[face.Indices[2]] + brush.Position;
+                    Vector2 uv0 = brush.LightmapUVs[face.Indices[0]];
+                    Vector2 uv1 = brush.LightmapUVs[face.Indices[1]];
+                    Vector2 uv2 = brush.LightmapUVs[face.Indices[2]];
 
                     polygonScratch.Clear();
 
-                    for (int fi = 0; fi < face.indices.Length; fi++)
+                    for (int fi = 0; fi < face.Indices.Length; fi++)
                     {
-                        Vector3 vert = brush.vertices[face.indices[fi]] + brush.position;
+                        Vector3 vert = brush.Vertices[face.Indices[fi]] + brush.Position;
 
                         bool duplicate = false;
                         for (int pj = 0; pj < polygonScratch.Count; pj++)
@@ -476,26 +476,26 @@ namespace Engine.Utils
 
                     RemoveCollinear(clippedScratch, clipPlanes, collinearScratch);
 
-                    ProcessVerts(collinearScratch, face.normal, face.tangent, face.binormal, p0, uv0, p1, uv1, p2, uv2);
+                    ProcessVerts(collinearScratch, face.Normal, face.Tangent, face.Binormal, p0, uv0, p1, uv1, p2, uv2);
                 }
             }
 
-            if (GlobalMapData.activeMap.terrains != null)
+            if (GlobalMapData.ActiveMap.Terrains != null)
             {
-                for (int i = 0; i < GlobalMapData.activeMap.terrains.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Terrains.Length; i++)
                 {
-                    var terrain = GlobalMapData.activeMap.terrains[i];
-                    if (terrain.bounds.Contains(decalAABB) == ContainmentType.Disjoint)
+                    var terrain = GlobalMapData.ActiveMap.Terrains[i];
+                    if (terrain.Bounds.Contains(decalAABB) == ContainmentType.Disjoint)
                     {
                         continue;
                     }
 
-                    for (int t = 0; t < terrain.triangles.Length; t += 3)
+                    for (int t = 0; t < terrain.Triangles.Length; t += 3)
                     {
-                        int ia = terrain.triangles[t + 0], ib = terrain.triangles[t + 1], ic = terrain.triangles[t + 2];
-                        Vector3 A = terrain.vertices[ia].Position;
-                        Vector3 B = terrain.vertices[ib].Position;
-                        Vector3 C = terrain.vertices[ic].Position;
+                        int ia = terrain.Triangles[t + 0], ib = terrain.Triangles[t + 1], ic = terrain.Triangles[t + 2];
+                        Vector3 A = terrain.Vertices[ia].Position;
+                        Vector3 B = terrain.Vertices[ib].Position;
+                        Vector3 C = terrain.Vertices[ic].Position;
 
                         var triBox = new BoundingBox(Vector3.Min(Vector3.Min(A, B), C), Vector3.Max(Vector3.Max(A, B), C));
                         if (triBox.Contains(decalAABB) == ContainmentType.Disjoint) continue;
@@ -510,16 +510,16 @@ namespace Engine.Utils
 
                         Vector3 triNormal = Vector3.Normalize(Vector3.Cross(B - A, C - A));
 
-                        Vector4 tanRaw = terrain.vertices[ia].Tangent.ToVector4();
+                        Vector4 tanRaw = terrain.Vertices[ia].Tangent.ToVector4();
                         Vector3 triTangent = tanRaw.LengthSquared() > 1e-6f
                             ? Vector3.Normalize(new Vector3(tanRaw.X, tanRaw.Y, tanRaw.Z))
                             : Vector3.Normalize(B - A);
                         Vector3 triBinormal = Vector3.Normalize(Vector3.Cross(triNormal, triTangent)) * (tanRaw.W == 0f ? 1f : MathF.Sign(tanRaw.W));
 
                         ProcessVerts(collinearScratch, triNormal, triTangent, triBinormal,
-                            A, terrain.vertices[ia].LightmapCoordinate,
-                            B, terrain.vertices[ib].LightmapCoordinate,
-                            C, terrain.vertices[ic].LightmapCoordinate);
+                            A, terrain.Vertices[ia].LightmapCoordinate,
+                            B, terrain.Vertices[ib].LightmapCoordinate,
+                            C, terrain.Vertices[ic].LightmapCoordinate);
                     }
                 }
             }

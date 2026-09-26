@@ -93,48 +93,48 @@ namespace Chisel.Formatter
 
         static void WriteMap(BinaryWriter w, Map map)
         {
-            w.Write(map.hasVis);
+            w.Write(map.HasVis);
 
-            w.Write(map.brushBounds.Length);
-            foreach (var bb in map.brushBounds) WriteBBox(w, bb);
+            w.Write(map.BrushBounds.Length);
+            foreach (var bb in map.BrushBounds) WriteBBox(w, bb);
 
-            w.Write(map.brushes.Length);
-            foreach (var b in map.brushes) WriteBrush(w, b);
+            w.Write(map.Brushes.Length);
+            foreach (var b in map.Brushes) WriteBrush(w, b);
 
-            w.Write(map.terrains.Length);
-            foreach (var t in map.terrains) WriteTerrain(w, t);
+            w.Write(map.Terrains.Length);
+            foreach (var t in map.Terrains) WriteTerrain(w, t);
 
-            w.Write(map.entities.Length);
-            foreach (var e in map.entities) WriteEntityRef(w, e);
+            w.Write(map.Entities.Length);
+            foreach (var e in map.Entities) WriteEntityRef(w, e);
 
             // Root node first, then the flat allNodes list the octree traversal uses.
-            w.Write(map.octreeNodes.Count);
-            WriteOctree(w, map.root);
-            foreach (var n in map.octreeNodes) WriteOctree(w, n);
+            w.Write(map.OctreeNodes.Count);
+            WriteOctree(w, map.Root);
+            foreach (var n in map.OctreeNodes) WriteOctree(w, n);
 
-            w.Write(map.lightNodes.Length);
-            foreach (var ln in map.lightNodes) WriteLightNodeBundle(w, ln);
+            w.Write(map.LightNodes.Length);
+            foreach (var ln in map.LightNodes) WriteLightNodeBundle(w, ln);
 
-            w.Write(map.lightGroupKeys.Length);
-            foreach (var key in map.lightGroupKeys) WriteStr(w, key);
+            w.Write(map.LightGroupKeys.Length);
+            foreach (var key in map.LightGroupKeys) WriteStr(w, key);
 
-            w.Write(map.mapModels.Length);
-            foreach (var dm in map.mapModels) WriteDetailModel(w, dm);
+            w.Write(map.MapModels.Length);
+            foreach (var dm in map.MapModels) WriteDetailModel(w, dm);
 
-            w.Write(map.staticGeomVertices.Length);
-            foreach (var v in map.staticGeomVertices) WriteVertexLM(w, v);
+            w.Write(map.StaticGeomVertices.Length);
+            foreach (var v in map.StaticGeomVertices) WriteVertexLM(w, v);
 
-            w.Write(map.leafPolygons.Length);
-            foreach (var lp in map.leafPolygons) WriteLeafPolygon(w, lp);
+            w.Write(map.LeafPolygons.Length);
+            foreach (var lp in map.LeafPolygons) WriteLeafPolygon(w, lp);
 
-            w.Write(map.leafPolyStart.Length);
-            for (int i = 0; i < map.leafPolyStart.Length; i++)
+            w.Write(map.LeafPolyStart.Length);
+            for (int i = 0; i < map.LeafPolyStart.Length; i++)
             {
-                w.Write(map.leafPolyStart[i]);
-                w.Write(map.leafPolyCount[i]);
+                w.Write(map.LeafPolyStart[i]);
+                w.Write(map.LeafPolyCount[i]);
             }
 
-            WriteNodeGraph(w, map.nodegraph);
+            WriteNodeGraph(w, map.Nodegraph);
         }
 
         static Map ReadMap(BinaryReader r)
@@ -154,14 +154,14 @@ namespace Chisel.Formatter
             for (int i = 0; i < entities.Length; i++) entities[i] = ReadEntityRef(r);
 
             int octreeNodeCount = r.ReadInt32();
-            OctreeRoot.allNodes.Clear();
+            OctreeRoot.AllNodes.Clear();
             var root = ReadOctree(r);
-            OctreeRoot.allNodes.Add(root);
+            OctreeRoot.AllNodes.Add(root);
             var octreeNodes = new List<Octree>(octreeNodeCount);
             for (int i = 0; i < octreeNodeCount; i++)
             {
                 var n = ReadOctree(r);
-                OctreeRoot.allNodes.Add(n);
+                OctreeRoot.AllNodes.Add(n);
                 octreeNodes.Add(n);
             }
 
@@ -193,21 +193,21 @@ namespace Chisel.Formatter
 
             return new Map
             {
-                hasVis = hasVis,
-                brushBounds = brushBounds,
-                brushes = brushes,
-                terrains = terrains,
-                entities = entities,
-                mapModels = models,
-                staticGeomVertices = staticGeomVertices,
-                leafPolygons = leafPolygons,
-                leafPolyStart = leafPolyStart,
-                leafPolyCount = leafPolyCount,
-                root = root,
-                octreeNodes = octreeNodes,
-                lightNodes = lightNodes,
-                lightGroupKeys = lightGroupKeys,
-                nodegraph = nodegraph,
+                HasVis = hasVis,
+                BrushBounds = brushBounds,
+                Brushes = brushes,
+                Terrains = terrains,
+                Entities = entities,
+                MapModels = models,
+                StaticGeomVertices = staticGeomVertices,
+                LeafPolygons = leafPolygons,
+                LeafPolyStart = leafPolyStart,
+                LeafPolyCount = leafPolyCount,
+                Root = root,
+                OctreeNodes = octreeNodes,
+                LightNodes = lightNodes,
+                LightGroupKeys = lightGroupKeys,
+                Nodegraph = nodegraph,
             };
         }
 
@@ -276,8 +276,8 @@ namespace Chisel.Formatter
 
         static void WriteBSP(BinaryWriter w, BSPFile file)
         {
-            w.Write(file.nodes.Length);
-            foreach (var n in file.nodes)
+            w.Write(file.Nodes.Length);
+            foreach (var n in file.Nodes)
             {
                 w.Write(n.nodeFlag);
                 w.Write(n.spx); w.Write(n.spy); w.Write(n.spz); w.Write(n.d);
@@ -302,25 +302,25 @@ namespace Chisel.Formatter
                 n.bnx = r.ReadSingle(); n.bny = r.ReadSingle(); n.bnz = r.ReadSingle();
                 nodes[i] = n;
             }
-            return new BSPFile { nodes = nodes };
+            return new BSPFile { Nodes = nodes };
         }
 
         static void WriteVis(BinaryWriter w, VisFile file)
         {
-            w.Write(file.leaves.Length);
-            foreach (var leaf in file.leaves)
+            w.Write(file.Leaves.Length);
+            foreach (var leaf in file.Leaves)
             {
-                w.Write(leaf.IsEmpty); w.Write(leaf.HasSkybox); w.Write(leaf.bspLeafID);
-                w.Write(leaf.portals.Length);
-                foreach (var p in leaf.portals) w.Write(p);
-                w.Write(leaf.pvs.Length);
-                foreach (var p in leaf.pvs) w.Write(p);
-                w.Write(leaf.brushes.Length);
-                foreach (var b in leaf.brushes) w.Write(b);
+                w.Write(leaf.IsEmpty); w.Write(leaf.HasSkybox); w.Write(leaf.BspLeafID);
+                w.Write(leaf.Portals.Length);
+                foreach (var p in leaf.Portals) w.Write(p);
+                w.Write(leaf.PVS.Length);
+                foreach (var p in leaf.PVS) w.Write(p);
+                w.Write(leaf.Brushes.Length);
+                foreach (var b in leaf.Brushes) w.Write(b);
             }
 
-            w.Write(file.portals.Length);
-            foreach (var portal in file.portals)
+            w.Write(file.Portals.Length);
+            foreach (var portal in file.Portals)
             {
                 w.Write(portal.LeafFront); w.Write(portal.LeafBack);
                 WriteVec3(w, portal.Plane.Normal); w.Write(portal.Plane.D);
@@ -337,13 +337,13 @@ namespace Chisel.Formatter
             for (int i = 0; i < leaves.Length; i++)
             {
                 var leaf = new VisLeaf();
-                leaf.IsEmpty = r.ReadBoolean(); leaf.HasSkybox = r.ReadBoolean(); leaf.bspLeafID = r.ReadInt32();
-                leaf.portals = new int[r.ReadInt32()];
-                for (int j = 0; j < leaf.portals.Length; j++) leaf.portals[j] = r.ReadInt32();
-                leaf.pvs = new uint[r.ReadInt32()];
-                for (int j = 0; j < leaf.pvs.Length; j++) leaf.pvs[j] = r.ReadUInt32();
-                leaf.brushes = new ushort[r.ReadInt32()];
-                for (int j = 0; j < leaf.brushes.Length; j++) leaf.brushes[j] = r.ReadUInt16();
+                leaf.IsEmpty = r.ReadBoolean(); leaf.HasSkybox = r.ReadBoolean(); leaf.BspLeafID = r.ReadInt32();
+                leaf.Portals = new int[r.ReadInt32()];
+                for (int j = 0; j < leaf.Portals.Length; j++) leaf.Portals[j] = r.ReadInt32();
+                leaf.PVS = new uint[r.ReadInt32()];
+                for (int j = 0; j < leaf.PVS.Length; j++) leaf.PVS[j] = r.ReadUInt32();
+                leaf.Brushes = new ushort[r.ReadInt32()];
+                for (int j = 0; j < leaf.Brushes.Length; j++) leaf.Brushes[j] = r.ReadUInt16();
                 leaves[i] = leaf;
             }
 
@@ -360,108 +360,108 @@ namespace Chisel.Formatter
                 portals[i] = portal;
             }
 
-            return new VisFile { leaves = leaves, portals = portals };
+            return new VisFile { Leaves = leaves, Portals = portals };
         }
 
         static void WriteBrush(BinaryWriter w, Brush b)
         {
-            WriteVec3(w, b.position);
+            WriteVec3(w, b.Position);
 
             // Pack the seven bool flags into one byte rather than seven.
             byte flags = 0;
-            if (b.abnormal) flags |= 1 << 0;
-            if (b.isDetail) flags |= 1 << 1;
-            if (b.isClip) flags |= 1 << 2;
-            if (b.isTrigger) flags |= 1 << 3;
-            if (b.isSkybox) flags |= 1 << 4;
-            if (b.isLightNodeVolume) flags |= 1 << 5;
-            if (b.isEntity) flags |= 1 << 6;
+            if (b.Abnormal) flags |= 1 << 0;
+            if (b.IsDetail) flags |= 1 << 1;
+            if (b.IsClip) flags |= 1 << 2;
+            if (b.IsTrigger) flags |= 1 << 3;
+            if (b.IsSkybox) flags |= 1 << 4;
+            if (b.IsLightNodeVolume) flags |= 1 << 5;
+            if (b.IsEntity) flags |= 1 << 6;
             w.Write(flags);
 
-            w.Write(b.vertices.Length);
-            foreach (var v in b.vertices) WriteVec3(w, v);
+            w.Write(b.Vertices.Length);
+            foreach (var v in b.Vertices) WriteVec3(w, v);
 
-            w.Write(b.uvs.Length);
-            foreach (var uv in b.uvs) WriteVec2(w, uv);
+            w.Write(b.UVs.Length);
+            foreach (var uv in b.UVs) WriteVec2(w, uv);
 
-            w.Write(b.lightmapUvs.Length);
-            foreach (var uv in b.lightmapUvs) WriteVec2(w, uv);
+            w.Write(b.LightmapUVs.Length);
+            foreach (var uv in b.LightmapUVs) WriteVec2(w, uv);
 
-            w.Write(b.faces.Length);
-            foreach (var f in b.faces) WriteFace(w, f);
+            w.Write(b.Faces.Length);
+            foreach (var f in b.Faces) WriteFace(w, f);
         }
 
         static Brush ReadBrush(BinaryReader r)
         {
             var b = new Brush();
-            b.position = ReadVec3(r);
+            b.Position = ReadVec3(r);
 
             byte flags = r.ReadByte();
-            b.abnormal = (flags & (1 << 0)) != 0;
-            b.isDetail = (flags & (1 << 1)) != 0;
-            b.isClip = (flags & (1 << 2)) != 0;
-            b.isTrigger = (flags & (1 << 3)) != 0;
-            b.isSkybox = (flags & (1 << 4)) != 0;
-            b.isLightNodeVolume = (flags & (1 << 5)) != 0;
-            b.isEntity = (flags & (1 << 6)) != 0;
+            b.Abnormal = (flags & (1 << 0)) != 0;
+            b.IsDetail = (flags & (1 << 1)) != 0;
+            b.IsClip = (flags & (1 << 2)) != 0;
+            b.IsTrigger = (flags & (1 << 3)) != 0;
+            b.IsSkybox = (flags & (1 << 4)) != 0;
+            b.IsLightNodeVolume = (flags & (1 << 5)) != 0;
+            b.IsEntity = (flags & (1 << 6)) != 0;
 
-            b.vertices = new Vector3[r.ReadInt32()];
-            for (int i = 0; i < b.vertices.Length; i++) b.vertices[i] = ReadVec3(r);
+            b.Vertices = new Vector3[r.ReadInt32()];
+            for (int i = 0; i < b.Vertices.Length; i++) b.Vertices[i] = ReadVec3(r);
 
-            b.uvs = new Vector2[r.ReadInt32()];
-            for (int i = 0; i < b.uvs.Length; i++) b.uvs[i] = ReadVec2(r);
+            b.UVs = new Vector2[r.ReadInt32()];
+            for (int i = 0; i < b.UVs.Length; i++) b.UVs[i] = ReadVec2(r);
 
-            b.lightmapUvs = new Vector2[r.ReadInt32()];
-            for (int i = 0; i < b.lightmapUvs.Length; i++) b.lightmapUvs[i] = ReadVec2(r);
+            b.LightmapUVs = new Vector2[r.ReadInt32()];
+            for (int i = 0; i < b.LightmapUVs.Length; i++) b.LightmapUVs[i] = ReadVec2(r);
 
-            b.faces = new Face[r.ReadInt32()];
-            for (int i = 0; i < b.faces.Length; i++) b.faces[i] = ReadFace(r);
+            b.Faces = new Face[r.ReadInt32()];
+            for (int i = 0; i < b.Faces.Length; i++) b.Faces[i] = ReadFace(r);
 
             return b;
         }
 
         static void WriteFace(BinaryWriter w, Face f)
         {
-            WriteVec3(w, f.normal); WriteVec3(w, f.tangent); WriteVec3(w, f.binormal);
-            WriteVec3(w, f.basis1); WriteVec3(w, f.basis2); WriteVec3(w, f.basis3);
-            w.Write(f.drawn); w.Write(f.surface);
-            w.Write(f.tOffX); w.Write(f.tOffY); w.Write(f.tScaleX); w.Write(f.tScaleY);
-            w.Write(f.luxelScale);
-            WriteStr(w, f.materialName);
+            WriteVec3(w, f.Normal); WriteVec3(w, f.Tangent); WriteVec3(w, f.Binormal);
+            WriteVec3(w, f.Basis1); WriteVec3(w, f.Basis2); WriteVec3(w, f.Basis3);
+            w.Write(f.Drawn); w.Write(f.Surface);
+            w.Write(f.TOffX); w.Write(f.TOffY); w.Write(f.TScaleX); w.Write(f.TScaleY);
+            w.Write(f.LuxelScale);
+            WriteStr(w, f.MaterialName);
 
-            w.Write(f.indices.Length);
-            foreach (var idx in f.indices) w.Write(idx);
+            w.Write(f.Indices.Length);
+            foreach (var idx in f.Indices) w.Write(idx);
 
-            int decalCount = f.decals?.Length ?? 0;
+            int decalCount = f.Decals?.Length ?? 0;
             w.Write(decalCount);
             for (int i = 0; i < decalCount; i++)
             {
-                w.Write(f.decals[i].surface);
-                w.Write(f.decals[i].vertices.Length);
-                foreach (var v in f.decals[i].vertices) WriteVertexLM(w, v);
+                w.Write(f.Decals[i].surface);
+                w.Write(f.Decals[i].vertices.Length);
+                foreach (var v in f.Decals[i].vertices) WriteVertexLM(w, v);
             }
         }
 
         static Face ReadFace(BinaryReader r)
         {
             var f = new Face();
-            f.normal = ReadVec3(r); f.tangent = ReadVec3(r); f.binormal = ReadVec3(r);
-            f.basis1 = ReadVec3(r); f.basis2 = ReadVec3(r); f.basis3 = ReadVec3(r);
-            f.drawn = r.ReadBoolean(); f.surface = r.ReadInt32();
-            f.tOffX = r.ReadSingle(); f.tOffY = r.ReadSingle();
-            f.tScaleX = r.ReadSingle(); f.tScaleY = r.ReadSingle();
-            f.luxelScale = r.ReadSingle();
-            f.materialName = ReadStr(r);
+            f.Normal = ReadVec3(r); f.Tangent = ReadVec3(r); f.Binormal = ReadVec3(r);
+            f.Basis1 = ReadVec3(r); f.Basis2 = ReadVec3(r); f.Basis3 = ReadVec3(r);
+            f.Drawn = r.ReadBoolean(); f.Surface = r.ReadInt32();
+            f.TOffX = r.ReadSingle(); f.TOffY = r.ReadSingle();
+            f.TScaleX = r.ReadSingle(); f.TScaleY = r.ReadSingle();
+            f.LuxelScale = r.ReadSingle();
+            f.MaterialName = ReadStr(r);
 
-            f.indices = new int[r.ReadInt32()];
-            for (int i = 0; i < f.indices.Length; i++) f.indices[i] = r.ReadInt32();
+            f.Indices = new int[r.ReadInt32()];
+            for (int i = 0; i < f.Indices.Length; i++) f.Indices[i] = r.ReadInt32();
 
-            f.decals = new EnvironmentalDecal[r.ReadInt32()];
-            for (int i = 0; i < f.decals.Length; i++)
+            f.Decals = new EnvironmentalDecal[r.ReadInt32()];
+            for (int i = 0; i < f.Decals.Length; i++)
             {
-                f.decals[i].surface = r.ReadInt32();
-                f.decals[i].vertices = new VertexLightmapped[r.ReadInt32()];
-                for (int j = 0; j < f.decals[i].vertices.Length; j++) f.decals[i].vertices[j] = ReadVertexLM(r);
+                f.Decals[i].surface = r.ReadInt32();
+                f.Decals[i].vertices = new VertexLightmapped[r.ReadInt32()];
+                for (int j = 0; j < f.Decals[i].vertices.Length; j++) f.Decals[i].vertices[j] = ReadVertexLM(r);
             }
 
             return f;
@@ -469,108 +469,108 @@ namespace Chisel.Formatter
 
         static void WriteTerrain(BinaryWriter w, Terrain t)
         {
-            w.Write(t.surface); w.Write(t.blendedSurface);
-            w.Write(t.surfaceName); w.Write(t.blendedSurfaceName);
-            w.Write(t.brushSource); w.Write(t.faceSource);
-            WriteBBox(w, t.bounds);
-            w.Write(t.vertices.Length);
-            foreach (var v in t.vertices) WriteTerrainVert(w, v);
-            w.Write(t.triangles.Length);
-            foreach (var tri in t.triangles) w.Write(tri);
+            w.Write(t.Surface); w.Write(t.BlendedSurface);
+            w.Write(t.SurfaceName); w.Write(t.BlendedSurfaceName);
+            w.Write(t.BrushSource); w.Write(t.FaceSource);
+            WriteBBox(w, t.Bounds);
+            w.Write(t.Vertices.Length);
+            foreach (var v in t.Vertices) WriteTerrainVert(w, v);
+            w.Write(t.Triangles.Length);
+            foreach (var tri in t.Triangles) w.Write(tri);
         }
 
         static Terrain ReadTerrain(BinaryReader r)
         {
             var t = new Terrain();
-            t.surface = r.ReadInt32(); t.blendedSurface = r.ReadInt32();
-            t.surfaceName = r.ReadString(); t.blendedSurfaceName = r.ReadString();
-            t.brushSource = r.ReadInt32(); t.faceSource = r.ReadInt32();
-            t.bounds = ReadBBox(r);
-            t.vertices = new TerrainVertex[r.ReadInt32()];
-            for (int i = 0; i < t.vertices.Length; i++) t.vertices[i] = ReadTerrainVert(r);
-            t.triangles = new short[r.ReadInt32()];
-            for (int i = 0; i < t.triangles.Length; i++) t.triangles[i] = r.ReadInt16();
+            t.Surface = r.ReadInt32(); t.BlendedSurface = r.ReadInt32();
+            t.SurfaceName = r.ReadString(); t.BlendedSurfaceName = r.ReadString();
+            t.BrushSource = r.ReadInt32(); t.FaceSource = r.ReadInt32();
+            t.Bounds = ReadBBox(r);
+            t.Vertices = new TerrainVertex[r.ReadInt32()];
+            for (int i = 0; i < t.Vertices.Length; i++) t.Vertices[i] = ReadTerrainVert(r);
+            t.Triangles = new short[r.ReadInt32()];
+            for (int i = 0; i < t.Triangles.Length; i++) t.Triangles[i] = r.ReadInt16();
             return t;
         }
 
         static void WriteEntityRef(BinaryWriter w, EntityReference e)
         {
-            WriteVec3(w, e.position); WriteVec3(w, e.spawnRotation); WriteVec3(w, e.scale);
-            WriteStr(w, e.entityName ?? "");
-            WriteStr(w, e.name ?? "");
+            WriteVec3(w, e.Position); WriteVec3(w, e.SpawnRotation); WriteVec3(w, e.Scale);
+            WriteStr(w, e.EntityName ?? "");
+            WriteStr(w, e.Name ?? "");
             WriteStr(w, e.entityMoveParentName ?? "");
 
-            int propCount = e.properties?.Length ?? 0;
+            int propCount = e.Properties?.Length ?? 0;
             w.Write(propCount);
             for (int i = 0; i < propCount; i++)
             {
-                WriteStr(w, e.properties[i].Name);
-                WriteStr(w, e.properties[i].Value);
+                WriteStr(w, e.Properties[i].Name);
+                WriteStr(w, e.Properties[i].Value);
             }
 
-            int outCount = e.entityOutputs?.Count ?? 0;
+            int outCount = e.EntityOutputs?.Count ?? 0;
             w.Write(outCount);
             for (int i = 0; i < outCount; i++)
             {
-                var (evtName, output) = e.entityOutputs[i];
+                var (evtName, output) = e.EntityOutputs[i];
                 WriteStr(w, evtName);
-                w.Write(output.delay); w.Write(output.refire);
-                WriteStr(w, output.entityTarget);
-                WriteStr(w, output.entityInputTarget);
-                WriteStr(w, output.inputParameters);
-                WriteStr(w, output.scriptSource ?? "NULLSCRIPT");
+                w.Write(output.Delay); w.Write(output.Refire);
+                WriteStr(w, output.EntityTarget);
+                WriteStr(w, output.EntityInputTarget);
+                WriteStr(w, output.InputParameters);
+                WriteStr(w, output.ScriptSource ?? "NULLSCRIPT");
             }
 
-            int brushCount = e.brushIndices?.Count ?? 0;
+            int brushCount = e.BrushIndices?.Count ?? 0;
             w.Write(brushCount);
             for (int i = 0; i < brushCount; i++)
-                w.Write(e.brushIndices[i]);
+                w.Write(e.BrushIndices[i]);
         }
 
         static EntityReference ReadEntityRef(BinaryReader r)
         {
             var e = new EntityReference();
-            e.position = ReadVec3(r); e.spawnRotation = ReadVec3(r); e.scale = ReadVec3(r);
-            e.entityName = ReadStr(r);
-            e.name = ReadStr(r);
+            e.Position = ReadVec3(r); e.SpawnRotation = ReadVec3(r); e.Scale = ReadVec3(r);
+            e.EntityName = ReadStr(r);
+            e.Name = ReadStr(r);
             e.entityMoveParentName = ReadStr(r);
 
             int propCount = r.ReadInt32();
             if (propCount > 0)
             {
-                e.properties = new EntityProperty[propCount];
+                e.Properties = new EntityProperty[propCount];
                 for (int i = 0; i < propCount; i++)
                 {
                     var p = new EntityProperty();
                     p.Name = ReadStr(r); p.Value = ReadStr(r);
-                    e.properties[i] = p;
+                    e.Properties[i] = p;
                 }
             }
 
             int outCount = r.ReadInt32();
             if (outCount > 0)
             {
-                e.entityOutputs = new List<(string, EntityOutput)>(outCount);
+                e.EntityOutputs = new List<(string, EntityOutput)>(outCount);
                 for (int i = 0; i < outCount; i++)
                 {
                     string evtName = ReadStr(r);
                     var output = new EntityOutput();
-                    output.delay = r.ReadSingle(); output.refire = r.ReadInt32();
-                    output.entityTarget = ReadStr(r);
-                    output.entityInputTarget = ReadStr(r);
-                    output.inputParameters = ReadStr(r);
+                    output.Delay = r.ReadSingle(); output.Refire = r.ReadInt32();
+                    output.EntityTarget = ReadStr(r);
+                    output.EntityInputTarget = ReadStr(r);
+                    output.InputParameters = ReadStr(r);
                     var script = ReadStr(r);
-                    output.scriptSource = script == "NULLSCRIPT" ? null : script;
-                    e.entityOutputs.Add((evtName, output));
+                    output.ScriptSource = script == "NULLSCRIPT" ? null : script;
+                    e.EntityOutputs.Add((evtName, output));
                 }
             }
 
             int brushCount = r.ReadInt32();
             if (brushCount > 0)
             {
-                e.brushIndices = new List<int>(brushCount);
+                e.BrushIndices = new List<int>(brushCount);
                 for (int i = 0; i < brushCount; i++)
-                    e.brushIndices.Add(r.ReadInt32());
+                    e.BrushIndices.Add(r.ReadInt32());
             }
 
             return e;
@@ -578,45 +578,45 @@ namespace Chisel.Formatter
 
         static void WriteOctree(BinaryWriter w, Octree oct)
         {
-            WriteBBox(w, oct.box);
-            w.Write(oct.isEnd);
+            WriteBBox(w, oct.Box);
+            w.Write(oct.IsEnd);
             // children is always exactly 8 elements so no length prefix needed
-            foreach (var c in oct.children) w.Write(c);
-            w.Write(oct.corners.Length);
-            foreach (var c in oct.corners) WriteBBox(w, c);
-            w.Write(oct.contents.Count);
-            foreach (var c in oct.contents) w.Write(c);
+            foreach (var c in oct.Children) w.Write(c);
+            w.Write(oct.Corners.Length);
+            foreach (var c in oct.Corners) WriteBBox(w, c);
+            w.Write(oct.Contents.Count);
+            foreach (var c in oct.Contents) w.Write(c);
         }
 
         static Octree ReadOctree(BinaryReader r)
         {
             var oct = new Octree();
-            oct.box = ReadBBox(r);
-            oct.isEnd = r.ReadBoolean();
-            oct.children = new int[8];
-            for (int i = 0; i < 8; i++) oct.children[i] = r.ReadInt32();
-            oct.corners = new BoundingBox[r.ReadInt32()];
-            for (int i = 0; i < oct.corners.Length; i++) oct.corners[i] = ReadBBox(r);
-            oct.contents = new List<int>();
+            oct.Box = ReadBBox(r);
+            oct.IsEnd = r.ReadBoolean();
+            oct.Children = new int[8];
+            for (int i = 0; i < 8; i++) oct.Children[i] = r.ReadInt32();
+            oct.Corners = new BoundingBox[r.ReadInt32()];
+            for (int i = 0; i < oct.Corners.Length; i++) oct.Corners[i] = ReadBBox(r);
+            oct.Contents = new List<int>();
             var contentLength = r.ReadInt32();
-            for (int i = 0; i < contentLength; i++) oct.contents.Add(r.ReadInt32());
+            for (int i = 0; i < contentLength; i++) oct.Contents.Add(r.ReadInt32());
             return oct;
         }
 
         static void WriteLightNodeBundle(BinaryWriter w, LightNodeBundle bundle)
         {
-            WriteBBox(w, bundle.box);
-            w.Write(bundle.children.Length);
-            foreach (var child in bundle.children)
+            WriteBBox(w, bundle.Box);
+            w.Write(bundle.Children.Length);
+            foreach (var child in bundle.Children)
             {
-                WriteVec3(w, child.pos);
-                w.Write(child.data.Length);
-                foreach (var d in child.data) { w.Write(d.lightBlocked); w.Write(d.lightNum); }
-                w.Write(child.indirectCoefficients.Length);
-                foreach (var c in child.indirectCoefficients) WriteVec3(w, c);
+                WriteVec3(w, child.Pos);
+                w.Write(child.Data.Length);
+                foreach (var d in child.Data) { w.Write(d.LightBlocked); w.Write(d.LightNum); }
+                w.Write(child.IndirectCoefficients.Length);
+                foreach (var c in child.IndirectCoefficients) WriteVec3(w, c);
 
-                w.Write(child.groupIndirectCoefficients.Length);
-                foreach (var groupCoeffs in child.groupIndirectCoefficients)
+                w.Write(child.GroupIndirectCoefficients.Length);
+                foreach (var groupCoeffs in child.GroupIndirectCoefficients)
                 {
                     w.Write(groupCoeffs.Length);
                     foreach (var c in groupCoeffs) WriteVec3(w, c);
@@ -627,40 +627,40 @@ namespace Chisel.Formatter
         static LightNodeBundle ReadLightNodeBundle(BinaryReader r)
         {
             var bundle = new LightNodeBundle(ReadBBox(r));
-            bundle.children = new LightNodeBundle.LightNode[r.ReadInt32()];
-            for (int i = 0; i < bundle.children.Length; i++)
+            bundle.Children = new LightNodeBundle.LightNode[r.ReadInt32()];
+            for (int i = 0; i < bundle.Children.Length; i++)
             {
                 var child = new LightNodeBundle.LightNode();
-                child.pos = ReadVec3(r);
-                child.data = new LightNodeBundle.LightData[r.ReadInt32()];
-                for (int j = 0; j < child.data.Length; j++)
-                    child.data[j] = new LightNodeBundle.LightData { lightBlocked = r.ReadBoolean(), lightNum = r.ReadInt32() };
-                child.indirectCoefficients = new Vector3[r.ReadInt32()];
-                for (int j = 0; j < child.indirectCoefficients.Length; j++)
-                    child.indirectCoefficients[j] = ReadVec3(r);
+                child.Pos = ReadVec3(r);
+                child.Data = new LightNodeBundle.LightData[r.ReadInt32()];
+                for (int j = 0; j < child.Data.Length; j++)
+                    child.Data[j] = new LightNodeBundle.LightData { LightBlocked = r.ReadBoolean(), LightNum = r.ReadInt32() };
+                child.IndirectCoefficients = new Vector3[r.ReadInt32()];
+                for (int j = 0; j < child.IndirectCoefficients.Length; j++)
+                    child.IndirectCoefficients[j] = ReadVec3(r);
 
-                child.groupIndirectCoefficients = new Vector3[r.ReadInt32()][];
-                for (int g = 0; g < child.groupIndirectCoefficients.Length; g++)
+                child.GroupIndirectCoefficients = new Vector3[r.ReadInt32()][];
+                for (int g = 0; g < child.GroupIndirectCoefficients.Length; g++)
                 {
                     var coeffs = new Vector3[r.ReadInt32()];
                     for (int j = 0; j < coeffs.Length; j++) coeffs[j] = ReadVec3(r);
-                    child.groupIndirectCoefficients[g] = coeffs;
+                    child.GroupIndirectCoefficients[g] = coeffs;
                 }
 
-                bundle.children[i] = child;
+                bundle.Children[i] = child;
             }
             return bundle;
         }
 
         static void WriteNodeGraph(BinaryWriter w, NodeGraph graph)
         {
-            w.Write(graph.nodes.Length);
-            foreach (var n in graph.nodes)
+            w.Write(graph.Nodes.Length);
+            foreach (var n in graph.Nodes)
             {
-                WriteVec3(w, n.position);
-                int connCount = n.connections?.Length ?? 0;
+                WriteVec3(w, n.Position);
+                int connCount = n.Connections?.Length ?? 0;
                 w.Write(connCount);
-                for (int i = 0; i < connCount; i++) w.Write(n.connections[i]);
+                for (int i = 0; i < connCount; i++) w.Write(n.Connections[i]);
             }
         }
 
@@ -669,12 +669,12 @@ namespace Chisel.Formatter
             var nodes = new AINode[r.ReadInt32()];
             for (int i = 0; i < nodes.Length; i++)
             {
-                nodes[i].position = ReadVec3(r);
-                nodes[i].connections = new int[r.ReadInt32()];
-                for (int j = 0; j < nodes[i].connections.Length; j++)
-                    nodes[i].connections[j] = r.ReadInt32();
+                nodes[i].Position = ReadVec3(r);
+                nodes[i].Connections = new int[r.ReadInt32()];
+                for (int j = 0; j < nodes[i].Connections.Length; j++)
+                    nodes[i].Connections[j] = r.ReadInt32();
             }
-            return new NodeGraph { nodes = nodes };
+            return new NodeGraph { Nodes = nodes };
         }
 
         static void WriteVec3(BinaryWriter w, Vector3 v) { w.Write(v.X); w.Write(v.Y); w.Write(v.Z); }

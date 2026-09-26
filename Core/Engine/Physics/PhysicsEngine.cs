@@ -284,7 +284,7 @@ namespace Engine.Physics
         {
             if (brushSet == null || brushSet.Length == 0) return null;
 
-            var brushes = GlobalMapData.activeMap.brushes;
+            var brushes = GlobalMapData.ActiveMap.Brushes;
             if (brushes == null) return null;
 
             using var compoundSettings = new StaticCompoundShapeSettings();
@@ -295,12 +295,12 @@ namespace Engine.Physics
                 if (brushIdx < 0 || brushIdx >= brushes.Length) continue;
 
                 var brush = brushes[brushIdx];
-                if (brush.faces == null || brush.vertices == null) continue;
+                if (brush.Faces == null || brush.Vertices == null) continue;
 
-                var hullVerts = brush.faces
-                    .SelectMany(f => f.indices)
+                var hullVerts = brush.Faces
+                    .SelectMany(f => f.Indices)
                     .Distinct()
-                    .Select(idx => (brush.vertices[idx] + brush.position - anchor).ToNumerics())
+                    .Select(idx => (brush.Vertices[idx] + brush.Position - anchor).ToNumerics())
                     .ToArray();
 
                 // A valid convex hull needs at least 4 non-coplanar points; anything less is
@@ -319,22 +319,22 @@ namespace Engine.Physics
         }
         public static void OnMapLoaded()
         {
-            if (GlobalMapData.activeMap.brushes == null) return;
+            if (GlobalMapData.ActiveMap.Brushes == null) return;
 
             var rawVerts = new List<Vector3>();
             var rawIndices = new List<int>();
 
-            for (int i = 0; i < GlobalMapData.activeMap.brushes.Length; i++)
+            for (int i = 0; i < GlobalMapData.ActiveMap.Brushes.Length; i++)
             {
-                var brush = GlobalMapData.activeMap.brushes[i];
+                var brush = GlobalMapData.ActiveMap.Brushes[i];
 
-                if (brush.isTrigger)
+                if (brush.IsTrigger)
                 {
                     // brushes are convex by definition, so we can always use a ConvexHullShape.
                     // Collect every unique vertex across all faces of this brush.
-                    var hullVerts = brush.faces
-                        .SelectMany(f => f.indices)
-                        .Select(idx => brush.vertices[idx] + brush.position)
+                    var hullVerts = brush.Faces
+                        .SelectMany(f => f.Indices)
+                        .Select(idx => brush.Vertices[idx] + brush.Position)
                         .Select(v => new System.Numerics.Vector3(v.X, v.Y, v.Z))
                         .ToArray();
 
@@ -358,12 +358,12 @@ namespace Engine.Physics
                     TriggerBodyMap.Add(bodyID, i);
                     continue;
                 }
-                else if (brush.isClip)
+                else if (brush.IsClip)
                 {
-                    var hullVerts = brush.faces
-                        .SelectMany(f => f.indices)
+                    var hullVerts = brush.Faces
+                        .SelectMany(f => f.Indices)
                         .Distinct()
-                        .Select(idx => brush.vertices[idx] + brush.position)
+                        .Select(idx => brush.Vertices[idx] + brush.Position)
                         .Select(v => new System.Numerics.Vector3(v.X, v.Y, v.Z))
                         .ToArray();
 
@@ -387,15 +387,15 @@ namespace Engine.Physics
                     ShapeMapper.Add(bodyID, shape);
                     continue;
                 }
-                if (brush.isEntity && !brush.isDetail) continue;
+                if (brush.IsEntity && !brush.IsDetail) continue;
 
-                foreach (var face in brush.faces)
+                foreach (var face in brush.Faces)
                 {
-                    for (int k = 0; k < face.indices.Length; k += 3)
+                    for (int k = 0; k < face.Indices.Length; k += 3)
                     {
-                        var v0 = brush.vertices[face.indices[k + 0]] + brush.position;
-                        var v1 = brush.vertices[face.indices[k + 1]] + brush.position;
-                        var v2 = brush.vertices[face.indices[k + 2]] + brush.position;
+                        var v0 = brush.Vertices[face.Indices[k + 0]] + brush.Position;
+                        var v1 = brush.Vertices[face.Indices[k + 1]] + brush.Position;
+                        var v2 = brush.Vertices[face.Indices[k + 2]] + brush.Position;
 
                         rawVerts.Add(new Vector3(v0.X, v0.Y, v0.Z));
                         rawVerts.Add(new Vector3(v1.X, v1.Y, v1.Z));
@@ -408,16 +408,16 @@ namespace Engine.Physics
                     }
                 }
             }
-            if(GlobalMapData.activeMap.terrains != null)
+            if(GlobalMapData.ActiveMap.Terrains != null)
             {
-                for (int i = 0; i < GlobalMapData.activeMap.terrains.Length; i++)
+                for (int i = 0; i < GlobalMapData.ActiveMap.Terrains.Length; i++)
                 {
-                    var terrain = GlobalMapData.activeMap.terrains[i];
+                    var terrain = GlobalMapData.ActiveMap.Terrains[i];
 
                     var baseIndex = rawVerts.Count;
 
-                    rawVerts.AddRange(terrain.vertices.Select(i => i.Position));
-                    rawIndices.AddRange(terrain.triangles.Select(i => (int)i + baseIndex));
+                    rawVerts.AddRange(terrain.Vertices.Select(i => i.Position));
+                    rawIndices.AddRange(terrain.Triangles.Select(i => (int)i + baseIndex));
                 }
             }
 
@@ -476,11 +476,11 @@ namespace Engine.Physics
 
             while (PendingTriggerEvents.TryDequeue(out var evt))
             {
-                var brushes = GlobalMapData.activeMap.brushes;
+                var brushes = GlobalMapData.ActiveMap.Brushes;
                 if (brushes == null || evt.BrushIndex >= brushes.Length) continue;
 
                 var brush = brushes[evt.BrushIndex];
-                if (brush.entity is not BrushEntity brushEnt) continue;
+                if (brush.Entity is not BrushEntity brushEnt) continue;
                 if (!BodyMapper.TryGetValue(evt.EntityBodyID, out var entity)) continue;
                 if (entity is BrushEntity) continue;
                 if (entity.IsDespawned) continue;
@@ -605,12 +605,12 @@ namespace Engine.Physics
             if (i >= 256) i -= 256;
             else return ValidateResult.AcceptAllContactsForThisBodyPair;
 
-            if (GlobalMapData.activeMap.brushes[i].isTrigger)
+            if (GlobalMapData.ActiveMap.Brushes[i].IsTrigger)
             {
-                if (GlobalMapData.activeMap.brushes[i].entity != null && !GlobalMapData.activeMap.brushes[i].entity.insideBrush.Contains(entity))
+                if (GlobalMapData.ActiveMap.Brushes[i].Entity != null && !GlobalMapData.ActiveMap.Brushes[i].Entity.insideBrush.Contains(entity))
                 {
-                    GlobalMapData.activeMap.brushes[i].entity.insideBrush.Add(entity);
-                    GlobalMapData.activeMap.brushes[i].entity.OnEntityEnter(entity);
+                    GlobalMapData.ActiveMap.Brushes[i].Entity.insideBrush.Add(entity);
+                    GlobalMapData.ActiveMap.Brushes[i].Entity.OnEntityEnter(entity);
                 }
                 return ValidateResult.RejectContact;
             }

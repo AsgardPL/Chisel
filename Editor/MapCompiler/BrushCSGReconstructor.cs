@@ -46,12 +46,12 @@ public static class BrushCSGReconstructor
     /// </summary>
     static (Vector2 uv, Vector2 lmpUv) ComputeUVsForVertex(Vector3 worldPos, Face originalFace, Brush originalBrush)
     {
-        Vector3 localPos = worldPos - originalBrush.position;
+        Vector3 localPos = worldPos - originalBrush.Position;
 
-        var origIndices = originalFace.indices;
-        var origVerts = originalBrush.vertices;
-        var origUVs = originalBrush.uvs;
-        var origLMPUVs = originalBrush.lightmapUvs;
+        var origIndices = originalFace.Indices;
+        var origVerts = originalBrush.Vertices;
+        var origUVs = originalBrush.UVs;
+        var origLMPUVs = originalBrush.LightmapUVs;
 
         float bestDist = float.MaxValue;
         Vector2 bestUV = Vector2.Zero;
@@ -198,8 +198,8 @@ public static class BrushCSGReconstructor
 
                 for (int edgeIdx = 0; edgeIdx < verts.Count; edgeIdx++)
                 {
-                    Vector3 start = verts[edgeIdx] + brush.position;
-                    Vector3 end = verts[(edgeIdx + 1) % verts.Count] + brush.position;
+                    Vector3 start = verts[edgeIdx] + brush.Position;
+                    Vector3 end = verts[(edgeIdx + 1) % verts.Count] + brush.Position;
 
                     allEdges.Add(new WorldEdge
                     {
@@ -318,7 +318,7 @@ public static class BrushCSGReconstructor
 
             foreach (var (worldPos, t) in verticesToInsert)
             {
-                Vector3 localPos = worldPos - brush.position;
+                Vector3 localPos = worldPos - brush.Position;
                 face.Vertices.Insert(edgeIdx + 1, localPos);
                 totalVerticesAdded++;
             }
@@ -546,7 +546,7 @@ public static class BrushCSGReconstructor
             {
                 var verts = faces[faceIdx].Vertices;
                 for (int vertIdx = 0; vertIdx < verts.Count; vertIdx++)
-                    refs.Add((brushIdx, faceIdx, vertIdx, verts[vertIdx] + brush.position));
+                    refs.Add((brushIdx, faceIdx, vertIdx, verts[vertIdx] + brush.Position));
             }
         }
 
@@ -611,7 +611,7 @@ public static class BrushCSGReconstructor
             var (brushIdx, faceIdx, vertIdx, _) = refs[i];
             var brush = brushes[brushIdx];
 
-            brushPendingFaces[brushIdx][faceIdx].Vertices[vertIdx] = canonical - brush.position;
+            brushPendingFaces[brushIdx][faceIdx].Vertices[vertIdx] = canonical - brush.Position;
             welded++;
         }
 
@@ -645,8 +645,8 @@ public static class BrushCSGReconstructor
 
         foreach (var portal in portals)
         {
-            var frontNode = BSPRoot.nodes[portal.LeafFront];
-            var backNode = BSPRoot.nodes[portal.LeafBack];
+            var frontNode = BSPRoot.Nodes[portal.LeafFront];
+            var backNode = BSPRoot.Nodes[portal.LeafBack];
 
             int openLeaf = -1;
             if (!frontNode.solid && backNode.solid) openLeaf = portal.LeafFront;
@@ -676,15 +676,15 @@ public static class BrushCSGReconstructor
 
             var brush = brushes[brushIdx];
 
-            if (brush.isClip || brush.isTrigger || brush.isLightNodeVolume || brush.isSkybox || brush.isClip)
+            if (brush.IsClip || brush.IsTrigger || brush.IsLightNodeVolume || brush.IsSkybox || brush.IsClip)
                 continue;
 
             var portalList = brushToPortals[brushIdx];
             if (portalList.Count == 0)
                 continue;
 
-            var originalFaces = brush.faces.ToArray();
-            var originalVertices = brush.vertices.ToArray();
+            var originalFaces = brush.Faces.ToArray();
+            var originalVertices = brush.Vertices.ToArray();
 
             foreach (var (portal, originalFaceIdx, portalIdx, leafIdx) in portalList)
             {
@@ -698,22 +698,22 @@ public static class BrushCSGReconstructor
 
                 var originalFace = originalFaces[originalFaceIdx];
 
-                var faceVerts = originalFace.indices.Select(i => originalVertices[i]).ToArray();
+                var faceVerts = originalFace.Indices.Select(i => originalVertices[i]).ToArray();
 
-                if (!originalFace.plane.HasValue)
+                if (!originalFace.Plane.HasValue)
                 {
-                    originalFace.plane = new Plane(originalVertices[0], originalFace.normal);
+                    originalFace.Plane = new Plane(originalVertices[0], originalFace.Normal);
                 }
 
                 if (MathF.Abs(Portalizer.SignedWindingArea(portal.Vertices, portal.Plane)) >
-                    MathF.Abs(Portalizer.SignedWindingArea(faceVerts, originalFace.plane.Value)) + 32)
+                    MathF.Abs(Portalizer.SignedWindingArea(faceVerts, originalFace.Plane.Value)) + 32)
                     continue;
 
                 var portalVerts = portal.Vertices;
                 foreach (var bf in originalFaces)
                 {
-                    Vector3 pointOnFace = originalVertices[bf.indices[0]] + brush.position;
-                    Plane facePlane = new Plane(bf.normal, -Vector3.Dot(bf.normal, pointOnFace));
+                    Vector3 pointOnFace = originalVertices[bf.Indices[0]] + brush.Position;
+                    Plane facePlane = new Plane(bf.Normal, -Vector3.Dot(bf.Normal, pointOnFace));
 
                     float maxDist = 0f;
                     foreach (var v in portalVerts)
@@ -728,10 +728,10 @@ public static class BrushCSGReconstructor
                     continue;
 
                 var localVertices = portalVerts
-                    .Select(v => v - brush.position)
+                    .Select(v => v - brush.Position)
                     .ToList();
 
-                if (Vector3.Dot(portal.Plane.Normal, originalFace.normal) < 0)
+                if (Vector3.Dot(portal.Plane.Normal, originalFace.Normal) < 0)
                     localVertices.Reverse();
 
                 var pendingFace = new PendingFace
@@ -780,10 +780,10 @@ public static class BrushCSGReconstructor
             if (pendingFaces.Count == 0)
                 continue;
 
-            var originalFaces = brush.faces.ToArray();
-            var originalVertices = brush.vertices.ToArray();
-            var originalUVs = brush.uvs.ToArray();
-            var originalLMPUVs = brush.lightmapUvs.ToArray();
+            var originalFaces = brush.Faces.ToArray();
+            var originalVertices = brush.Vertices.ToArray();
+            var originalUVs = brush.UVs.ToArray();
+            var originalLMPUVs = brush.LightmapUVs.ToArray();
 
             var newVertices = new List<Vector3>();
             var newUVs = new List<Vector2>();
@@ -792,11 +792,11 @@ public static class BrushCSGReconstructor
 
             var tempBrush = new Brush
             {
-                position = brush.position,
-                vertices = originalVertices,
-                uvs = originalUVs,
-                lightmapUvs = originalLMPUVs,
-                faces = originalFaces
+                Position = brush.Position,
+                Vertices = originalVertices,
+                UVs = originalUVs,
+                LightmapUVs = originalLMPUVs,
+                Faces = originalFaces
             };
 
             for (int pfIdx = 0; pfIdx < pendingFaces.Count; pfIdx++)
@@ -810,20 +810,20 @@ public static class BrushCSGReconstructor
 
                 var newFace = new Face
                 {
-                    surface = originalFace.surface,
-                    normal = originalFace.normal,
-                    tangent = originalFace.tangent,
-                    binormal = originalFace.binormal,
-                    basis1 = originalFace.basis1,
-                    basis2 = originalFace.basis2,
-                    basis3 = originalFace.basis3,
-                    tScaleX = originalFace.tScaleX,
-                    tScaleY = originalFace.tScaleY,
-                    tOffX = originalFace.tOffX,
-                    tOffY = originalFace.tOffY,
-                    luxelScale = originalFace.luxelScale,
-                    materialName = originalFace.materialName,
-                    drawn = originalFace.drawn,
+                    Surface = originalFace.Surface,
+                    Normal = originalFace.Normal,
+                    Tangent = originalFace.Tangent,
+                    Binormal = originalFace.Binormal,
+                    Basis1 = originalFace.Basis1,
+                    Basis2 = originalFace.Basis2,
+                    Basis3 = originalFace.Basis3,
+                    TScaleX = originalFace.TScaleX,
+                    TScaleY = originalFace.TScaleY,
+                    TOffX = originalFace.TOffX,
+                    TOffY = originalFace.TOffY,
+                    LuxelScale = originalFace.LuxelScale,
+                    MaterialName = originalFace.MaterialName,
+                    Drawn = originalFace.Drawn,
                     toolFace = originalFace.toolFace,
                     smoothGroup = originalFace.smoothGroup,
                 };
@@ -834,57 +834,57 @@ public static class BrushCSGReconstructor
                 {
                     newVertices.Add(localVertices[i]);
 
-                    Vector3 worldPos = localVertices[i] + brush.position;
+                    Vector3 worldPos = localVertices[i] + brush.Position;
                     var (uv, LMPuv) = ComputeUVsForVertex(worldPos, originalFace, tempBrush);
                     newUVs.Add(uv);
                     newLightmapUVs.Add(LMPuv);
                 }
 
-                var triangleIndices = TriangulatePolygon(localVertices, originalFace.normal);
+                var triangleIndices = TriangulatePolygon(localVertices, originalFace.Normal);
                 var finalIndices = triangleIndices.Select(i => i + vertIDX).ToArray();
 
-                newFace.indices = finalIndices;
+                newFace.Indices = finalIndices;
 
                 finalFaceIndex[pfIdx] = newFaces.Count;
                 baseVertexIndex[pfIdx] = vertIDX;
                 newFaces.Add(newFace);
 
-                if (!newFace.drawn) continue;
+                if (!newFace.Drawn) continue;
 
                 int pendingIdx = pfIdx;
 
                 var workingPoly = new WorkingLeafPoly
                 {
                     LeafIndex = pendingFace.LeafIndex,
-                    MaterialName = originalFace.materialName,
-                    Normal = originalFace.normal,
-                    Tangent = originalFace.tangent,
-                    Binormal = originalFace.binormal,
-                    B1 = originalFace.basis1,
-                    B2 = originalFace.basis2,
-                    B3 = originalFace.basis3,
+                    MaterialName = originalFace.MaterialName,
+                    Normal = originalFace.Normal,
+                    Tangent = originalFace.Tangent,
+                    Binormal = originalFace.Binormal,
+                    B1 = originalFace.Basis1,
+                    B2 = originalFace.Basis2,
+                    B3 = originalFace.Basis3,
                     BrushIndex = brushIdx,
                     PendingFaceIndex = pendingIdx,
                 };
 
                 for (int i = 0; i < localVertices.Length; i++)
                 {
-                    Vector3 worldPos = localVertices[i] + brush.position;
+                    Vector3 worldPos = localVertices[i] + brush.Position;
                     workingPoly.Vertices.Add(worldPos);
                     //workingPoly.UVs.Add(ComputeUVForVertex(worldPos, originalFace, brush));
                     // LightmapUVs filled in later by ComputeLeafPolygonLightmapUVs
                 }
 
-                workingPoly.Indices.AddRange(TriangulatePolygon(localVertices.ToArray(), originalFace.normal));
+                workingPoly.Indices.AddRange(TriangulatePolygon(localVertices.ToArray(), originalFace.Normal));
                 workingPolys.Add(workingPoly);
             }
 
             if (newFaces.Count > 0)
             {
-                brush.vertices = newVertices.ToArray();
-                brush.uvs = newUVs.ToArray();
-                brush.lightmapUvs = newLightmapUVs.ToArray();
-                brush.faces = newFaces.ToArray();
+                brush.Vertices = newVertices.ToArray();
+                brush.UVs = newUVs.ToArray();
+                brush.LightmapUVs = newLightmapUVs.ToArray();
+                brush.Faces = newFaces.ToArray();
 
                 brushes[brushIdx] = brush;
             }
@@ -892,7 +892,7 @@ public static class BrushCSGReconstructor
 
         progressBar.Dispose();
 
-        int totalFacesAfter = brushes.Sum(b => b.faces.Length);
+        int totalFacesAfter = brushes.Sum(b => b.Faces.Length);
         Console.WriteLine($"Brush reconstruction complete. Total faces after CSG: {totalFacesAfter}");
     }
 
@@ -911,7 +911,7 @@ public static class BrushCSGReconstructor
             var baseIndices = pendingToBaseVertex[wp.BrushIndex];
 
             int vBase = wp.PendingFaceIndex < baseIndices.Length ? baseIndices[wp.PendingFaceIndex] : -1;
-            if (vBase < 0 || vBase + wp.Vertices.Count > brush.lightmapUvs.Length)
+            if (vBase < 0 || vBase + wp.Vertices.Count > brush.LightmapUVs.Length)
             {
                 Console.WriteLine($"Warning: leaf poly on brush {wp.BrushIndex} lost its vertex mapping, lightmap UVs left blank.");
                 continue;
@@ -920,8 +920,8 @@ public static class BrushCSGReconstructor
             wp.LightmapUVs.Clear();
             for (int i = 0; i < wp.Vertices.Count; i++)
             {
-                wp.UVs.Add(brush.uvs[vBase + i]);
-                wp.LightmapUVs.Add(brush.lightmapUvs[vBase + i]);
+                wp.UVs.Add(brush.UVs[vBase + i]);
+                wp.LightmapUVs.Add(brush.LightmapUVs[vBase + i]);
             }
         }
     }
@@ -936,7 +936,7 @@ public static class BrushCSGReconstructor
             var finalFaces = pendingToFinalFace[wp.BrushIndex];
             int finalFaceIdx = wp.PendingFaceIndex < finalFaces.Length ? finalFaces[wp.PendingFaceIndex] : -1;
 
-            if (finalFaceIdx < 0 || finalFaceIdx >= brushes[wp.BrushIndex].faces.Length)
+            if (finalFaceIdx < 0 || finalFaceIdx >= brushes[wp.BrushIndex].Faces.Length)
             {
                 for (int i = 0; i < wp.Vertices.Count; i++)
                 {
@@ -948,9 +948,9 @@ public static class BrushCSGReconstructor
             }
 
             var brush = brushes[wp.BrushIndex];
-            var face = brush.faces[finalFaceIdx];
+            var face = brush.Faces[finalFaceIdx];
 
-            Vector3 flatNormal = face.normal;
+            Vector3 flatNormal = face.Normal;
             Vector3 flatTangent = wp.Tangent;
             Vector3 flatBinormal = wp.Binormal;
 

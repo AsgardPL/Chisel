@@ -99,7 +99,7 @@ namespace Rockwall2.Tools
                 _ => PrimitiveGenerator.Box(bounds),
             };
             previewBrush = BrushOperations.CreateBrushFromPlanes(planes, Toolbelt.ActiveTexture,
-                GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]);
+                GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]);
         }
 
         public override void OnSelected()
@@ -313,7 +313,7 @@ namespace Rockwall2.Tools
             {
                 worldPos = Vector3.Round((sceneRay.Position + sceneRay.Direction * mapHit.distance)
                                / Transformable.GridSize) * Transformable.GridSize;
-                var fn = MapTools.Brushes[mapHit.brush].faces[mapHit.face].normal;
+                var fn = MapTools.Brushes[mapHit.brush].Faces[mapHit.face].Normal;
                 var an = new Vector3(MathF.Abs(fn.X), MathF.Abs(fn.Y), MathF.Abs(fn.Z));
                 Vector3 sn = an.X >= an.Y && an.X >= an.Z ? new Vector3(MathF.Sign(fn.X), 0, 0)
                            : an.Y >= an.X && an.Y >= an.Z ? new Vector3(0, MathF.Sign(fn.Y), 0)
@@ -351,24 +351,24 @@ namespace Rockwall2.Tools
                 case PrimitiveShape.Cylinder:
                     created = BrushOperations.CreateBrushFromPlanes(
                         PrimitiveGenerator.Cylinder(bounds, primitiveSides, PrimitiveAxis),
-                        Toolbelt.ActiveTexture, GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]).Value;
+                        Toolbelt.ActiveTexture, GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]).Value;
                     break;
                 case PrimitiveShape.Sphere:
                     created = BrushOperations.CreateBrushFromPlanes(
                         PrimitiveGenerator.Sphere(bounds, primitiveSides / 2, primitiveSides, PrimitiveAxis),
-                        Toolbelt.ActiveTexture, GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]).Value;
+                        Toolbelt.ActiveTexture, GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]).Value;
                     break;
                 case PrimitiveShape.Cone:
                     created = BrushOperations.CreateBrushFromPlanes(
                         PrimitiveGenerator.Cone(bounds, primitiveSides, PrimitiveAxis),
-                        Toolbelt.ActiveTexture, GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]).Value;
+                        Toolbelt.ActiveTexture, GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]).Value;
                     break;
                 default:
                     created = BrushOperations.CreateBrush(bounds.Min, bounds.Max);
                     break;
             }
 
-            created.position = brushOrigin;
+            created.Position = brushOrigin;
 
             var oldBrushes = MapTools.Brushes;
 
@@ -378,7 +378,7 @@ namespace Rockwall2.Tools
             var brushRef = MapTools.Brushes[MapTools.Brushes.Length - 1];
             Toolbelt.UndoManager.DoOnUndo(() =>
             {
-                MapTools.ActiveMap.brushes = oldBrushes;
+                MapTools.ActiveMap.Brushes = oldBrushes;
                 MapTools.RecomputeAllBrushBounds();
             });
 
@@ -734,18 +734,18 @@ namespace Rockwall2.Tools
         {
             var verts = new List<VertexPositionColor>();
 
-            foreach (var face in brush.faces)
+            foreach (var face in brush.Faces)
             {
-                if (face.indices == null || face.indices.Length < 3) continue;
+                if (face.Indices == null || face.Indices.Length < 3) continue;
 
-                var ring = face.indices.Distinct().ToList();
+                var ring = face.Indices.Distinct().ToList();
                 if (ring.Count < 3) continue;
 
                 Vector3 center = Vector3.Zero;
-                foreach (var idx in ring) center += brush.vertices[idx];
+                foreach (var idx in ring) center += brush.Vertices[idx];
                 center /= ring.Count;
 
-                Vector3 normal = face.normal;
+                Vector3 normal = face.Normal;
                 Vector3 refAxis = Vector3.Cross(normal, Vector3.UnitZ);
                 if (refAxis.LengthSquared() < 1e-6f)
                     refAxis = Vector3.Cross(normal, Vector3.UnitX);
@@ -754,8 +754,8 @@ namespace Rockwall2.Tools
 
                 ring.Sort((a, b) =>
                 {
-                    Vector3 da = brush.vertices[a] - center;
-                    Vector3 db = brush.vertices[b] - center;
+                    Vector3 da = brush.Vertices[a] - center;
+                    Vector3 db = brush.Vertices[b] - center;
                     float angA = MathF.Atan2(Vector3.Dot(da, perpAxis), Vector3.Dot(da, refAxis));
                     float angB = MathF.Atan2(Vector3.Dot(db, perpAxis), Vector3.Dot(db, refAxis));
                     return angA.CompareTo(angB);
@@ -763,8 +763,8 @@ namespace Rockwall2.Tools
 
                 for (int i = 0; i < ring.Count; i++)
                 {
-                    Vector3 p0 = brush.vertices[ring[i]] + brush.position;
-                    Vector3 p1 = brush.vertices[ring[(i + 1) % ring.Count]] + brush.position;
+                    Vector3 p0 = brush.Vertices[ring[i]] + brush.Position;
+                    Vector3 p1 = brush.Vertices[ring[(i + 1) % ring.Count]] + brush.Position;
                     verts.Add(new VertexPositionColor(p0, color));
                     verts.Add(new VertexPositionColor(p1, color));
                 }

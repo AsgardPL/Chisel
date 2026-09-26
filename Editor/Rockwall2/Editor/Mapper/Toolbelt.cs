@@ -183,7 +183,7 @@ public static class Toolbelt
                 if (entity.entity >= MapTools.Entities.Length) continue;
                 if (entity.entity < 0) continue;
 
-                var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == MapTools.Entities[entity.entity].entityName);
+                var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == MapTools.Entities[entity.entity].EntityName);
                 if (id != -1)
                 {
                     box = new BoundingBox(GlobalEditorData.EditorOverrides.overrides[id].boundsMin + entity.GetPosition(),
@@ -195,7 +195,7 @@ public static class Toolbelt
                 if (terrain.terrain >= MapTools.Terrains.Length) continue;
                 if (terrain.terrain < 0) continue;
 
-                box = MapTools.Terrains[terrain.terrain].bounds;
+                box = MapTools.Terrains[terrain.terrain].Bounds;
             }
             if (sel is BrushMoveable brush)
             {
@@ -216,8 +216,8 @@ public static class Toolbelt
                 if (edge.brush >= MapTools.BrushBounds.Length) continue;
                 if (edge.brush < 0) continue;
 
-                var pa = MapTools.Brushes[edge.brush].position + MapTools.Brushes[edge.brush].vertices[edge.vertA];
-                var pb = MapTools.Brushes[edge.brush].position + MapTools.Brushes[edge.brush].vertices[edge.vertB];
+                var pa = MapTools.Brushes[edge.brush].Position + MapTools.Brushes[edge.brush].Vertices[edge.vertA];
+                var pb = MapTools.Brushes[edge.brush].Position + MapTools.Brushes[edge.brush].Vertices[edge.vertB];
 
                 var aa = Vector3.Min(pa, pb);
                 var bb = Vector3.Max(pa, pb);
@@ -230,7 +230,7 @@ public static class Toolbelt
                 if (vert.brush >= MapTools.BrushBounds.Length) continue;
                 if (vert.brush < 0) continue;
 
-                var pa = MapTools.Brushes[vert.brush].position + MapTools.Brushes[vert.brush].vertices[vert.vert];
+                var pa = MapTools.Brushes[vert.brush].Position + MapTools.Brushes[vert.brush].Vertices[vert.vert];
                 box = new BoundingBox(Vector3.Min(pa - Vector3.One * f, pa + Vector3.One * f),
                                       Vector3.Max(pa - Vector3.One * f, pa + Vector3.One * f));
             }
@@ -239,7 +239,7 @@ public static class Toolbelt
                 if (hintSel.hint >= MapTools.Hints.Length) continue;
                 if (hintSel.hint < 0) continue;
 
-                var pos = MapTools.Hints[hintSel.hint].position;
+                var pos = MapTools.Hints[hintSel.hint].Position;
                 box = new BoundingBox(pos - Vector3.One * 0.25f, pos + Vector3.One * 0.25f);
             }
 
@@ -413,7 +413,7 @@ public static class Toolbelt
             {
                 Watermark = "Header",
                 Margin = new Avalonia.Thickness(0, 0, 0, 8),
-                Text = hint.header
+                Text = hint.Header
             };
 
             var descriptionBox = new TextBox
@@ -423,7 +423,7 @@ public static class Toolbelt
                 TextWrapping = TextWrapping.Wrap,
                 Height = 150,
                 Margin = new Avalonia.Thickness(0, 0, 0, 8),
-                Text = hint.body
+                Text = hint.Body
             };
 
             var okButton = new Button
@@ -459,8 +459,8 @@ public static class Toolbelt
                 var header = headerBox.Text;
                 var description = descriptionBox.Text;
 
-                hint.header = header;
-                hint.body = description;
+                hint.Header = header;
+                hint.Body = description;
 
                 window.Close();
             };

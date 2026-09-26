@@ -15,7 +15,7 @@ namespace MapCompiler
         public static bool PlaceOccupant(int num, Vector3 point)
         {
             var nodeID = BSPRoot.Traverse(point);
-            var node = BSPRoot.nodes[nodeID];
+            var node = BSPRoot.Nodes[nodeID];
 
             if (node.solid) return false;
 

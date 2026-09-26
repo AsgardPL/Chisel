@@ -65,7 +65,7 @@ public class RopeObject : WorldEntity
             effect.Param("View").SetValue(RenderEngine.ViewMatrix);
             effect.Param("Projection").SetValue(RenderEngine.ProjectionMatrix);
             effect.Param("AlphaClip").SetValue(true);
-            effect.Param("MainTex").SetValue(GlobalMapData.loadedMaterials[materialID].Texture);
+            effect.Param("MainTex").SetValue(GlobalMapData.LoadedMaterials[materialID].Texture);
 
             Vector3 cameraPos = RenderEngine.CameraPosition;
             float thickness = 0.15f;
@@ -264,7 +264,7 @@ public class RopeObject : WorldEntity
         {
             string mat = (string)(entity.ReadProperty("Material", EntityPropertyType.String) ?? "Rope");
 
-            GlobalMapData.materialNameToIndex.TryGetValue(mat, out materialID);
+            GlobalMapData.MaterialNameToIndex.TryGetValue(mat, out materialID);
         }
 
         public override void OnUpdate(GameTime gameTime)

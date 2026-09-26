@@ -14,15 +14,15 @@ namespace MapCompiler
     {
         public static (System.Drawing.Bitmap[] textures, Color[] matColors) Load(string texturePath,Brush[] brushes)
         {
-            var textures   = new System.Drawing.Bitmap[GlobalMapData.loadedMaterials.Length];
-            var matColors  = new Color[GlobalMapData.loadedMaterials.Length];
+            var textures   = new System.Drawing.Bitmap[GlobalMapData.LoadedMaterials.Length];
+            var matColors  = new Color[GlobalMapData.LoadedMaterials.Length];
 
-            var usedTextures = brushes.SelectMany(b => b.faces).Select(f => f.surface).Distinct().ToArray();
+            var usedTextures = brushes.SelectMany(b => b.Faces).Select(f => f.Surface).Distinct().ToArray();
             CompilerConsole.Stat("Unique textures", usedTextures.Length);
 
             foreach (int i in usedTextures)
                 textures[i] = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromFile(
-                    $"{texturePath}/{GlobalMapData.loadedMaterials[i].texture}.png");
+                    $"{texturePath}/{GlobalMapData.LoadedMaterials[i].TextureName}.png");
 
             Parallel.ForEach(usedTextures, i =>
                 matColors[i] = GetDominantColor(textures[i]));

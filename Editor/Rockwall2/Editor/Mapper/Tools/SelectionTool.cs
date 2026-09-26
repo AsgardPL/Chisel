@@ -69,7 +69,7 @@ namespace Rockwall2.Tools
             o is FaceMoveable fm ? fm.brush :
             o is BrushVertexMoveable bv ? bv.brush :
             o is BrushEdgeMoveable be ? be.brush :
-            o is TerrainMoveable tm && tm.terrain >= 0 && tm.terrain < MapTools.Terrains.Length ? MapTools.Terrains[tm.terrain].brushSource :
+            o is TerrainMoveable tm && tm.terrain >= 0 && tm.terrain < MapTools.Terrains.Length ? MapTools.Terrains[tm.terrain].BrushSource :
             -1;
 
 
@@ -216,7 +216,7 @@ namespace Rockwall2.Tools
                     menu.MaxHeight = 300;
 
                     if (Toolbelt.SelectedObjects[0] is EntityMoveable ent ||
-                       (Toolbelt.SelectedObjects[0] is BrushMoveable brush && MapTools.Brushes[brush.brush].isEntity))
+                       (Toolbelt.SelectedObjects[0] is BrushMoveable brush && MapTools.Brushes[brush.brush].IsEntity))
                     {
                         Avalonia.Controls.MenuItem item = new();
 
@@ -251,17 +251,17 @@ namespace Rockwall2.Tools
 
                             var entity = new EntityReference
                             {
-                                position = pos,
-                                entityName = "PointLight",
-                                entityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
-                                scale = Vector3.One,
+                                Position = pos,
+                                EntityName = "PointLight",
+                                EntityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
+                                Scale = Vector3.One,
                             };
 
-                            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.entityName);
+                            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.EntityName);
                             if (id != -1 && GlobalEditorData.EditorOverrides.overrides[id].defaultProperties != null)
                             {
-                                entity.properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
-                                Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.properties, entity.properties.Length);
+                                entity.Properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
+                                Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.Properties, entity.Properties.Length);
                             }
 
                             MapTools.AddEntity(entity);
@@ -279,17 +279,17 @@ namespace Rockwall2.Tools
 
                             var entity = new EntityReference
                             {
-                                position = pos,
-                                entityName = "DirectionalLight",
-                                entityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
-                                scale = Vector3.One,
+                                Position = pos,
+                                EntityName = "DirectionalLight",
+                                EntityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
+                                Scale = Vector3.One,
                             };
 
-                            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.entityName);
+                            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.EntityName);
                             if (id != -1 && GlobalEditorData.EditorOverrides.overrides[id].defaultProperties != null)
                             {
-                                entity.properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
-                                Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.properties, entity.properties.Length);
+                                entity.Properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
+                                Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.Properties, entity.Properties.Length);
                             }
 
                             MapTools.AddEntity(entity);
@@ -307,17 +307,17 @@ namespace Rockwall2.Tools
 
                             var entity = new EntityReference
                             {
-                                position = pos,
-                                entityName = "Player",
-                                entityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
-                                scale = Vector3.One,
+                                Position = pos,
+                                EntityName = "Player",
+                                EntityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
+                                Scale = Vector3.One,
                             };
 
-                            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.entityName);
+                            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.EntityName);
                             if (id != -1 && GlobalEditorData.EditorOverrides.overrides[id].defaultProperties != null)
                             {
-                                entity.properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
-                                Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.properties, entity.properties.Length);
+                                entity.Properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
+                                Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.Properties, entity.Properties.Length);
                             }
 
                             MapTools.AddEntity(entity);
@@ -413,8 +413,8 @@ namespace Rockwall2.Tools
                 {
                     ref var brush = ref MapTools.Brushes[pivotDragState.brush];
 
-                    brush.vertices = brush.vertices.Select(v => v - move).ToArray();
-                    brush.position += move;
+                    brush.Vertices = brush.Vertices.Select(v => v - move).ToArray();
+                    brush.Position += move;
 
                     BrushOperations.RecalculateBrushPlanes(ref brush);
                     BrushOperations.RebuildBrush(ref brush);
@@ -459,7 +459,7 @@ namespace Rockwall2.Tools
 
                     var brush = MapTools.Brushes[bi];
 
-                    if (Vector2.Distance(mouse, vp.WorldToLocal(brush.position)) < 10f)
+                    if (Vector2.Distance(mouse, vp.WorldToLocal(brush.Position)) < 10f)
                     {
                         if (MouseManager.IsDown(MouseButton.Left))
                         {
@@ -640,7 +640,7 @@ namespace Rockwall2.Tools
             // Note: terrains and hints aren't included here yet
             foreach (var (entity, idx) in MapTools.Entities.Select((e, i) => (e, i)))
             {
-                var local = vp.WorldToLocal(entity.position);
+                var local = vp.WorldToLocal(entity.Position);
                 if (!RectContainsPoint(rect, local)) continue;
                 if (Toolbelt.SelectedObjects.Any(o => o is EntityMoveable em && em.entity == idx)) continue;
 
@@ -756,7 +756,7 @@ namespace Rockwall2.Tools
                     if (bi == -1) continue;
                     var brush = MapTools.Brushes[bi];
 
-                    var pivotScreen = vp.WorldToLocal(brush.position);
+                    var pivotScreen = vp.WorldToLocal(brush.Position);
                     var pivotColor = pivotDragState.isDragging ? Color.LightGray : Color.DarkGray;
                     spriteBatch.DrawCircle(new CircleF(pivotScreen, 6), 12, pivotColor, 2f);
                     spriteBatch.DrawLine(pivotScreen - Vector2.UnitX * 8, pivotScreen + Vector2.UnitX * 8, pivotColor, 1.0f);
@@ -777,12 +777,12 @@ namespace Rockwall2.Tools
             for (int bi = 0; bi < altDragFakeBrushes.Count; bi++)
             {
                 var (brush, faceIndex) = altDragFakeBrushes[bi];
-                if (brush.vertices == null || brush.faces == null) continue;
+                if (brush.Vertices == null || brush.Faces == null) continue;
 
-                var face = brush.faces[faceIndex];
-                if (!face.plane.HasValue) continue;
+                var face = brush.Faces[faceIndex];
+                if (!face.Plane.HasValue) continue;
 
-                Plane currentPlane = face.plane.Value;
+                Plane currentPlane = face.Plane.Value;
                 Plane originalPlane = altDragOriginalPlanes[bi];
 
                 bool isSlicing = currentPlane.D > originalPlane.D;
@@ -794,8 +794,8 @@ namespace Rockwall2.Tools
                     var seenEdges = new HashSet<(int, int)>();
 
                     // Collect unique verts of the face polygon for a line loop
-                    var uniqueVerts = face.indices
-                        .Select(i => brush.vertices[i] + brush.position)
+                    var uniqueVerts = face.Indices
+                        .Select(i => brush.Vertices[i] + brush.Position)
                         .Distinct()
                         .ToList();
 
@@ -826,9 +826,9 @@ namespace Rockwall2.Tools
                     var lineVerts = new List<VertexPosition>();
 
                     // Use brush planes + original plane as cap to find clipped vertices
-                    var clipPlanes = brush.faces
-                        .Where(f => f.plane.HasValue)
-                        .Select(f => f.plane.Value)
+                    var clipPlanes = brush.Faces
+                        .Where(f => f.Plane.HasValue)
+                        .Select(f => f.Plane.Value)
                         .ToList();
                     clipPlanes.Add(new Plane(-originalPlane.Normal, -originalPlane.D));
 
@@ -856,7 +856,7 @@ namespace Rockwall2.Tools
                                 }
 
                                 if (inside && !clippedVerts.Any(e => Vector3.DistanceSquared(e, v.Value) < 0.001f))
-                                    clippedVerts.Add(v.Value + brush.position);
+                                    clippedVerts.Add(v.Value + brush.Position);
                             }
                         }
                     }
@@ -865,7 +865,7 @@ namespace Rockwall2.Tools
                     for (int fi = 0; fi < clipPlanes.Count; fi++)
                     {
                         var facePts = clippedVerts.Where(v =>
-                            MathF.Abs(clipPlanes[fi].DotCoordinate(v - brush.position)) < 0.1f).ToList();
+                            MathF.Abs(clipPlanes[fi].DotCoordinate(v - brush.Position)) < 0.1f).ToList();
 
                         if (facePts.Count < 3) continue;
 
@@ -964,9 +964,9 @@ namespace Rockwall2.Tools
 
                             if (source == null) continue;
 
-                            var name = source.name;
+                            var name = source.Name;
                             if (string.IsNullOrEmpty(name)) { selectedValid = false; break; }
-                            if (MapTools.Entities.Any(e => e.name == name && e != source)) { selectedValid = false; break; }
+                            if (MapTools.Entities.Any(e => e.Name == name && e != source)) { selectedValid = false; break; }
 
                             properSelections.Add(source);
                         }
@@ -1039,8 +1039,8 @@ namespace Rockwall2.Tools
             {
                 if (ea.brush != eb.brush) return false;
                 var brush = MapTools.Brushes[ea.brush];
-                return Vector3.DistanceSquared(brush.vertices[ea.vertA], brush.vertices[eb.vertA]) < 0.01f
-                    && Vector3.DistanceSquared(brush.vertices[ea.vertB], brush.vertices[eb.vertB]) < 0.01f;
+                return Vector3.DistanceSquared(brush.Vertices[ea.vertA], brush.Vertices[eb.vertA]) < 0.01f
+                    && Vector3.DistanceSquared(brush.Vertices[ea.vertB], brush.Vertices[eb.vertB]) < 0.01f;
             }
             return false;
         }
@@ -1057,7 +1057,7 @@ namespace Rockwall2.Tools
                 if (Toolbelt.HighlightedObject is TerrainMoveable paintTerrain)
                 {
                     int srcBrush = paintTerrain.terrain >= 0 && paintTerrain.terrain < MapTools.Terrains.Length
-                        ? MapTools.Terrains[paintTerrain.terrain].brushSource : -1;
+                        ? MapTools.Terrains[paintTerrain.terrain].BrushSource : -1;
 
                     if (srcBrush >= 0 && srcBrush < MapTools.Brushes.Length &&
                         !Toolbelt.SelectedObjects.Any(o => o is BrushMoveable bm && bm.brush == srcBrush))
@@ -1091,7 +1091,7 @@ namespace Rockwall2.Tools
 
                 if (owner != null)
                 {
-                    var groupIndices = owner != null ? owner.brushIndices : new List<int> { bID };
+                    var groupIndices = owner != null ? owner.BrushIndices : new List<int> { bID };
 
                     bool anySelected = Toolbelt.SelectedObjects.Any(o => o is BrushMoveable bm && groupIndices.Contains(bm.brush));
 
@@ -1113,7 +1113,7 @@ namespace Rockwall2.Tools
             if (Toolbelt.HighlightedObject is TerrainMoveable hitTerrain)
             {
                 int srcBrush = hitTerrain.terrain >= 0 && hitTerrain.terrain < MapTools.Terrains.Length
-                    ? MapTools.Terrains[hitTerrain.terrain].brushSource : -1;
+                    ? MapTools.Terrains[hitTerrain.terrain].BrushSource : -1;
 
                 var foundTerrain = Toolbelt.SelectedObjects.Find(t => IsSameTarget(t, hitTerrain));
 
@@ -1178,9 +1178,9 @@ namespace Rockwall2.Tools
                 foreach (var obj in Toolbelt.SelectedObjects)
                 {
                     if (obj is not FaceMoveable face) continue;
-                    var realFace = MapTools.Brushes[face.brush].faces[face.face];
+                    var realFace = MapTools.Brushes[face.brush].Faces[face.face];
                     if (wheel != 0) movedAny = true;
-                    face.Move(Vector3.Normalize(realFace.normal) * Transformable.GridSize * wheel);
+                    face.Move(Vector3.Normalize(realFace.Normal) * Transformable.GridSize * wheel);
 
                     //if(EditorPrefs.EnableSFX)
                     //{
@@ -1214,7 +1214,7 @@ namespace Rockwall2.Tools
                     if (obj is FaceMoveable face)
                     {
                         altDragFakeBrushes.Add((BrushOperations.DuplicateBrush(MapTools.Brushes[face.brush], false), face.face));
-                        altDragOriginalPlanes.Add(MapTools.Brushes[face.brush].faces[face.face].plane.Value);
+                        altDragOriginalPlanes.Add(MapTools.Brushes[face.brush].Faces[face.face].Plane.Value);
                     }
                 }
                 movedAny = false;
@@ -1222,7 +1222,7 @@ namespace Rockwall2.Tools
                 totalScrollDelta = 0f;
 
                 altDragMoveDirection = altDragFakeBrushes.Count > 0
-                    ? altDragFakeBrushes[0].brush.faces[altDragFakeBrushes[0].face].normal
+                    ? altDragFakeBrushes[0].brush.Faces[altDragFakeBrushes[0].face].Normal
                     : Vector3.Up;
             }
             if (KeyboardManager.IsDown(extrudeKey) && isAltDragging)
@@ -1236,7 +1236,7 @@ namespace Rockwall2.Tools
                     {
                         var (brush, face) = altDragFakeBrushes[i];
 
-                        brush.faces[face].plane = altDragOriginalPlanes[i];
+                        brush.Faces[face].Plane = altDragOriginalPlanes[i];
                         BrushOperations.RebuildBrush(ref brush);
                         BrushOperations.MoveFace(ref brush, face, totalScrollDelta);
                         altDragFakeBrushes[i] = (brush, face);
@@ -1262,11 +1262,11 @@ namespace Rockwall2.Tools
                     {
                         var (fakeBrush, faceIndex) = altDragFakeBrushes[i];
                         var originalPlane = altDragOriginalPlanes[i];
-                        var currentPlane = fakeBrush.faces[faceIndex].plane.Value;
+                        var currentPlane = fakeBrush.Faces[faceIndex].Plane.Value;
                         bool isSlicing = currentPlane.D > originalPlane.D;
 
-                        var slicePlane = new Plane(currentPlane.Normal, currentPlane.D - Vector3.Dot(currentPlane.Normal, fakeBrush.position));
-                        var originalSlicePlane = new Plane(originalPlane.Normal, originalPlane.D - Vector3.Dot(originalPlane.Normal, fakeBrush.position));
+                        var slicePlane = new Plane(currentPlane.Normal, currentPlane.D - Vector3.Dot(currentPlane.Normal, fakeBrush.Position));
+                        var originalSlicePlane = new Plane(originalPlane.Normal, originalPlane.D - Vector3.Dot(originalPlane.Normal, fakeBrush.Position));
 
                         var sourceFace = sourceFaces.ElementAtOrDefault(i);
                         if (sourceFace == null) continue;
@@ -1343,24 +1343,24 @@ namespace Rockwall2.Tools
                 {
                     SnapshotFaceForUndo(f.brush, f.face, out var restore);
 
-                    MapTools.Brushes[f.brush].faces[f.face].materialName =
+                    MapTools.Brushes[f.brush].Faces[f.face].MaterialName =
                         Toolbelt.ActiveTexture;
-                    MapTools.Brushes[f.brush].faces[f.face].surface =
-                        GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture];
+                    MapTools.Brushes[f.brush].Faces[f.face].Surface =
+                        GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture];
                     BrushOperations.RebuildBrush(ref MapTools.Brushes[f.brush]);
 
                     Toolbelt.UndoManager.DoOnUndo(restore);
                 }
                 else if (Toolbelt.HighlightedObject is BrushMoveable b)
                 {
-                    var restores = new System.Action[MapTools.Brushes[b.brush].faces.Length];
-                    for (int j = 0; j < MapTools.Brushes[b.brush].faces.Length; j++)
+                    var restores = new System.Action[MapTools.Brushes[b.brush].Faces.Length];
+                    for (int j = 0; j < MapTools.Brushes[b.brush].Faces.Length; j++)
                     {
                         SnapshotFaceForUndo(b.brush, j, out restores[j]);
-                        MapTools.Brushes[b.brush].faces[j].materialName =
+                        MapTools.Brushes[b.brush].Faces[j].MaterialName =
                             Toolbelt.ActiveTexture;
-                        MapTools.Brushes[b.brush].faces[j].surface =
-                            GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture];
+                        MapTools.Brushes[b.brush].Faces[j].Surface =
+                            GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture];
                     }
                     BrushOperations.RebuildBrush(ref MapTools.Brushes[b.brush]);
                     Toolbelt.UndoManager.DoOnUndo(() => { foreach (var r in restores) r(); });
@@ -1379,8 +1379,8 @@ namespace Rockwall2.Tools
                 }
                 else if (Toolbelt.HighlightedObject is BrushMoveable b)
                 {
-                    var restores = new System.Action[MapTools.Brushes[b.brush].faces.Length];
-                    for (int j = 0; j < MapTools.Brushes[b.brush].faces.Length; j++)
+                    var restores = new System.Action[MapTools.Brushes[b.brush].Faces.Length];
+                    for (int j = 0; j < MapTools.Brushes[b.brush].Faces.Length; j++)
                     {
                         SnapshotFaceForUndo(b.brush, j, out restores[j]);
                         TextureClipboard.StampOntoFace(b.brush, j, includeMaterial: true);
@@ -1393,25 +1393,25 @@ namespace Rockwall2.Tools
 
         void SnapshotFaceForUndo(int bi, int fi, out System.Action restore)
         {
-            var face = MapTools.Brushes[bi].faces[fi];
-            string n = face.materialName;
-            int s = face.surface;
-            float ox = face.tOffX, oy = face.tOffY;
-            float sx = face.tScaleX, sy = face.tScaleY;
-            float r = face.uvRotation;
-            float lx = face.luxelScale;
-            var pm = face.uvProjectionMode;
+            var face = MapTools.Brushes[bi].Faces[fi];
+            string n = face.MaterialName;
+            int s = face.Surface;
+            float ox = face.TOffX, oy = face.TOffY;
+            float sx = face.TScaleX, sy = face.TScaleY;
+            float r = face.UvRotation;
+            float lx = face.LuxelScale;
+            var pm = face.UvProjectionMode;
 
             restore = () => {
-                MapTools.Brushes[bi].faces[fi].materialName = n;
-                MapTools.Brushes[bi].faces[fi].surface = s;
-                MapTools.Brushes[bi].faces[fi].tOffX = ox;
-                MapTools.Brushes[bi].faces[fi].tOffY = oy;
-                MapTools.Brushes[bi].faces[fi].tScaleX = sx;
-                MapTools.Brushes[bi].faces[fi].tScaleY = sy;
-                MapTools.Brushes[bi].faces[fi].uvRotation = r;
-                MapTools.Brushes[bi].faces[fi].luxelScale = lx;
-                MapTools.Brushes[bi].faces[fi].uvProjectionMode = pm;
+                MapTools.Brushes[bi].Faces[fi].MaterialName = n;
+                MapTools.Brushes[bi].Faces[fi].Surface = s;
+                MapTools.Brushes[bi].Faces[fi].TOffX = ox;
+                MapTools.Brushes[bi].Faces[fi].TOffY = oy;
+                MapTools.Brushes[bi].Faces[fi].TScaleX = sx;
+                MapTools.Brushes[bi].Faces[fi].TScaleY = sy;
+                MapTools.Brushes[bi].Faces[fi].UvRotation = r;
+                MapTools.Brushes[bi].Faces[fi].LuxelScale = lx;
+                MapTools.Brushes[bi].Faces[fi].UvProjectionMode = pm;
                 BrushOperations.RebuildBrush(ref MapTools.Brushes[bi]);
             };
         }
@@ -1469,19 +1469,19 @@ namespace Rockwall2.Tools
             // Group: one new entity owning every selected brush, not one entity per brush.
             var entity = new EntityReference
             {
-                entityName = "FuncDetail",
-                properties = Array.Empty<EntityProperty>(),
-                brushIndices = new List<int>(ids),
+                EntityName = "FuncDetail",
+                Properties = Array.Empty<EntityProperty>(),
+                BrushIndices = new List<int>(ids),
                 brushOwnerGUIDs = MapTools.GuidsForBrushIndices(ids),
-                position = (unionBounds ?? default).Min,
+                Position = (unionBounds ?? default).Min,
             };
 
             var eid = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == "FuncDetail");
             if (eid != -1)
             {
                 var src = GlobalEditorData.EditorOverrides.overrides[eid].defaultProperties;
-                entity.properties = new EntityProperty[src.Length];
-                Array.Copy(src, entity.properties, src.Length);
+                entity.Properties = new EntityProperty[src.Length];
+                Array.Copy(src, entity.Properties, src.Length);
             }
 
             MapTools.AddEntity(entity);
@@ -1507,7 +1507,7 @@ namespace Rockwall2.Tools
                 MapTools.AddBrush(brush.Value);
                 Toolbelt.UndoManager.DoOnUndo(() =>
                 {
-                    MapTools.ActiveMap.brushes = oldBrushes;
+                    MapTools.ActiveMap.Brushes = oldBrushes;
                     MapTools.RecomputeAllBrushBounds();
                 });
             }

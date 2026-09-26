@@ -48,9 +48,9 @@ namespace Engine.Entities
 
             MainEngine.ActiveStaticLights.Add(new Rockwall.Light
             {
-                type = Rockwall.Light.LightType.Directional,
-                id = int.Parse(Array.Find(entity.properties, prop => prop.Name == "ID").Value),
-                targetname = entity.Name,
+                Type = Rockwall.Light.LightType.Directional,
+                ID = int.Parse(Array.Find(entity.properties, prop => prop.Name == "ID").Value),
+                TargetName = entity.Name,
             });
 
             string skybox = Array.Find(entity.properties, prop => prop.Name == "Skybox").Value;
@@ -120,13 +120,13 @@ namespace Engine.Entities
 
             MainEngine.ActiveStaticLights.Add(new Rockwall.Light
             {
-                color = new Color(byte.Parse(colors[0]), byte.Parse(colors[1]), byte.Parse(colors[2]), (byte)255),
-                intensity = float.Parse(strength, CultureInfo.InvariantCulture),
-                range = float.Parse(range, CultureInfo.InvariantCulture),
-                position = entity.Position,
-                type = Rockwall.Light.LightType.Point,
-                targetname = entity.Name,
-                id = int.Parse(Array.Find(entity.properties, prop => prop.Name == "ID").Value)
+                Color = new Color(byte.Parse(colors[0]), byte.Parse(colors[1]), byte.Parse(colors[2]), (byte)255),
+                Intensity = float.Parse(strength, CultureInfo.InvariantCulture),
+                Range = float.Parse(range, CultureInfo.InvariantCulture),
+                Position = entity.Position,
+                Type = Rockwall.Light.LightType.Point,
+                TargetName = entity.Name,
+                ID = int.Parse(Array.Find(entity.properties, prop => prop.Name == "ID").Value)
             });
         }
 
@@ -174,15 +174,15 @@ namespace Engine.Entities
 
             MainEngine.ActiveStaticLights.Add(new Rockwall.Light
             {
-                color = new Color(byte.Parse(colors[0]), byte.Parse(colors[1]), byte.Parse(colors[2]), (byte)255),
-                intensity = float.Parse(strength, CultureInfo.InvariantCulture),
-                range = float.Parse(range, CultureInfo.InvariantCulture),
-                position = entity.Position,
-                rotation = Matrix.CreateFromQuaternion(entity.Rotation).Forward,
-                angle = float.Parse(spotAngle, CultureInfo.InvariantCulture),
-                type = Rockwall.Light.LightType.SpotLight,
-                targetname = entity.Name,
-                id = int.Parse(Array.Find(entity.properties, prop => prop.Name == "ID").Value)
+                Color = new Color(byte.Parse(colors[0]), byte.Parse(colors[1]), byte.Parse(colors[2]), (byte)255),
+                Intensity = float.Parse(strength, CultureInfo.InvariantCulture),
+                Range = float.Parse(range, CultureInfo.InvariantCulture),
+                Position = entity.Position,
+                Rotation = Matrix.CreateFromQuaternion(entity.Rotation).Forward,
+                Angle = float.Parse(spotAngle, CultureInfo.InvariantCulture),
+                Type = Rockwall.Light.LightType.SpotLight,
+                TargetName = entity.Name,
+                ID = int.Parse(Array.Find(entity.properties, prop => prop.Name == "ID").Value)
             });
         }
 

@@ -42,9 +42,9 @@ internal static class GBufferBuilder
         var interiorTasks = new List<(int brush, int face, int yStart, int yEnd)>();
         for (int i = 0; i < brushes.Length; i++)
         {
-            for (int f = 0; f < brushes[i].faces.Length; f++)
+            for (int f = 0; f < brushes[i].Faces.Length; f++)
             {
-                if (brushes[i].faces[f].toolFace) continue;
+                if (brushes[i].Faces[f].toolFace) continue;
 
                 var (vmin, vmax) = faceVBounds[i][f];
                 int yMin = (int)MathF.Floor(vmin.Y * lightmapResolution);
@@ -66,13 +66,13 @@ internal static class GBufferBuilder
             {
                 var (i, f, yStart, yEnd) = task;
 
-                var faceGrid = faceGridCache.GetOrAdd((i, f), k => new GeometryUtils.FaceUvGrid(brushes[k.brush].lightmapUvs, brushes[k.brush].faces[k.face].indices, uvCellSize));
+                var faceGrid = faceGridCache.GetOrAdd((i, f), k => new GeometryUtils.FaceUvGrid(brushes[k.brush].LightmapUVs, brushes[k.brush].Faces[k.face].Indices, uvCellSize));
                 var loopIndices = faceLoopIndexCache.GetOrAdd((i, f), k => GeometryUtils.GetFaceUvBoundaryLoop(brushes[k.brush], k.face));
                 var originalEdges = originalEdgeCache.GetOrAdd((i, f), k =>
                 {
                     var idx = faceLoopIndexCache[k];
                     var loopUvs = new Vector2[idx.Length];
-                    for (int li = 0; li < idx.Length; li++) loopUvs[li] = brushes[k.brush].lightmapUvs[idx[li]];
+                    for (int li = 0; li < idx.Length; li++) loopUvs[li] = brushes[k.brush].LightmapUVs[idx[li]];
                     return GeometryUtils.PolygonToEdges(loopUvs);
                 });
 
@@ -118,9 +118,9 @@ internal static class GBufferBuilder
         var paddingTasks = new List<(int brush, int face, int yStart, int yEnd)>();
         for (int i = 0; i < brushes.Length; i++)
         {
-            for (int f = 0; f < brushes[i].faces.Length; f++)
+            for (int f = 0; f < brushes[i].Faces.Length; f++)
             {
-                if (brushes[i].faces[f].toolFace) continue;
+                if (brushes[i].Faces[f].toolFace) continue;
 
                 var (vmin, vmax) = faceVBounds[i][f];
                 int yMin = (int)MathF.Floor(vmin.Y * lightmapResolution) - 3;
@@ -147,7 +147,7 @@ internal static class GBufferBuilder
                 {
                     var idx = faceLoopIndexCache[k];
                     var loopUvs = new Vector2[idx.Length];
-                    for (int li = 0; li < idx.Length; li++) loopUvs[li] = brushes[k.brush].lightmapUvs[idx[li]];
+                    for (int li = 0; li < idx.Length; li++) loopUvs[li] = brushes[k.brush].LightmapUVs[idx[li]];
                     return GeometryUtils.PolygonToEdges(GeometryUtils.BuildInsetPolygon(loopUvs, inwardPush));
                 });
 
@@ -199,7 +199,7 @@ internal static class GBufferBuilder
         var tasks = new List<(int t, int triStart)>();
         for (int t = 0; t < terrains.Length; t++)
         {
-            for (int tri = 0; tri < terrains[t].triangles.Length; tri += 3)
+            for (int tri = 0; tri < terrains[t].Triangles.Length; tri += 3)
             {
                 tasks.Add((t, tri));
             }
@@ -213,25 +213,25 @@ internal static class GBufferBuilder
         {
             var (t, triStart) = task;
 
-            int i0 = terrains[t].triangles[triStart];
-            int i1 = terrains[t].triangles[triStart + 1];
-            int i2 = terrains[t].triangles[triStart + 2];
+            int i0 = terrains[t].Triangles[triStart];
+            int i1 = terrains[t].Triangles[triStart + 1];
+            int i2 = terrains[t].Triangles[triStart + 2];
 
             Vector2 uv0 = terrains[t].lightmapUvs[i0];
             Vector2 uv1 = terrains[t].lightmapUvs[i1];
             Vector2 uv2 = terrains[t].lightmapUvs[i2];
 
-            Vector3 p0 = terrains[t].vertices[i0].Position;
-            Vector3 p1 = terrains[t].vertices[i1].Position;
-            Vector3 p2 = terrains[t].vertices[i2].Position;
+            Vector3 p0 = terrains[t].Vertices[i0].Position;
+            Vector3 p1 = terrains[t].Vertices[i1].Position;
+            Vector3 p2 = terrains[t].Vertices[i2].Position;
 
-            Vector3 n0 = terrains[t].vertices[i0].Normal;
-            Vector3 n1 = terrains[t].vertices[i1].Normal;
-            Vector3 n2 = terrains[t].vertices[i2].Normal;
+            Vector3 n0 = terrains[t].Vertices[i0].Normal;
+            Vector3 n1 = terrains[t].Vertices[i1].Normal;
+            Vector3 n2 = terrains[t].Vertices[i2].Normal;
 
-            Vector4 tv0 = terrains[t].vertices[i0].Tangent.ToVector4();
-            Vector4 tv1 = terrains[t].vertices[i1].Tangent.ToVector4();
-            Vector4 tv2 = terrains[t].vertices[i2].Tangent.ToVector4();
+            Vector4 tv0 = terrains[t].Vertices[i0].Tangent.ToVector4();
+            Vector4 tv1 = terrains[t].Vertices[i1].Tangent.ToVector4();
+            Vector4 tv2 = terrains[t].Vertices[i2].Tangent.ToVector4();
 
             float area2D = GeometryUtils.TriArea2D(uv0, uv1, uv2);
             if (MathF.Abs(area2D) < 1e-10f) return;

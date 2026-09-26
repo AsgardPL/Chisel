@@ -262,9 +262,9 @@ public class MapperView : IEditorScene
         {
             result = new BoundingBox(GlobalEditorData.EditorOverrides.overrides[overrideID].boundsMin, GlobalEditorData.EditorOverrides.overrides[overrideID].boundsMax);
         }
-        else if (GlobalEditorData.RegisteredEntityMeta.TryGetValue(classname, out var meta) && meta.boundsMax != Vector3.Zero)
+        else if (GlobalEditorData.RegisteredEntityMeta.TryGetValue(classname, out var meta) && meta.BoundsMax != Vector3.Zero)
         {
-            result = new BoundingBox(meta.boundsMin, meta.boundsMax);
+            result = new BoundingBox(meta.BoundsMin, meta.BoundsMax);
         }
         else
         {
@@ -593,7 +593,7 @@ public class MapperView : IEditorScene
         savedFaceEdges.Clear();
         for (int bi = 0; bi < MapTools.Brushes.Length; bi++)
         {
-            var verts = MapTools.Brushes[bi].vertices;
+            var verts = MapTools.Brushes[bi].Vertices;
 
             if (edgeCache.TryGetValue(bi, out var cached) && ReferenceEquals(cached.verts, verts))
             {
@@ -622,7 +622,7 @@ public class MapperView : IEditorScene
         worldShader.Parameters["fogIntensity"].SetValue(0);
         if (Toolbelt.ShowFog)
         {
-            var entity = MapTools.Entities.FirstOrDefault((e) => e.entityName == "FogController");
+            var entity = MapTools.Entities.FirstOrDefault((e) => e.EntityName == "FogController");
             if (entity != null)
             {
                 float fogStart = EntityTools.GetFloatProperty(entity, "Fog Start", 0f);
@@ -746,28 +746,28 @@ public class MapperView : IEditorScene
         for (int bi = 0; bi < MapTools.Brushes.Length; bi++)
         {
             var brush = MapTools.Brushes[bi];
-            if (brush.vertices == null) continue;
+            if (brush.Vertices == null) continue;
 
             bool isSel = false, isHi = false;
             for (int si = 0; si < Toolbelt.SelectedObjects.Count; si++)
             {
                 var o = Toolbelt.SelectedObjects[si];
                 if ((o is BrushMoveable bm && bm.brush == bi) || (o is FaceMoveable fm && fm.brush == bi) ||
-                    (o is TerrainMoveable tm && tm.terrain >= 0 && tm.terrain < MapTools.Terrains.Length && MapTools.Terrains[tm.terrain].brushSource == bi))
+                    (o is TerrainMoveable tm && tm.terrain >= 0 && tm.terrain < MapTools.Terrains.Length && MapTools.Terrains[tm.terrain].BrushSource == bi))
                 { isSel = true; break; }
             }
             if (!isSel)
                 isHi = (Toolbelt.HighlightedObject is BrushMoveable hb && hb.brush == bi) ||
                        (Toolbelt.HighlightedObject is FaceMoveable hf && hf.brush == bi) ||
-                       (Toolbelt.HighlightedObject is TerrainMoveable ht && ht.terrain >= 0 && ht.terrain < MapTools.Terrains.Length && MapTools.Terrains[ht.terrain].brushSource == bi);
+                       (Toolbelt.HighlightedObject is TerrainMoveable ht && ht.terrain >= 0 && ht.terrain < MapTools.Terrains.Length && MapTools.Terrains[ht.terrain].BrushSource == bi);
 
             Color c = isSel ? selected : isHi ? highlight : normal;
             var target = (isSel || isHi) ? wireframeSelLines : wireframeLines;
 
             foreach (var line in savedFaceEdges[bi])
             {
-                target.Add(new VertexPositionColor(brush.vertices[line.Item1] + brush.position, c));
-                target.Add(new VertexPositionColor(brush.vertices[line.Item2] + brush.position, c));
+                target.Add(new VertexPositionColor(brush.Vertices[line.Item1] + brush.Position, c));
+                target.Add(new VertexPositionColor(brush.Vertices[line.Item2] + brush.Position, c));
             }
         }
 
@@ -797,7 +797,7 @@ public class MapperView : IEditorScene
             var ent = MapTools.Entities[i];
             if (ent.IsBrushEntity) continue;
 
-            var box = BoundsFor(ent.entityName);
+            var box = BoundsFor(ent.EntityName);
 
             bool isHighlighted = false;
             if (Toolbelt.HighlightedObject is EntityMoveable entityMoveable)
@@ -810,16 +810,16 @@ public class MapperView : IEditorScene
                 return false;
             });
 
-            var sprite = IconFor(ent.entityName);
+            var sprite = IconFor(ent.EntityName);
             if (sprite != null)
             {
-                Vector2 pos = ViewportManager.Rendering.WorldToLocal(ent.position);
+                Vector2 pos = ViewportManager.Rendering.WorldToLocal(ent.Position);
                 float w = vp.Zoom;
                 var color = isSelected ? SelectionColor : isHighlighted ? HighlightColor : Vector3.One;
                 SpriteBatch.Draw(sprite, new RectangleF(pos - Vector2.One * w * 0.5f, Vector2.One * w).ToRectangle(), new Color(color.X, color.Y, color.Z, 0.2f));
             }
 
-            var p = ent.position;
+            var p = ent.Position;
             foreach (var point in BrushOperations.GetDebugEdges(box))
             {
                 entityLines.Add(new VertexPositionColor(point.Position + p, isSelected ? new Color(SelectionColor) : isHighlighted ? new Color(HighlightColor) : c));
@@ -829,7 +829,7 @@ public class MapperView : IEditorScene
             entityLines.Add(new VertexPositionColor(p - vp.UpAxis * s, c));
             entityLines.Add(new VertexPositionColor(p + vp.UpAxis * s, c));
 
-            var fwd = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.spawnRotation.X), MathHelper.ToRadians(ent.spawnRotation.Y), MathHelper.ToRadians(ent.spawnRotation.Z));
+            var fwd = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.SpawnRotation.X), MathHelper.ToRadians(ent.SpawnRotation.Y), MathHelper.ToRadians(ent.SpawnRotation.Z));
 
             entityLines.Add(new VertexPositionColor(p, c));
             entityLines.Add(new VertexPositionColor(p - fwd.Forward * arrow, c));
@@ -942,9 +942,9 @@ public class MapperView : IEditorScene
     }
     void DrawEntityVisualizer(EntityReference ent)
     {
-        if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(ent.entityName, out var meta) || meta.visualizer is not { } binding) return;
+        if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(ent.EntityName, out var meta) || meta.Visualizer is not { } binding) return;
 
-        var visualizer = VisualizerRegistry.Create(binding.visualizerType);
+        var visualizer = VisualizerRegistry.Create(binding.VisualizerType);
         if (visualizer == null) return;
 
         if (!visualizerFieldCache.TryGetValue(visualizer.GetType(), out var fields))
@@ -955,14 +955,14 @@ public class MapperView : IEditorScene
 
         foreach (var field in fields)
         {
-            if (binding.fieldToProperty.TryGetValue(field.Name, out var propName))
+            if (binding.FieldToProperty.TryGetValue(field.Name, out var propName))
             {
-                var raw = ent.properties?.FirstOrDefault(p => p.Name == propName).Value;
+                var raw = ent.Properties?.FirstOrDefault(p => p.Name == propName).Value;
                 var parsed = ParseVisualizerValue(field.FieldType, raw);
                 if (parsed != null)
                     field.SetValue(visualizer, parsed);
             }
-            else if (binding.fieldToLiteral != null && binding.fieldToLiteral.TryGetValue(field.Name, out var literal))
+            else if (binding.FieldToLiteral != null && binding.FieldToLiteral.TryGetValue(field.Name, out var literal))
             {
                 var parsed = ParseVisualizerValue(field.FieldType, literal);
                 if (parsed != null)
@@ -981,20 +981,20 @@ public class MapperView : IEditorScene
                 var filepath = Path.Combine(ConfigManager.currentConfig.EditorAssetsPath, Path.ChangeExtension(mv.Model, "ccmdl"));
                 if (File.Exists(filepath))
                 {
-                    var mat = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.spawnRotation.X), MathHelper.ToRadians(ent.spawnRotation.Y), MathHelper.ToRadians(ent.spawnRotation.Z)) * Matrix.CreateWorld(ent.position, Vector3.Forward, Vector3.Up);
+                    var mat = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.SpawnRotation.X), MathHelper.ToRadians(ent.SpawnRotation.Y), MathHelper.ToRadians(ent.SpawnRotation.Z)) * Matrix.CreateWorld(ent.Position, Vector3.Forward, Vector3.Up);
                     modelsToDraw.Enqueue((mat, filepath));
                 }
             }
             return;
         }
 
-        var fwd = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.spawnRotation.X), MathHelper.ToRadians(ent.spawnRotation.Y), MathHelper.ToRadians(ent.spawnRotation.Z));
+        var fwd = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.SpawnRotation.X), MathHelper.ToRadians(ent.SpawnRotation.Y), MathHelper.ToRadians(ent.SpawnRotation.Z));
 
         VertexPositionColor[] lines = visualizer switch
         {
-            SphereVisualizer s => GizmoShapes.WireSphere(ent.position, s.Radius, s.Color),
-            ConeVisualizer c => GizmoShapes.WireCone(ent.position, -fwd.Forward, c.Length, c.Angle, c.Color),
-            ArrowVisualizer a => GizmoShapes.WireArrow(ent.position, a.Direction, a.Length, a.Color),
+            SphereVisualizer s => GizmoShapes.WireSphere(ent.Position, s.Radius, s.Color),
+            ConeVisualizer c => GizmoShapes.WireCone(ent.Position, -fwd.Forward, c.Length, c.Angle, c.Color),
+            ArrowVisualizer a => GizmoShapes.WireArrow(ent.Position, a.Direction, a.Length, a.Color),
             _ => null
         };
         if (lines == null || lines.Length < 2) return;
@@ -1011,12 +1011,12 @@ public class MapperView : IEditorScene
     }
     void DrawSpriteVisualizer(EntityReference ent, SpriteVisualizer sv)
     {
-        if (string.IsNullOrEmpty(sv.Material) || !GlobalMapData.materialNameToIndex.TryGetValue(sv.Material, out int matIdx)) return;
-        var tex = GlobalMapData.loadedMaterials[matIdx].Texture;
+        if (string.IsNullOrEmpty(sv.Material) || !GlobalMapData.MaterialNameToIndex.TryGetValue(sv.Material, out int matIdx)) return;
+        var tex = GlobalMapData.LoadedMaterials[matIdx].Texture;
         if (tex == null) return;
 
         var blend = sv.RenderMode == "Additive" ? BlendState.Additive : BlendState.NonPremultiplied;
-        DrawBillSprite(tex, ent.position, sv.Size, sv.Color, blend, DepthStencilState.DepthRead);
+        DrawBillSprite(tex, ent.Position, sv.Size, sv.Color, blend, DepthStencilState.DepthRead);
     }
     // Same string parsing rules as EntityManager.ReadProperty, just targeting a reflected field type instead of a switch.
     static object ParseVisualizerValue(Type fieldType, string raw)
@@ -1053,15 +1053,15 @@ public class MapperView : IEditorScene
         foreach (var ent in MapTools.Entities)
         {
             if (ent.IsBrushEntity) continue;
-            if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(ent.entityName, out var meta) || meta.link is not { } link) continue;
+            if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(ent.EntityName, out var meta) || meta.Link is not { } link) continue;
 
-            var targetName = ent.properties?.FirstOrDefault(p => p.Name == link.next).Value;
+            var targetName = ent.Properties?.FirstOrDefault(p => p.Name == link.Next).Value;
             if (string.IsNullOrEmpty(targetName)) continue;
 
-            var target = MapTools.Entities.FirstOrDefault(o => o.name == targetName && !o.IsBrushEntity);
+            var target = MapTools.Entities.FirstOrDefault(o => o.Name == targetName && !o.IsBrushEntity);
             if (target == null) continue;
 
-            var lines = new[] { new VertexPositionColor(ent.position, Color.Goldenrod), new VertexPositionColor(target.position, Color.Goldenrod) };
+            var lines = new[] { new VertexPositionColor(ent.Position, Color.Goldenrod), new VertexPositionColor(target.Position, Color.Goldenrod) };
             BasicEffect.World = Matrix.Identity;
             foreach (var pass in BasicEffect.CurrentTechnique.Passes)
             {
@@ -1078,12 +1078,12 @@ public class MapperView : IEditorScene
         {
             var hint = MapTools.Hints[i];
 
-            DrawBillSprite(hintTex, hint.position);
+            DrawBillSprite(hintTex, hint.Position);
 
             var box = new BoundingBox(-Vector3.One * 0.25f, Vector3.One * 0.25f);
             var lines = BrushOperations.GetDebugEdges(box);
 
-            BasicEffect.World = Matrix.CreateWorld(hint.position, Vector3.Forward, Vector3.Up);
+            BasicEffect.World = Matrix.CreateWorld(hint.Position, Vector3.Forward, Vector3.Up);
 
             bool isHighlighted = false;
             if (Toolbelt.HighlightedObject is HintMoveable hintMove)
@@ -1114,11 +1114,11 @@ public class MapperView : IEditorScene
         {
             var hint = MapTools.Hints[i];
 
-            var pos = host.GraphicsDevice.Viewport.Project(hint.position + Vector3.Up * 0.6f, Viewport3DCamera.projectionMatrix, Viewport3DCamera.viewMatrix, Viewport3DCamera.worldMatrix);
+            var pos = host.GraphicsDevice.Viewport.Project(hint.Position + Vector3.Up * 0.6f, Viewport3DCamera.projectionMatrix, Viewport3DCamera.viewMatrix, Viewport3DCamera.worldMatrix);
 
             if (pos.Z > 1) continue;
 
-            float dst = Vector3.Distance(Viewport3DCamera.position, hint.position);
+            float dst = Vector3.Distance(Viewport3DCamera.position, hint.Position);
 
             if (dst > 16f) continue;
 
@@ -1131,7 +1131,7 @@ public class MapperView : IEditorScene
             var fontP = FontSystem.GetFont(6);
 
             const float maxWidth = 150f;
-            var lines = WrapText(fontH, hint.header ?? "???", maxWidth);
+            var lines = WrapText(fontH, hint.Header ?? "???", maxWidth);
 
             float lineHeight = fontH.FontSize * scale;
             float totalHeight = lines.Count * lineHeight;
@@ -1197,8 +1197,8 @@ public class MapperView : IEditorScene
             var ent = MapTools.Entities[i];
             if (ent.IsBrushEntity) continue;
 
-            var box = BoundsFor(ent.entityName);
-            var worldBox = new BoundingBox(box.Min + ent.position, box.Max + ent.position);
+            var box = BoundsFor(ent.EntityName);
+            var worldBox = new BoundingBox(box.Min + ent.Position, box.Max + ent.Position);
             //if (frustum.Contains(worldBox) == ContainmentType.Disjoint) continue;
 
             bool isHighlighted = false;
@@ -1212,45 +1212,45 @@ public class MapperView : IEditorScene
                 return false;
             });
 
-            var sprite = IconFor(ent.entityName);
+            var sprite = IconFor(ent.EntityName);
             if (sprite != null)
             {
-                DrawBillSprite(sprite, ent.position);
+                DrawBillSprite(sprite, ent.Position);
             }
 
             DrawEntityVisualizer(ent);
 
-            if (ent.entityName == "EnvDecal")
+            if (ent.EntityName == "EnvDecal")
             {
                 decalsToDraw.Enqueue(ent);
             }
 
-            if (ent.entityName == "DetailModel")
+            if (ent.EntityName == "DetailModel")
             {
-                if (ent.properties != null && ent.properties.Length > 0)
+                if (ent.Properties != null && ent.Properties.Length > 0)
                 {
-                    var filepath = Path.Combine(ConfigManager.currentConfig.EditorAssetsPath, Path.ChangeExtension(ent.properties[0].Value, "ccmdl"));
+                    var filepath = Path.Combine(ConfigManager.currentConfig.EditorAssetsPath, Path.ChangeExtension(ent.Properties[0].Value, "ccmdl"));
                     if (File.Exists(filepath) && Path.GetExtension(filepath) == ".ccmdl")
                     {
-                        var mat = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.spawnRotation.X), MathHelper.ToRadians(ent.spawnRotation.Y), MathHelper.ToRadians(ent.spawnRotation.Z)) * Matrix.CreateWorld(ent.position, Vector3.Forward, Vector3.Up);
+                        var mat = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.SpawnRotation.X), MathHelper.ToRadians(ent.SpawnRotation.Y), MathHelper.ToRadians(ent.SpawnRotation.Z)) * Matrix.CreateWorld(ent.Position, Vector3.Forward, Vector3.Up);
                         modelsToDraw.Enqueue((mat, filepath));
                     }
                     else
                     {
-                        BasicEffect.World = Matrix.Identity * Matrix.CreateTranslation(ent.position);
+                        BasicEffect.World = Matrix.Identity * Matrix.CreateTranslation(ent.Position);
                         ErrorModel.Draw(BasicEffect, host.GraphicsDevice);
                     }
                 }
                 else
                 {
-                    BasicEffect.World = Matrix.Identity * Matrix.CreateTranslation(ent.position);
+                    BasicEffect.World = Matrix.Identity * Matrix.CreateTranslation(ent.Position);
                     ErrorModel.Draw(BasicEffect, host.GraphicsDevice);
                 }
             }
 
             var lines = BrushOperations.GetDebugEdges(box);
 
-            BasicEffect.World = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.spawnRotation.X), MathHelper.ToRadians(ent.spawnRotation.Y), MathHelper.ToRadians(ent.spawnRotation.Z)) * Matrix.CreateWorld(ent.position, Vector3.Forward, Vector3.Up);
+            BasicEffect.World = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.SpawnRotation.X), MathHelper.ToRadians(ent.SpawnRotation.Y), MathHelper.ToRadians(ent.SpawnRotation.Z)) * Matrix.CreateWorld(ent.Position, Vector3.Forward, Vector3.Up);
 
             BasicEffect.VertexColorEnabled = false;
             BasicEffect.DiffuseColor = isSelected ? SelectionColor : isHighlighted ? HighlightColor : Vector3.One;
@@ -1260,8 +1260,8 @@ public class MapperView : IEditorScene
                 pass.Apply();
                 host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, lines, 0, lines.Length / 2);
             }
-            BasicEffect.World = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.spawnRotation.X), MathHelper.ToRadians(ent.spawnRotation.Y), MathHelper.ToRadians(ent.spawnRotation.Z)) *
-                                Matrix.CreateWorld(ent.position, Vector3.Forward, Vector3.Up);
+            BasicEffect.World = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(ent.SpawnRotation.X), MathHelper.ToRadians(ent.SpawnRotation.Y), MathHelper.ToRadians(ent.SpawnRotation.Z)) *
+                                Matrix.CreateWorld(ent.Position, Vector3.Forward, Vector3.Up);
             BasicEffect.DiffuseColor = Vector3.One;
             BasicEffect.VertexColorEnabled = true;
 
@@ -1285,7 +1285,7 @@ public class MapperView : IEditorScene
         {
             var terrain = MapTools.Terrains[i];
 
-            if (frustum.Contains(terrain.bounds) == ContainmentType.Disjoint) continue;
+            if (frustum.Contains(terrain.Bounds) == ContainmentType.Disjoint) continue;
 
             bool isHighlighted = false;
             if (Toolbelt.HighlightedObject is TerrainMoveable terrainMoveable)
@@ -1298,8 +1298,8 @@ public class MapperView : IEditorScene
                 return false;
             });
 
-            terrainShader.Parameters["texture1"].SetValue(GlobalMapData.loadedMaterials[terrain.surface].Texture);
-            terrainShader.Parameters["texture2"].SetValue(GlobalMapData.loadedMaterials[terrain.blendedSurface].Texture);
+            terrainShader.Parameters["texture1"].SetValue(GlobalMapData.LoadedMaterials[terrain.Surface].Texture);
+            terrainShader.Parameters["texture2"].SetValue(GlobalMapData.LoadedMaterials[terrain.BlendedSurface].Texture);
 
             terrainShader.Parameters["tint"].SetValue(isSelected ? SelectionColor : isHighlighted ? HighlightColor : Vector3.One);
             terrainShader.Parameters["selected"].SetValue(isHighlighted || isSelected);
@@ -1307,7 +1307,7 @@ public class MapperView : IEditorScene
             foreach (var pass in terrainShader.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrain.vertices, 0, terrain.vertices.Length, terrain.triangles, 0, terrain.triangles.Length / 3);
+                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrain.Vertices, 0, terrain.Vertices.Length, terrain.Triangles, 0, terrain.Triangles.Length / 3);
             }
 
             if (isSelected)
@@ -1321,7 +1321,7 @@ public class MapperView : IEditorScene
                 foreach (var pass in BasicEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrain.vertices, 0, terrain.vertices.Length, terrain.triangles, 0, terrain.triangles.Length / 3);
+                    host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrain.Vertices, 0, terrain.Vertices.Length, terrain.Triangles, 0, terrain.Triangles.Length / 3);
                 }
 
                 host.GraphicsDevice.RasterizerState = worldRasterizer;
@@ -1359,7 +1359,7 @@ public class MapperView : IEditorScene
             foreach (var pass in BasicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrain.vertices, 0, terrain.vertices.Length, terrain.triangles, 0, terrain.triangles.Length / 3);
+                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, terrain.Vertices, 0, terrain.Vertices.Length, terrain.Triangles, 0, terrain.Triangles.Length / 3);
             }
 
             BasicEffect.Alpha = 1;
@@ -1394,20 +1394,20 @@ public class MapperView : IEditorScene
             if (b.isUsedForTerrain) continue;
             if (i < MapTools.BrushBounds.Length && frustum.Contains(MapTools.BrushBounds[i]) == ContainmentType.Disjoint) continue;
 
-            var world = Matrix.CreateWorld(b.position, Vector3.Forward, Vector3.Up);
+            var world = Matrix.CreateWorld(b.Position, Vector3.Forward, Vector3.Up);
             worldShader.Parameters["World"].SetValue(world * Viewport3DCamera.worldMatrix);
             worldShader.Parameters["View"].SetValue(Viewport3DCamera.viewMatrix);
             worldShader.Parameters["Projection"].SetValue(Viewport3DCamera.projectionMatrix);
 
-            bool isAccidentalSkybox = b.faces.Any(f => f.materialName.Contains("skybox"));
+            bool isAccidentalSkybox = b.Faces.Any(f => f.MaterialName.Contains("skybox"));
             bool brushSelected = selectedBrushes.Contains(i);
             bool brushHighlighted = highlightedBrush == i;
 
-            for (int j = 0; j < b.faces.Length; j++)
+            for (int j = 0; j < b.Faces.Length; j++)
             {
-                var f = b.faces[j];
+                var f = b.Faces[j];
 
-                if (GlobalMapData.loadedMaterials[f.surface].name.StartsWith("tool_") || isAccidentalSkybox)
+                if (GlobalMapData.LoadedMaterials[f.Surface].Name.StartsWith("tool_") || isAccidentalSkybox)
                 {
                     transparentFaceQueue.Add((b, f, i, j));
                     continue;
@@ -1440,7 +1440,7 @@ public class MapperView : IEditorScene
             if (!ent.IsBrushEntity) continue;
 
             BoundingBox? unionBounds = null;
-            foreach (var bi in ent.brushIndices)
+            foreach (var bi in ent.BrushIndices)
             {
                 if (bi < 0 || bi >= MapTools.BrushBounds.Length) continue;
                 unionBounds = unionBounds.HasValue
@@ -1485,14 +1485,14 @@ public class MapperView : IEditorScene
 
         foreach (var element in transparentFaceQueue)
         {
-            bool isAccidentalSkybox = element.b.faces.Any(f => f.materialName.Contains("skybox")) && !element.f.materialName.Contains("skybox");
+            bool isAccidentalSkybox = element.b.Faces.Any(f => f.MaterialName.Contains("skybox")) && !element.f.MaterialName.Contains("skybox");
 
-            var world = Matrix.CreateWorld(element.b.position, Vector3.Forward, Vector3.Up);
+            var world = Matrix.CreateWorld(element.b.Position, Vector3.Forward, Vector3.Up);
             worldShader.Parameters["World"].SetValue(world * Viewport3DCamera.worldMatrix);
             worldShader.Parameters["View"].SetValue(Viewport3DCamera.viewMatrix);
             worldShader.Parameters["Projection"].SetValue(Viewport3DCamera.projectionMatrix);
 
-            worldShader.Parameters["faceAlpha"].SetValue(GlobalMapData.loadedMaterials[element.f.surface].name.StartsWith("tool_") ? 0.8f : 1);
+            worldShader.Parameters["faceAlpha"].SetValue(GlobalMapData.LoadedMaterials[element.f.Surface].Name.StartsWith("tool_") ? 0.8f : 1);
 
             bool isHighlighted = false;
             if (Toolbelt.HighlightedObject is FaceMoveable faceMoveable)
@@ -1515,7 +1515,7 @@ public class MapperView : IEditorScene
                 faceLines.Enqueue((element.f, element.bID));
             }
 
-            if (GlobalMapData.loadedMaterials[element.f.surface].name.StartsWith("tool_") && Toolbelt.HideToolFaces && !isSelected) continue;
+            if (GlobalMapData.LoadedMaterials[element.f.Surface].Name.StartsWith("tool_") && Toolbelt.HideToolFaces && !isSelected) continue;
 
             Vector3 defaultColor = Vector3.One;
 
@@ -1535,7 +1535,7 @@ public class MapperView : IEditorScene
     }
     void DrawFace(Face f)
     {
-        worldShader.Parameters["faceTexture"].SetValue(GlobalMapData.loadedMaterials[f.surface].Texture);
+        worldShader.Parameters["faceTexture"].SetValue(GlobalMapData.LoadedMaterials[f.Surface].Texture);
 
         host.GraphicsDevice.SetVertexBuffer(f.vertexBuffer);
         foreach (var pass in worldShader.CurrentTechnique.Passes)
@@ -1577,8 +1577,8 @@ public class MapperView : IEditorScene
         foreach (var edge in edges)
         {
             var brush = MapTools.Brushes[edge.brush];
-            var vA = brush.vertices[edge.vertA] + brush.position;
-            var vB = brush.vertices[edge.vertB] + brush.position;
+            var vA = brush.Vertices[edge.vertA] + brush.Position;
+            var vB = brush.Vertices[edge.vertB] + brush.Position;
 
             if (!OtherMath.ClipSegmentToNearPlane(vA, vB,
                     Viewport3DCamera.viewMatrix,
@@ -1598,16 +1598,16 @@ public class MapperView : IEditorScene
     }
     void DrawFaceOutline(Face f, int brushIndex)
     {
-        var vertices = MapTools.Brushes[brushIndex].vertices;
+        var vertices = MapTools.Brushes[brushIndex].Vertices;
 
-        var polygon = f.indices.Distinct().ToList();
+        var polygon = f.Indices.Distinct().ToList();
 
         var center = polygon.Aggregate(Vector3.Zero, (c, v) => c + vertices[v]) / polygon.Count;
-        var refAxis = Vector3.Cross(f.normal, Vector3.UnitZ);
+        var refAxis = Vector3.Cross(f.Normal, Vector3.UnitZ);
         if (refAxis.LengthSquared() < 1e-6f)
-            refAxis = Vector3.Cross(f.normal, Vector3.UnitX);
+            refAxis = Vector3.Cross(f.Normal, Vector3.UnitX);
         refAxis = Vector3.Normalize(refAxis);
-        var perpAxis = Vector3.Normalize(Vector3.Cross(f.normal, refAxis));
+        var perpAxis = Vector3.Normalize(Vector3.Cross(f.Normal, refAxis));
 
         polygon.Sort((a, b) => {
             var da = vertices[a] - center; var db = vertices[b] - center;
@@ -1638,7 +1638,7 @@ public class MapperView : IEditorScene
             lineVerts[e * 2 + 1] = new VertexPositionColorNormalTexture(p1, outlineColor, new(), new());
         }
 
-        BasicEffect.World = Matrix.CreateWorld(MapTools.Brushes[brushIndex].position, Vector3.Forward, Vector3.Up);
+        BasicEffect.World = Matrix.CreateWorld(MapTools.Brushes[brushIndex].Position, Vector3.Forward, Vector3.Up);
         BasicEffect.View = Viewport3DCamera.viewMatrix;
         BasicEffect.Projection = Viewport3DCamera.projectionMatrix;
         BasicEffect.Alpha = 0.25f;
@@ -1703,7 +1703,7 @@ public class MapperView : IEditorScene
         string[] lines = File.ReadAllLines(GlobalEditorData.EDSFile);
 
         MaterialLoader.MountMaterials(lines[3]);
-        GlobalMapData.materialNameToIndex = new Dictionary<string, int>();
+        GlobalMapData.MaterialNameToIndex = new Dictionary<string, int>();
 
         GlobalEditorData.RegisteredClassnames = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(lines[0])).Order().ToArray();
 
@@ -1712,15 +1712,15 @@ public class MapperView : IEditorScene
 
         GlobalEditorData.RegisteredEntityMeta = JsonConvert.DeserializeObject<Dictionary<string, EntityClassMetadata>>(File.ReadAllText(lines[4]));
 
-        for (int i = 0; i < GlobalMapData.loadedMaterials.Length; i++)
+        for (int i = 0; i < GlobalMapData.LoadedMaterials.Length; i++)
         {
-            GlobalMapData.materialNameToIndex.Add(GlobalMapData.loadedMaterials[i].name, i);
-            if (!string.IsNullOrEmpty(GlobalMapData.loadedMaterials[i].texture))
-                GlobalMapData.loadedMaterials[i].Texture = host.Content.Load<Texture2D>($"{GlobalMapData.loadedMaterials[i].texture}");
-            if (!string.IsNullOrEmpty(GlobalMapData.loadedMaterials[i].normal))
-                GlobalMapData.loadedMaterials[i].Normal = host.Content.Load<Texture2D>($"{GlobalMapData.loadedMaterials[i].normal}");
-            if (!string.IsNullOrEmpty(GlobalMapData.loadedMaterials[i].specular))
-                GlobalMapData.loadedMaterials[i].Specular = host.Content.Load<Texture2D>($"{GlobalMapData.loadedMaterials[i].specular}");
+            GlobalMapData.MaterialNameToIndex.Add(GlobalMapData.LoadedMaterials[i].Name, i);
+            if (!string.IsNullOrEmpty(GlobalMapData.LoadedMaterials[i].TextureName))
+                GlobalMapData.LoadedMaterials[i].Texture = host.Content.Load<Texture2D>($"{GlobalMapData.LoadedMaterials[i].TextureName}");
+            if (!string.IsNullOrEmpty(GlobalMapData.LoadedMaterials[i].NormalName))
+                GlobalMapData.LoadedMaterials[i].Normal = host.Content.Load<Texture2D>($"{GlobalMapData.LoadedMaterials[i].NormalName}");
+            if (!string.IsNullOrEmpty(GlobalMapData.LoadedMaterials[i].SpecularName))
+                GlobalMapData.LoadedMaterials[i].Specular = host.Content.Load<Texture2D>($"{GlobalMapData.LoadedMaterials[i].SpecularName}");
         }
         //RokMessages.Append("{ Rockwall : Internal System }" + $" Loaded Materials OK!");
     }

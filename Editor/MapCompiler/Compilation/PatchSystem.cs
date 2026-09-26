@@ -160,7 +160,7 @@ namespace MapCompiler
                     var loopIndices = GeometryUtils.GetFaceUvBoundaryLoop(brushes[brushIdx], faceIdx);
                     var loopUvs = new Vector2[loopIndices.Length];
                     for (int li = 0; li < loopIndices.Length; li++)
-                        loopUvs[li] = brushes[brushIdx].lightmapUvs[loopIndices[li]];
+                        loopUvs[li] = brushes[brushIdx].LightmapUVs[loopIndices[li]];
 
                     inset = GeometryUtils.PolygonToEdges(GeometryUtils.BuildInsetPolygon(loopUvs, inwardPush));
                     faceInsetCache[key] = inset;
@@ -170,24 +170,24 @@ namespace MapCompiler
 
             for (int i = 0; i < brushes.Length; i++)
             {
-                if (brushes[i].isClip || brushes[i].isLightNodeVolume
-                    || brushes[i].isSkybox || brushes[i].isTrigger) continue;
+                if (brushes[i].IsClip || brushes[i].IsLightNodeVolume
+                    || brushes[i].IsSkybox || brushes[i].IsTrigger) continue;
 
-                for (int j = 0; j < brushes[i].faces.Length; j++)
+                for (int j = 0; j < brushes[i].Faces.Length; j++)
                 {
-                    if (!brushes[i].faces[j].drawn) continue;
+                    if (!brushes[i].Faces[j].Drawn) continue;
 
                     // Determine the UV extent of this face in lightmap space
                     Vector2 vmin = new Vector2(float.MaxValue), vmax = new Vector2(float.MinValue);
-                    foreach (int v in brushes[i].faces[j].indices)
+                    foreach (int v in brushes[i].Faces[j].Indices)
                     {
-                        float x = brushes[i].lightmapUvs[v].X;
-                        float y = brushes[i].lightmapUvs[v].Y;
+                        float x = brushes[i].LightmapUVs[v].X;
+                        float y = brushes[i].LightmapUVs[v].Y;
                         vmin = new Vector2(MathF.Min(vmin.X, x), MathF.Min(vmin.Y, y));
                         vmax = new Vector2(MathF.Max(vmax.X, x), MathF.Max(vmax.Y, y));
                     }
 
-                    var face = brushes[i].faces[j];
+                    var face = brushes[i].Faces[j];
 
                     (int X, int Y) startLuxel = ((int)MathF.Floor(vmin.X * lightmapResolution), (int)MathF.Floor(vmin.Y * lightmapResolution));
                     (int X, int Y) endLuxel   = ((int)MathF.Ceiling(vmax.X * lightmapResolution), (int)MathF.Ceiling(vmax.Y * lightmapResolution));
@@ -229,13 +229,13 @@ namespace MapCompiler
                         {
                             id1    = i,
                             id2     = j,
-                            normal   = brushes[i].faces[j].normal,
+                            normal   = brushes[i].Faces[j].Normal,
                             startUV  = rect.Location.ToVector2() / lightmapResolution,
                             endUV    = (rect.Location + rect.Size).ToVector2() / lightmapResolution,
                             samples  = 0,
-                            texr     = matColors[face.surface].R / 255f,
-                            texg     = matColors[face.surface].G / 255f,
-                            texb     = matColors[face.surface].B / 255f,
+                            texr     = matColors[face.Surface].R / 255f,
+                            texg     = matColors[face.Surface].G / 255f,
+                            texb     = matColors[face.Surface].B / 255f,
                         };
 
                         patch.luxels = rect.Size.X * rect.Size.Y;
@@ -273,7 +273,7 @@ namespace MapCompiler
                 {
                     // Determine the UV extent of this face in lightmap space
                     Vector2 vmin = new Vector2(float.MaxValue), vmax = new Vector2(float.MinValue);
-                    foreach (int v in terrains[i].triangles)
+                    foreach (int v in terrains[i].Triangles)
                     {
                         float x = terrains[i].lightmapUvs[v].X;
                         float y = terrains[i].lightmapUvs[v].Y;
@@ -324,9 +324,9 @@ namespace MapCompiler
                             startUV = rect.Location.ToVector2() / lightmapResolution,
                             endUV = (rect.Location + rect.Size).ToVector2() / lightmapResolution,
                             samples = 0,
-                            texr = matColors[terrains[i].surface].R / 255f,
-                            texg = matColors[terrains[i].surface].G / 255f,
-                            texb = matColors[terrains[i].surface].B / 255f,
+                            texr = matColors[terrains[i].Surface].R / 255f,
+                            texg = matColors[terrains[i].Surface].G / 255f,
+                            texb = matColors[terrains[i].Surface].B / 255f,
                         };
 
                         patch.luxels = rect.Size.X * rect.Size.Y;
@@ -339,10 +339,10 @@ namespace MapCompiler
                         // Resolve patch corners and center into world space
                         Vector2 mid = (patch.startUV + patch.endUV) / 2f;
 
-                        Vector3 rawNormal = Clamp3D(mid, terrains[i].vertices.Select(i => i.Normal).ToArray(), terrains[i].lightmapUvs, terrains[i].triangles.Select(i => (int)i).ToArray());
-                        patch.normal = rawNormal.LengthSquared() > 1e-8f ? Vector3.Normalize(rawNormal) : terrains[i].vertices[terrains[i].triangles[0]].Normal;
+                        Vector3 rawNormal = Clamp3D(mid, terrains[i].Vertices.Select(i => i.Normal).ToArray(), terrains[i].lightmapUvs, terrains[i].Triangles.Select(i => (int)i).ToArray());
+                        patch.normal = rawNormal.LengthSquared() > 1e-8f ? Vector3.Normalize(rawNormal) : terrains[i].Vertices[terrains[i].Triangles[0]].Normal;
 
-                        patch.center = Clamp3D(mid, terrains[i].vertices.Select(i=>i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].triangles.Select(i=>(int)i).ToArray());
+                        patch.center = Clamp3D(mid, terrains[i].Vertices.Select(i=>i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].Triangles.Select(i=>(int)i).ToArray());
 
                         if (!float.IsFinite(patch.center.X) || !float.IsFinite(patch.center.Y) || !float.IsFinite(patch.center.Z))
                         {
@@ -350,10 +350,10 @@ namespace MapCompiler
                             continue;
                         }
 
-                        patch.c0 = Clamp3D(patch.startUV, terrains[i].vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].triangles.Select(i => (int)i).ToArray());
-                        patch.c1 = Clamp3D(patch.endUV, terrains[i].vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].triangles.Select(i => (int)i).ToArray());
-                        patch.c2 = Clamp3D(new Vector2(patch.startUV.X, patch.endUV.Y), terrains[i].vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].triangles.Select(i => (int)i).ToArray());
-                        patch.c3 = Clamp3D(new Vector2(patch.endUV.X, patch.startUV.Y), terrains[i].vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].triangles.Select(i => (int)i).ToArray());
+                        patch.c0 = Clamp3D(patch.startUV, terrains[i].Vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].Triangles.Select(i => (int)i).ToArray());
+                        patch.c1 = Clamp3D(patch.endUV, terrains[i].Vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].Triangles.Select(i => (int)i).ToArray());
+                        patch.c2 = Clamp3D(new Vector2(patch.startUV.X, patch.endUV.Y), terrains[i].Vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].Triangles.Select(i => (int)i).ToArray());
+                        patch.c3 = Clamp3D(new Vector2(patch.endUV.X, patch.startUV.Y), terrains[i].Vertices.Select(i => i.Position).ToArray(), terrains[i].lightmapUvs, terrains[i].Triangles.Select(i => (int)i).ToArray());
 
                         patches.Add(patch);
                     }
@@ -433,9 +433,9 @@ namespace MapCompiler
             var flatChildKey = new List<(int node, int child)>();
             for (int node = 0; node < lightNodes.Count; node++)
             {
-                for (int n = 0; n < lightNodes[node].children.Length; n++)
+                for (int n = 0; n < lightNodes[node].Children.Length; n++)
                 {
-                    flatChildPos.Add(lightNodes[node].children[n].pos);
+                    flatChildPos.Add(lightNodes[node].Children[n].Pos);
                     flatChildKey.Add((node, n));
                 }
             }
@@ -510,7 +510,7 @@ namespace MapCompiler
                             Vector3 origin = center + patches[p].normal * 0.01f;
                             var ray = new Ray(origin, Vector3.Normalize(pos - origin));
                             var hit = BSPRoot.TraceRay(ray, dist);
-                            if (hit.hit && Vector3.Distance(hit.point, center) < dist) continue;
+                            if (hit.Hit && Vector3.Distance(hit.Point, center) < dist) continue;
 
                             nodeTransfer.Add((childKey[ci], contrib));
                             nodeTotal += contrib;
@@ -709,7 +709,7 @@ namespace MapCompiler
                 var ray = new Ray(origin, Vector3.Normalize(dstCenter - origin));
                 var hit = BSPRoot.TraceRay(ray, dist, default, selfBrush);
 
-                if (!hit.hit || Vector3.Distance(hit.point, origin) >= dist)
+                if (!hit.Hit || Vector3.Distance(hit.Point, origin) >= dist)
                     return false;
             }
 
@@ -745,8 +745,8 @@ namespace MapCompiler
         {
             var map = new Dictionary<int, int>(leaves.Length);
             for (int i = 0; i < leaves.Length; i++)
-                if (leaves[i].bspLeafID >= 0)
-                    map[leaves[i].bspLeafID] = i;
+                if (leaves[i].BspLeafID >= 0)
+                    map[leaves[i].BspLeafID] = i;
             return map;
         }
 
@@ -754,7 +754,7 @@ namespace MapCompiler
         {
             var sets = new HashSet<uint>[leaves.Length];
             for (int i = 0; i < leaves.Length; i++)
-                sets[i] = new HashSet<uint>(leaves[i].pvs);
+                sets[i] = new HashSet<uint>(leaves[i].PVS);
             return sets;
         }
 

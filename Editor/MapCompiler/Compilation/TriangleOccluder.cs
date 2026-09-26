@@ -67,9 +67,9 @@ internal class TriangleOccluder
             Parallel.For(0, terrains.Length, t =>
             {
                 var terrain = terrains[t];
-                var positions = new Vector3[terrain.triangles.Length];
-                for (int i = 0; i < terrain.triangles.Length; i++)
-                    positions[i] = terrain.vertices[terrain.triangles[i]].Position;
+                var positions = new Vector3[terrain.Triangles.Length];
+                for (int i = 0; i < terrain.Triangles.Length; i++)
+                    positions[i] = terrain.Vertices[terrain.Triangles[i]].Position;
 
                 groups.Add(new TriGroup { positions = positions, sourceIndex = t, isTerrain = true, entityGroup = -1 });
             });
@@ -78,26 +78,26 @@ internal class TriangleOccluder
         for (int b = 0; b < brushes.Length; b++)
         {
             bool isEntityOwned = EntityOwnership.IsPartOfEntity(brushOwner, b);
-            if (!brushes[b].isDetail && !isEntityOwned) continue;
+            if (!brushes[b].IsDetail && !isEntityOwned) continue;
 
             var brush = brushes[b];
             var triList = new List<Vector3>();
 
-            foreach (var face in brush.faces)
+            foreach (var face in brush.Faces)
             {
-                if (!face.drawn) continue;
-                for (int i = 0; i < face.indices.Length; i += 3)
+                if (!face.Drawn) continue;
+                for (int i = 0; i < face.Indices.Length; i += 3)
                 {
-                    Vector3 v0 = brush.vertices[face.indices[i]] + brush.position;
-                    Vector3 v1 = brush.vertices[face.indices[i + 1]] + brush.position;
-                    Vector3 v2 = brush.vertices[face.indices[i + 2]] + brush.position;
+                    Vector3 v0 = brush.Vertices[face.Indices[i]] + brush.Position;
+                    Vector3 v1 = brush.Vertices[face.Indices[i + 1]] + brush.Position;
+                    Vector3 v2 = brush.Vertices[face.Indices[i + 2]] + brush.Position;
                     triList.Add(v0); triList.Add(v1); triList.Add(v2);
                 }
             }
 
             if (triList.Count == 0) continue;
 
-            int group = brushes[b].isDetail ? -1 : brushOwner[b];
+            int group = brushes[b].IsDetail ? -1 : brushOwner[b];
             brushEntityGroups[b] = group;
 
             groups.Add(new TriGroup { positions = triList.ToArray(), sourceIndex = b, isTerrain = false, entityGroup = group });
@@ -106,17 +106,17 @@ internal class TriangleOccluder
         Parallel.For(0, entityReferences.Length, e =>
         {
             var entity = entityReferences[e];
-            if (entity.entityName != "DetailModel") return;
-            if (entity.properties == null || entity.properties.Length <= 0) return;
+            if (entity.EntityName != "DetailModel") return;
+            if (entity.Properties == null || entity.Properties.Length <= 0) return;
 
-            var filepath = Path.Combine(Program.WorkingDir, Path.ChangeExtension(entity.properties[0].Value, "ccmdl"));
+            var filepath = Path.Combine(Program.WorkingDir, Path.ChangeExtension(entity.Properties[0].Value, "ccmdl"));
             if (!File.Exists(filepath) || Path.GetExtension(filepath) != ".ccmdl") return;
 
             var mat = Matrix.CreateFromYawPitchRoll(
-                          MathHelper.ToRadians(entity.spawnRotation.X),
-                          MathHelper.ToRadians(entity.spawnRotation.Y),
-                          MathHelper.ToRadians(entity.spawnRotation.Z)) *
-                      Matrix.CreateWorld(entity.position, Vector3.Forward, Vector3.Up);
+                          MathHelper.ToRadians(entity.SpawnRotation.X),
+                          MathHelper.ToRadians(entity.SpawnRotation.Y),
+                          MathHelper.ToRadians(entity.SpawnRotation.Z)) *
+                      Matrix.CreateWorld(entity.Position, Vector3.Forward, Vector3.Up);
 
             var model = CCMDLHandler.LoadCCMDL(File.ReadAllBytes(filepath));
             foreach (var bg in model.bodyGroups)

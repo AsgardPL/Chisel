@@ -49,7 +49,7 @@ public static class DecalBoundsGizmo
         {
             return false;
         }
-        if (MapTools.Entities[em.entity].entityName != "EnvDecal")
+        if (MapTools.Entities[em.entity].EntityName != "EnvDecal")
         {
             return false;
         }
@@ -59,7 +59,7 @@ public static class DecalBoundsGizmo
 
     static Vector3 ReadPosition(EntityReference ent, string name, Vector3 fallback)
     {
-        var raw = ent.properties?.FirstOrDefault(p => p.Name == name).Value;
+        var raw = ent.Properties?.FirstOrDefault(p => p.Name == name).Value;
         if (string.IsNullOrEmpty(raw))
         {
             return fallback;
@@ -77,20 +77,20 @@ public static class DecalBoundsGizmo
                      value.Y.ToString(CultureInfo.InvariantCulture) + "," +
                      value.Z.ToString(CultureInfo.InvariantCulture);
 
-        int i = Array.FindIndex(ent.properties ?? Array.Empty<EntityProperty>(), p => p.Name == name);
+        int i = Array.FindIndex(ent.Properties ?? Array.Empty<EntityProperty>(), p => p.Name == name);
         if (i != -1)
         {
-            ent.properties[i].Value = str;
+            ent.Properties[i].Value = str;
             return;
         }
-        ent.properties = (ent.properties ?? Array.Empty<EntityProperty>()).Append(new EntityProperty { Name = name, Value = str }).ToArray();
+        ent.Properties = (ent.Properties ?? Array.Empty<EntityProperty>()).Append(new EntityProperty { Name = name, Value = str }).ToArray();
     }
 
     static Matrix EntityWorld(EntityReference ent) =>
         Matrix.CreateFromYawPitchRoll(
-            MathHelper.ToRadians(ent.spawnRotation.X),
-            MathHelper.ToRadians(ent.spawnRotation.Y),
-            MathHelper.ToRadians(ent.spawnRotation.Z)) * Matrix.CreateWorld(ent.position, Vector3.Forward, Vector3.Up);
+            MathHelper.ToRadians(ent.SpawnRotation.X),
+            MathHelper.ToRadians(ent.SpawnRotation.Y),
+            MathHelper.ToRadians(ent.SpawnRotation.Z)) * Matrix.CreateWorld(ent.Position, Vector3.Forward, Vector3.Up);
 
     static Vector3 FaceCenterLocal(Vector3 min, Vector3 max, int face)
     {

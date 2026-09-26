@@ -94,7 +94,7 @@ namespace MapCompiler
         static (Brush[] brushes, EntityReference[] entities, Terrain[] terrains) LoadMap(string json)
         {
             var map = Chisel.Formatter.MapMigration.LoadAndMigrate(json);
-            return (map.brushes, map.entityReferences, map.terrains);
+            return (map.Brushes, map.EntityReferences, map.Terrains);
         }
 
         static void LoadEDF(string fileContent)

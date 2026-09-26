@@ -42,8 +42,8 @@ public static class DecalUVPreviewWindow
 
     static Vector2 ReadUv(EntityReference ent, string xName, string yName, Vector2 fallback)
     {
-        var rawX = ent.properties?.FirstOrDefault(p => p.Name == xName).Value;
-        var rawY = ent.properties?.FirstOrDefault(p => p.Name == yName).Value;
+        var rawX = ent.Properties?.FirstOrDefault(p => p.Name == xName).Value;
+        var rawY = ent.Properties?.FirstOrDefault(p => p.Name == yName).Value;
         float x = string.IsNullOrEmpty(rawX) ? fallback.X : float.Parse(rawX, CultureInfo.InvariantCulture);
         float y = string.IsNullOrEmpty(rawY) ? fallback.Y : float.Parse(rawY, CultureInfo.InvariantCulture);
         return new Vector2(x, y);
@@ -52,13 +52,13 @@ public static class DecalUVPreviewWindow
     static void WriteFloat(EntityReference ent, string name, float value)
     {
         string str = value.ToString(CultureInfo.InvariantCulture);
-        int i = Array.FindIndex(ent.properties ?? Array.Empty<EntityProperty>(), p => p.Name == name);
+        int i = Array.FindIndex(ent.Properties ?? Array.Empty<EntityProperty>(), p => p.Name == name);
         if (i != -1)
         {
-            ent.properties[i].Value = str;
+            ent.Properties[i].Value = str;
             return;
         }
-        ent.properties = (ent.properties ?? Array.Empty<EntityProperty>()).Append(new EntityProperty { Name = name, Value = str }).ToArray();
+        ent.Properties = (ent.Properties ?? Array.Empty<EntityProperty>()).Append(new EntityProperty { Name = name, Value = str }).ToArray();
     }
 
     public static void Update()
@@ -157,13 +157,13 @@ public static class DecalUVPreviewWindow
         }
 
         var ent = MapTools.Entities[entity];
-        string materialName = ent.properties?.FirstOrDefault(p => p.Name == "Decal Material").Value;
-        if (string.IsNullOrEmpty(materialName) || !GlobalMapData.materialNameToIndex.TryGetValue(materialName, out int matIdx))
+        string materialName = ent.Properties?.FirstOrDefault(p => p.Name == "Decal Material").Value;
+        if (string.IsNullOrEmpty(materialName) || !GlobalMapData.MaterialNameToIndex.TryGetValue(materialName, out int matIdx))
         {
             return;
         }
 
-        Texture2D texture = GlobalMapData.loadedMaterials[matIdx].Texture;
+        Texture2D texture = GlobalMapData.LoadedMaterials[matIdx].Texture;
         if (texture == null)
         {
             return;

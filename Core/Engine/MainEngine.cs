@@ -648,9 +648,9 @@ namespace Engine
 
             for (int i = 0; i < ShaderRealtimeLightCount; i++)
             {
-                ShaderRealtimeLightPositions[i] = new Vector4(vals[i].position, vals[i].range);
-                ShaderRealtimeLightColors[i] = new Vector4(vals[i].color.ToVector3(), vals[i].intensity);
-                ShaderRealtimeLightSpotData[i] = new Vector4(vals[i].rotation, MathHelper.ToRadians(vals[i].type == Light.LightType.Point ? -1 : vals[i].angle));
+                ShaderRealtimeLightPositions[i] = new Vector4(vals[i].Position, vals[i].Range);
+                ShaderRealtimeLightColors[i] = new Vector4(vals[i].Color.ToVector3(), vals[i].Intensity);
+                ShaderRealtimeLightSpotData[i] = new Vector4(vals[i].Rotation, MathHelper.ToRadians(vals[i].Type == Light.LightType.Point ? -1 : vals[i].Angle));
             }
 
             foreach (var shader in RenderEngine.LoadedWorldShaders)
@@ -829,12 +829,12 @@ namespace Engine
         public void UnloadMap()
         {
             SkyCamera.activeSkyCamera = null;
-            if(BSPRoot.nodes != null) Array.Clear(BSPRoot.nodes);
-            BSPRoot.nodes = null;
+            if(BSPRoot.Nodes != null) Array.Clear(BSPRoot.Nodes);
+            BSPRoot.Nodes = null;
             IsMapLoaded = false;
             willMapBeLoaded = false;
             EntityManager.DespawnAllEntities();
-            GlobalMapData.activeMap = new Map();
+            GlobalMapData.ActiveMap = new Map();
             ActiveStaticLights.Clear();
             Blockmap.Clear();
 
@@ -924,71 +924,71 @@ namespace Engine
                     };
 
                     var mapData = MapFormatter.ReadMapData(Path.ChangeExtension(path, ".cmap"));
-                    GlobalMapData.activeMap = mapData.map;
-                    BSPRoot.nodes = mapData.bspFile.nodes;
+                    GlobalMapData.ActiveMap = mapData.map;
+                    BSPRoot.Nodes = mapData.bspFile.Nodes;
                     LoadedMapHasVis = false;
-                    if (mapData.map.hasVis)
+                    if (mapData.map.HasVis)
                     {
-                        VisRoot.visLeaves = mapData.visFile.leaves;
-                        VisRoot.visPortals = mapData.visFile.portals;
+                        VisRoot.VisLeaves = mapData.visFile.Leaves;
+                        VisRoot.VisPortals = mapData.visFile.Portals;
                         LoadedMapHasVis = true;
                     }
-                    OctreeRoot.allNodes = GlobalMapData.activeMap.octreeNodes;
+                    OctreeRoot.AllNodes = GlobalMapData.ActiveMap.OctreeNodes;
 
                     DirectionalLightColor = Color.Black;
                     DirectionalLightStrength = 0.0f;
                     AmbientSkyColor = Color.White;
                     AmbientSkylightStrength = 1.0f;
 
-                    if (GlobalMapData.activeMap.terrains != null && GlobalMapData.activeMap.terrains.Length > 0)
+                    if (GlobalMapData.ActiveMap.Terrains != null && GlobalMapData.ActiveMap.Terrains.Length > 0)
                     {
-                        for (int i = 0; i < GlobalMapData.activeMap.terrains.Length; i++)
+                        for (int i = 0; i < GlobalMapData.ActiveMap.Terrains.Length; i++)
                         {
-                            GlobalMapData.activeMap.terrains[i].surface = GlobalMapData.materialNameToIndex[GlobalMapData.activeMap.terrains[i].surfaceName];
-                            GlobalMapData.activeMap.terrains[i].blendedSurface = GlobalMapData.materialNameToIndex[GlobalMapData.activeMap.terrains[i].blendedSurfaceName];
+                            GlobalMapData.ActiveMap.Terrains[i].Surface = GlobalMapData.MaterialNameToIndex[GlobalMapData.ActiveMap.Terrains[i].SurfaceName];
+                            GlobalMapData.ActiveMap.Terrains[i].BlendedSurface = GlobalMapData.MaterialNameToIndex[GlobalMapData.ActiveMap.Terrains[i].BlendedSurfaceName];
 
-                            pending.UsedMaterialIndices.Add(GlobalMapData.activeMap.terrains[i].surface);
-                            pending.UsedMaterialIndices.Add(GlobalMapData.activeMap.terrains[i].blendedSurface);
+                            pending.UsedMaterialIndices.Add(GlobalMapData.ActiveMap.Terrains[i].Surface);
+                            pending.UsedMaterialIndices.Add(GlobalMapData.ActiveMap.Terrains[i].BlendedSurface);
                         }
                     }
 
-                    if (GlobalMapData.activeMap.brushes.Length > 0)
+                    if (GlobalMapData.ActiveMap.Brushes.Length > 0)
                     {
-                        for (int b = 0; b < GlobalMapData.activeMap.brushes.Length; b++)
+                        for (int b = 0; b < GlobalMapData.ActiveMap.Brushes.Length; b++)
                         {
-                            Brush brush = GlobalMapData.activeMap.brushes[b];
-                            var verts = new VertexLightmapped[brush.vertices.Length];
+                            Brush brush = GlobalMapData.ActiveMap.Brushes[b];
+                            var verts = new VertexLightmapped[brush.Vertices.Length];
                             for (int i = 0; i < verts.Length; i++)
-                                verts[i] = new VertexLightmapped(brush.vertices[i], Vector3.Forward,
-                                    brush.uvs[i], brush.lightmapUvs == null ? Vector2.Zero : brush.lightmapUvs[i]);
+                                verts[i] = new VertexLightmapped(brush.Vertices[i], Vector3.Forward,
+                                    brush.UVs[i], brush.LightmapUVs == null ? Vector2.Zero : brush.LightmapUVs[i]);
 
                             var faceUploads = new List<(int faceIdx, ushort[] indices)>();
-                            for (int f = 0; f < brush.faces.Length; f++)
+                            for (int f = 0; f < brush.Faces.Length; f++)
                             {
-                                if (!brush.faces[f].drawn) continue;
-                                brush.faces[f].plane ??= new Plane(brush.faces[f].normal,
-                                    brush.vertices[brush.faces[f].indices[0]] + brush.position);
-                                if (!string.IsNullOrEmpty(brush.faces[f].materialName) &&
-                                    GlobalMapData.loadedMaterials[brush.faces[f].surface].name != brush.faces[f].materialName)
+                                if (!brush.Faces[f].Drawn) continue;
+                                brush.Faces[f].Plane ??= new Plane(brush.Faces[f].Normal,
+                                    brush.Vertices[brush.Faces[f].Indices[0]] + brush.Position);
+                                if (!string.IsNullOrEmpty(brush.Faces[f].MaterialName) &&
+                                    GlobalMapData.LoadedMaterials[brush.Faces[f].Surface].Name != brush.Faces[f].MaterialName)
                                 {
-                                    brush.faces[f].surface =
-                                        GlobalMapData.materialNameToIndex.ContainsKey(brush.faces[f].materialName)
-                                        ? GlobalMapData.materialNameToIndex[brush.faces[f].materialName]
+                                    brush.Faces[f].Surface =
+                                        GlobalMapData.MaterialNameToIndex.ContainsKey(brush.Faces[f].MaterialName)
+                                        ? GlobalMapData.MaterialNameToIndex[brush.Faces[f].MaterialName]
                                         : int.MaxValue;
                                 }
 
-                                if (brush.faces[f].surface >= 0 && brush.faces[f].surface < GlobalMapData.loadedMaterials.Length)
+                                if (brush.Faces[f].Surface >= 0 && brush.Faces[f].Surface < GlobalMapData.LoadedMaterials.Length)
                                 {
-                                    pending.UsedMaterialIndices.Add(brush.faces[f].surface);
+                                    pending.UsedMaterialIndices.Add(brush.Faces[f].Surface);
                                 }
 
-                                for (int i = 0; i < brush.faces[f].indices.Length; i++)
+                                for (int i = 0; i < brush.Faces[f].Indices.Length; i++)
                                 {
-                                    verts[brush.faces[f].indices[i]].Normal = brush.faces[f].normal;
-                                    verts[brush.faces[f].indices[i]].Tangent = brush.faces[f].tangent;
-                                    verts[brush.faces[f].indices[i]].Binormal = brush.faces[f].binormal;
+                                    verts[brush.Faces[f].Indices[i]].Normal = brush.Faces[f].Normal;
+                                    verts[brush.Faces[f].Indices[i]].Tangent = brush.Faces[f].Tangent;
+                                    verts[brush.Faces[f].Indices[i]].Binormal = brush.Faces[f].Binormal;
                                 }
-                                faceUploads.Add((f, brush.faces[f].indices.Select(i => (ushort)i).ToArray()));
+                                faceUploads.Add((f, brush.Faces[f].Indices.Select(i => (ushort)i).ToArray()));
                             }
                             pending.BrushUploads.Add(new PendingMapLoad.BrushUpload(b, verts, faceUploads.ToArray()));
                         }
@@ -1009,29 +1009,29 @@ namespace Engine
 
                             foreach (var bounds in pending.GroupBounds)
                             {
-                                var groupEntry = zip.GetEntry($"lightgroup-{bounds.name}.hdr");
+                                var groupEntry = zip.GetEntry($"lightgroup-{bounds.Name}.hdr");
                                 if (groupEntry == null) continue;
-                                pending.GroupLayerBytes[bounds.name] = StreamToBytes(groupEntry.Open());
+                                pending.GroupLayerBytes[bounds.Name] = StreamToBytes(groupEntry.Open());
                             }
                         }
                     }
 
                     if (!disableEntitySpawning)
                     {
-                        foreach (var entityRef in GlobalMapData.activeMap.entities)
+                        foreach (var entityRef in GlobalMapData.ActiveMap.Entities)
                         {
-                            if (entityRef.entityName == null) continue;
-                            if (!EntityCompiler.EntityLookupTable.ContainsKey(entityRef.entityName)) continue;
+                            if (entityRef.EntityName == null) continue;
+                            if (!EntityCompiler.EntityLookupTable.ContainsKey(entityRef.EntityName)) continue;
 
                             pending.EntityRefs.Add(entityRef);
                         }
                     }
 
-                    if (GlobalMapData.activeMap.leafPolygons != null)
+                    if (GlobalMapData.ActiveMap.LeafPolygons != null)
                     {
-                        foreach (var leaf in GlobalMapData.activeMap.leafPolygons)
+                        foreach (var leaf in GlobalMapData.ActiveMap.LeafPolygons)
                         {
-                            if (!GlobalMapData.materialNameToIndex.TryGetValue(leaf.MaterialName, out int surf))
+                            if (!GlobalMapData.MaterialNameToIndex.TryGetValue(leaf.MaterialName, out int surf))
                             {
                                 surf = 0;
                             }
@@ -1040,20 +1040,20 @@ namespace Engine
                         }
                     }
 
-                    if (GlobalMapData.activeMap.mapModels != null)
+                    if (GlobalMapData.ActiveMap.MapModels != null)
                     {
-                        foreach (var mdl in GlobalMapData.activeMap.mapModels)
+                        foreach (var mdl in GlobalMapData.ActiveMap.MapModels)
                         {
-                            if (GlobalMapData.materialNameToIndex.TryGetValue(mdl.Material, out int surf))
+                            if (GlobalMapData.MaterialNameToIndex.TryGetValue(mdl.Material, out int surf))
                             {
                                 pending.UsedMaterialIndices.Add(surf);
                             }
                         }
                     }
 
-                    MapModelManager.SetModels(GlobalMapData.activeMap.mapModels);
+                    MapModelManager.SetModels(GlobalMapData.ActiveMap.MapModels);
 
-                    Array.Clear(GlobalMapData.activeMap.entities);
+                    Array.Clear(GlobalMapData.ActiveMap.Entities);
                     pendingMapLoad = pending;
                 }
 #if !DEBUG
@@ -1074,28 +1074,28 @@ namespace Engine
             {
                 var vb = new VertexBuffer(GraphicsDevice, typeof(VertexLightmapped), bu.Verts.Length, BufferUsage.WriteOnly);
                 vb.SetData(bu.Verts);
-                GlobalMapData.activeMap.brushes[bu.BrushIdx].brushVertexBuffer = vb;
-                var faces = GlobalMapData.activeMap.brushes[bu.BrushIdx].faces;
+                GlobalMapData.ActiveMap.Brushes[bu.BrushIdx].BrushVertexBuffer = vb;
+                var faces = GlobalMapData.ActiveMap.Brushes[bu.BrushIdx].Faces;
 
                 foreach (var (faceIdx, indices) in bu.Faces)
                 {
                     var ib = new IndexBuffer(GraphicsDevice, typeof(ushort), indices.Length, BufferUsage.WriteOnly);
                     ib.SetData(indices);
-                    GlobalMapData.activeMap.brushes[bu.BrushIdx].faces[faceIdx].faceIndices = ib;
+                    GlobalMapData.ActiveMap.Brushes[bu.BrushIdx].Faces[faceIdx].FaceIndices = ib;
 
-                    if (faces[faceIdx].surface > GlobalMapData.loadedMaterials.Length) continue;
+                    if (faces[faceIdx].Surface > GlobalMapData.LoadedMaterials.Length) continue;
 
                     // This may look weird, but brushes with ANY face that have
                     // planar reflections HAVE to render face-by-face.
-                    GlobalMapData.activeMap.brushes[bu.BrushIdx].renderPiecewise |= 
-                        GlobalMapData.loadedMaterials[faces[faceIdx].surface].GetFlag("receivePlanarReflection");
+                    GlobalMapData.ActiveMap.Brushes[bu.BrushIdx].RenderPiecewise |= 
+                        GlobalMapData.LoadedMaterials[faces[faceIdx].Surface].GetFlag("receivePlanarReflection");
                 }
 
-                if (GlobalMapData.activeMap.brushes[bu.BrushIdx].renderPiecewise) continue;
+                if (GlobalMapData.ActiveMap.Brushes[bu.BrushIdx].RenderPiecewise) continue;
 
                 List<MatGroup> groups = new List<MatGroup>();
 
-                var gface = bu.Faces.GroupBy(f => faces[f.FaceIdx].surface);
+                var gface = bu.Faces.GroupBy(f => faces[f.FaceIdx].Surface);
                 foreach(var group in gface)
                 {
                     var indices = group.SelectMany(f=>f.Indices).ToArray();
@@ -1108,16 +1108,16 @@ namespace Engine
                     groups.Add(mgroup);
                 }
 
-                GlobalMapData.activeMap.brushes[bu.BrushIdx].matGroups = groups.ToArray();
+                GlobalMapData.ActiveMap.Brushes[bu.BrushIdx].MatGroups = groups.ToArray();
             }
 
-            for(int i = 0; i < GlobalMapData.activeMap.terrains.Length; i++)
+            for(int i = 0; i < GlobalMapData.ActiveMap.Terrains.Length; i++)
             {
-                ref var terrain = ref GlobalMapData.activeMap.terrains[i];
+                ref var terrain = ref GlobalMapData.ActiveMap.Terrains[i];
 
-                terrain.leafBits ??= Bitset.Create(BSPRoot.nodes.Length);
-                Array.Clear(terrain.leafBits);
-                Collision.GatherLeaves(0, terrain.bounds, terrain.leafBits);
+                terrain.LeafBits ??= Bitset.Create(BSPRoot.Nodes.Length);
+                Array.Clear(terrain.LeafBits);
+                Collision.GatherLeaves(0, terrain.Bounds, terrain.LeafBits);
             }
 
             var basis1 = RadianceHdrLoader.FromStream(GraphicsDevice, new MemoryStream(pending.IndexB1Bytes));
@@ -1125,14 +1125,14 @@ namespace Engine
             var basis3 = RadianceHdrLoader.FromStream(GraphicsDevice, new MemoryStream(pending.IndexB3Bytes));
 
             LightGroupRuntime.ResetForNewMap();
-            LightGroupRuntime.SetGroupKeyOrder(GlobalMapData.activeMap.lightGroupKeys);
+            LightGroupRuntime.SetGroupKeyOrder(GlobalMapData.ActiveMap.LightGroupKeys);
             LightGroupRuntime.SetIndexLayer(GraphicsDevice,basis1, basis3, basis2);
 
             foreach (var bounds in pending.GroupBounds)
             {
-                if (!pending.GroupLayerBytes.TryGetValue(bounds.name, out var bytes)) continue;
+                if (!pending.GroupLayerBytes.TryGetValue(bounds.Name, out var bytes)) continue;
                 var groupTex = RadianceHdrLoader.FromStream(GraphicsDevice, new MemoryStream(bytes));
-                LightGroupRuntime.LoadLayer(bounds.name, groupTex, bounds.uvMin, bounds.uvMax);
+                LightGroupRuntime.LoadLayer(bounds.Name, groupTex, bounds.UvMin, bounds.UvMax);
             }
 
             RenderEngine.CheckInWorldTextures(LightGroupRuntime.CurrentB1, LightGroupRuntime.CurrentB2, LightGroupRuntime.CurrentB3);
@@ -1144,39 +1144,39 @@ namespace Engine
                 for (int refIdx = 0; refIdx < pending.EntityRefs.Count; refIdx++)
                 {
                     var entityRef = pending.EntityRefs[refIdx];
-                    var ent = (WorldEntity)Activator.CreateInstance(EntityCompiler.EntityLookupTable[entityRef.entityName]);
-                    ent.properties = entityRef.properties;
-                    ent.Name = entityRef.name;
-                    ent.EntityOutputs = BuildOutputDict(entityRef.entityOutputs);
+                    var ent = (WorldEntity)Activator.CreateInstance(EntityCompiler.EntityLookupTable[entityRef.EntityName]);
+                    ent.properties = entityRef.Properties;
+                    ent.Name = entityRef.Name;
+                    ent.EntityOutputs = BuildOutputDict(entityRef.EntityOutputs);
 
                     allConstructed.Add(ent);
 
-                    if (entityRef.brushIndices != null && entityRef.brushIndices.Count > 0)
+                    if (entityRef.BrushIndices != null && entityRef.BrushIndices.Count > 0)
                     {
                         var brushEnt = (BrushEntity)ent;
-                        brushEnt.brushSet = entityRef.brushIndices.ToArray();
+                        brushEnt.brushSet = entityRef.BrushIndices.ToArray();
 
-                        ent.Position = GlobalMapData.activeMap.brushes[brushEnt.PrimaryBrush].position;
+                        ent.Position = GlobalMapData.ActiveMap.Brushes[brushEnt.PrimaryBrush].Position;
                         ent.Rotation = Quaternion.Identity;
                         ent.Scale = Vector3.One;
 
                         foreach (var bi in brushEnt.brushSet)
                         {
-                            if (bi < 0 || bi >= GlobalMapData.activeMap.brushes.Length) continue;
-                            GlobalMapData.activeMap.brushes[bi].entity = brushEnt;
+                            if (bi < 0 || bi >= GlobalMapData.ActiveMap.Brushes.Length) continue;
+                            GlobalMapData.ActiveMap.Brushes[bi].Entity = brushEnt;
                         }
 
                         pending.BrushEntities.Enqueue(ent);
                     }
                     else
                     {
-                        ent.Position = entityRef.position;
+                        ent.Position = entityRef.Position;
                         ent.Rotation = Quaternion.CreateFromYawPitchRoll(
-                            MathHelper.ToRadians(entityRef.spawnRotation.X),
-                            MathHelper.ToRadians(entityRef.spawnRotation.Y),
-                            MathHelper.ToRadians(entityRef.spawnRotation.Z));
-                        ent.SpawnRotation = entityRef.spawnRotation;
-                        ent.Scale = entityRef.scale;
+                            MathHelper.ToRadians(entityRef.SpawnRotation.X),
+                            MathHelper.ToRadians(entityRef.SpawnRotation.Y),
+                            MathHelper.ToRadians(entityRef.SpawnRotation.Z));
+                        ent.SpawnRotation = entityRef.SpawnRotation;
+                        ent.Scale = entityRef.Scale;
                         pending.PointEntities.Add(ent);
                     }
                 }
@@ -1191,7 +1191,7 @@ namespace Engine
                 for (int refIdx = 0; refIdx < pending.EntityRefs.Count; refIdx++)
                 {
                     var entityRef = pending.EntityRefs[refIdx];
-                    if (entityRef.brushIndices == null || entityRef.brushIndices.Count == 0) continue;
+                    if (entityRef.BrushIndices == null || entityRef.BrushIndices.Count == 0) continue;
                     if (string.IsNullOrEmpty(entityRef.entityMoveParentName)) continue;
 
                     if (nameToEntity.TryGetValue(entityRef.entityMoveParentName, out var parent))
@@ -1200,7 +1200,7 @@ namespace Engine
                     }
                     else
                     {
-                        Instance.Console.WriteDirect($"MoveParent target '{entityRef.entityMoveParentName}' not found for entity '{entityRef.name}'", GameConsole.LogLevel.Warning);
+                        Instance.Console.WriteDirect($"MoveParent target '{entityRef.entityMoveParentName}' not found for entity '{entityRef.Name}'", GameConsole.LogLevel.Warning);
                     }
                 }
 
@@ -1220,7 +1220,7 @@ namespace Engine
 
             TextureMipGenerator.SetMapMaterials(pending.UsedMaterialIndices);
 
-            RenderEngine.CreateStaticGeometryBuffer(GlobalMapData.activeMap.staticGeomVertices);
+            RenderEngine.CreateStaticGeometryBuffer(GlobalMapData.ActiveMap.StaticGeomVertices);
 
             RenderEngine.OnMapLoaded();
             PhysicsEngine.OnMapLoaded();

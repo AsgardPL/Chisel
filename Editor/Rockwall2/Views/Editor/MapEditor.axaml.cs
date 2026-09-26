@@ -107,11 +107,11 @@ public partial class MapEditor : UserControl
         if (mat == -1) return;
 
         TexturePreview.Source = GlobalEditorData.TexturesAsImages[mat].Image;
-        Toolbelt.ActiveTexture = GlobalMapData.loadedMaterials[mat].name;
+        Toolbelt.ActiveTexture = GlobalMapData.LoadedMaterials[mat].Name;
     }
     public void RefreshViews()
     {
-        TexturePreview.Source = GlobalEditorData.TexturesAsImages[GlobalMapData.materialNameToIndex[Toolbelt.ActiveTexture]].Image;
+        TexturePreview.Source = GlobalEditorData.TexturesAsImages[GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture]].Image;
     }
     public void RefreshGridSize()
     {

@@ -119,7 +119,7 @@ namespace MapCompiler
                 var b = tv.portals.SelectMany(p => p.Brushes).Distinct().ToArray();
                 finalBrushMapping.TryAdd(i, b);
 
-                tv.HasSkybox = b.Any(i => brushes[i].isSkybox) || tv.HasSkybox;
+                tv.HasSkybox = b.Any(i => brushes[i].IsSkybox) || tv.HasSkybox;
             });
 
             for (int i = 0; i < leafCount; i++)
@@ -137,12 +137,12 @@ namespace MapCompiler
 
                 result.Add(new VisLeaf
                 {
-                    bspLeafID = tv.bspLeafID,
+                    BspLeafID = tv.bspLeafID,
                     IsEmpty = tv.IsEmpty,
                     HasSkybox = tv.HasSkybox,
-                    portals = ids,
-                    pvs = tv.pvs!=null? tv.pvs.Distinct().ToArray():Array.Empty<uint>(),
-                    brushes = finalBrushMapping[i]
+                    Portals = ids,
+                    PVS = tv.pvs!=null? tv.pvs.Distinct().ToArray():Array.Empty<uint>(),
+                    Brushes = finalBrushMapping[i]
                 });
             }
             progressBar.Dispose();
@@ -250,8 +250,8 @@ namespace MapCompiler
                 var p = portals[i];
                 bool flip = p.LeafBack == leaf.bspLeafID;
                 int next = flip ? p.LeafFront : p.LeafBack;
-                if (next == -1 || p.Brushes.Length > 0 || BSPRoot.nodes[next].split) continue;
-                if (excludeSolid && BSPRoot.nodes[next].solid) continue;
+                if (next == -1 || p.Brushes.Length > 0 || BSPRoot.Nodes[next].split) continue;
+                if (excludeSolid && BSPRoot.Nodes[next].solid) continue;
                 buf.Add(p);
             }
             return buf;
@@ -290,7 +290,7 @@ namespace MapCompiler
         {
             Console.WriteLine("--- CalculateFinePVS ---");
 
-            var leavesToCheck = visLeaves.Where(l => !BSPRoot.nodes[l.bspLeafID].solid && !BSPRoot.nodes[l.bspLeafID].split).ToArray();
+            var leavesToCheck = visLeaves.Where(l => !BSPRoot.Nodes[l.bspLeafID].solid && !BSPRoot.Nodes[l.bspLeafID].split).ToArray();
 
             progressTarget = leavesToCheck.Length;
             progressBar = new ProgressBar();
@@ -304,8 +304,8 @@ namespace MapCompiler
                 progress++;
                 progressBar.Report(progress / (float)progressTarget);
 
-                if (BSPRoot.nodes[leaf.bspLeafID].solid) return;
-                if (BSPRoot.nodes[leaf.bspLeafID].split) return;
+                if (BSPRoot.Nodes[leaf.bspLeafID].solid) return;
+                if (BSPRoot.Nodes[leaf.bspLeafID].split) return;
 
                 var sourcePortals = GetTraversablePortals(leaf, true).ToArray();
 
@@ -400,8 +400,8 @@ namespace MapCompiler
         {
             Bitset.Set(currentPVS, info.leaf.bspLeafID);
 
-            if (BSPRoot.nodes[info.leaf.bspLeafID].solid) return;
-            if (BSPRoot.nodes[info.leaf.bspLeafID].split) return;
+            if (BSPRoot.Nodes[info.leaf.bspLeafID].solid) return;
+            if (BSPRoot.Nodes[info.leaf.bspLeafID].split) return;
 
             var portals = GetTraversablePortals(info.leaf, false);
 
@@ -493,7 +493,7 @@ namespace MapCompiler
         {
             Console.WriteLine("--- CalculateCoarsePVS ---");
 
-            var leavesToCheck = visLeaves.Where(l => !BSPRoot.nodes[l.bspLeafID].solid && !BSPRoot.nodes[l.bspLeafID].split).ToArray();
+            var leavesToCheck = visLeaves.Where(l => !BSPRoot.Nodes[l.bspLeafID].solid && !BSPRoot.Nodes[l.bspLeafID].split).ToArray();
 
             progressTarget = leavesToCheck.Length;
             progressBar = new ProgressBar();
@@ -506,8 +506,8 @@ namespace MapCompiler
                 progress++;
                 progressBar.Report(progress / (float)progressTarget);
 
-                if (BSPRoot.nodes[leaf.bspLeafID].solid) continue;
-                if (BSPRoot.nodes[leaf.bspLeafID].split) continue;
+                if (BSPRoot.Nodes[leaf.bspLeafID].solid) continue;
+                if (BSPRoot.Nodes[leaf.bspLeafID].split) continue;
 
                 // wtf c#
                 var sourcePortals = GetTraversablePortals(leaf, true).ToArray();
@@ -585,7 +585,7 @@ namespace MapCompiler
         {
             for (int i = 0; i < visLeaves.Length; i++)
             {
-                BSPRoot.nodes[visLeaves[i].bspLeafID].solid = wasSolid[i];
+                BSPRoot.Nodes[visLeaves[i].bspLeafID].solid = wasSolid[i];
             }
 
             //invisibleBrushFaces.Clear();
@@ -656,7 +656,7 @@ namespace MapCompiler
             {
                 if (entities[i].IsBrushEntity) continue;
 
-                if (Outside.PlaceOccupant(i, entities[i].position))
+                if (Outside.PlaceOccupant(i, entities[i].Position))
                 {
                     inside = true;
                 }
@@ -665,8 +665,8 @@ namespace MapCompiler
             wasSolid = new bool[visLeaves.Length];
             for(int i = 0; i < visLeaves.Length; i++)
             {
-                wasSolid[i] = BSPRoot.nodes[visLeaves[i].bspLeafID].solid;
-                BSPRoot.nodes[visLeaves[i].bspLeafID].solid = true;
+                wasSolid[i] = BSPRoot.Nodes[visLeaves[i].bspLeafID].solid;
+                BSPRoot.Nodes[visLeaves[i].bspLeafID].solid = true;
             }
 
             if(!inside)
@@ -678,7 +678,7 @@ namespace MapCompiler
             if(!FillOutsideFromEntities(wasSolid, out var path, out var seedEntityIndex))
             {
                 Vector3[] points = new Vector3[path.Length + 1];
-                points[0] = entities[seedEntityIndex].position;
+                points[0] = entities[seedEntityIndex].Position;
                 for (int i = 0; i < path.Length; i++)
                 {
                     var center = path[i].Vertices.Aggregate((a, b) => a + b) / path[i].Vertices.Length;
@@ -740,7 +740,7 @@ namespace MapCompiler
                 var (l, viaPortal) = leaves.Dequeue();
 
                 if (visited[l.bspLeafID]) continue;
-                BSPRoot.nodes[l.bspLeafID].solid = false;
+                BSPRoot.Nodes[l.bspLeafID].solid = false;
                 visited[l.bspLeafID] = true;
 
                 outleaves++;
@@ -757,7 +757,7 @@ namespace MapCompiler
                     bool targetFlip = p.LeafBack == l.bspLeafID;
                     int next = (targetFlip ? p.LeafFront : p.LeafBack);
 
-                    return !(p.Brushes.Length > 0 || BSPRoot.nodes[next].split || wasSolid[next]);
+                    return !(p.Brushes.Length > 0 || BSPRoot.Nodes[next].split || wasSolid[next]);
                 }).ToList();
 
                 foreach (var p in sourcePortals)
@@ -805,8 +805,8 @@ namespace MapCompiler
         {
             Console.WriteLine("--- MakeHeadnodePortals ---");
 
-            visLeaves = new TempVisLeaf[BSPRoot.nodes.Length];
-            for (int i = 0; i < BSPRoot.nodes.Length; i++) { visLeaves[i] = (new TempVisLeaf { bspLeafID = i, portals = [] }); }
+            visLeaves = new TempVisLeaf[BSPRoot.Nodes.Length];
+            for (int i = 0; i < BSPRoot.Nodes.Length; i++) { visLeaves[i] = (new TempVisLeaf { bspLeafID = i, portals = [] }); }
 
             Vector3[] bounds = new Vector3[4];
             Portal[] boundingPortals = new Portal[6];
@@ -889,7 +889,7 @@ namespace MapCompiler
 
             foreach (var leaf in visLeaves)
             {
-                if (BSPRoot.nodes[leaf.bspLeafID].solid)
+                if (BSPRoot.Nodes[leaf.bspLeafID].solid)
                 {
                     leaf.portals.Clear();
                     continue;
@@ -902,7 +902,7 @@ namespace MapCompiler
                     var leafA = visLeaves[portal.LeafFront];
                     var leafB = visLeaves[portal.LeafBack];
 
-                    return !BSPRoot.nodes[leafA.bspLeafID].split && !BSPRoot.nodes[leafB.bspLeafID].split;
+                    return !BSPRoot.Nodes[leafA.bspLeafID].split && !BSPRoot.Nodes[leafB.bspLeafID].split;
                 }));
             }
 
@@ -912,7 +912,7 @@ namespace MapCompiler
                 if (p.LeafFront == -1 || p.LeafBack == -1) return false;
                 var leafA = visLeaves[p.LeafFront];
                 var leafB = visLeaves[p.LeafBack];
-                return BSPRoot.nodes[leafA.bspLeafID].solid && BSPRoot.nodes[leafB.bspLeafID].solid;
+                return BSPRoot.Nodes[leafA.bspLeafID].solid && BSPRoot.Nodes[leafB.bspLeafID].solid;
             });
             // This seems a bit hacky, but it DOES remove all of the weird leftovers, and nothing looks to have been removed where it shouldnt. So it stays.
             portals.RemoveAll(p =>
@@ -977,20 +977,20 @@ namespace MapCompiler
                 var brush = brushes[b];
                 var bounds = brushBounds[b];
 
-                if (brush.isEntity) continue;
-                if (brush.isClip) continue;
-                if (brush.isTrigger) continue;
-                if (brush.isLightNodeVolume) continue;
+                if (brush.IsEntity) continue;
+                if (brush.IsClip) continue;
+                if (brush.IsTrigger) continue;
+                if (brush.IsLightNodeVolume) continue;
 
                 foreach (var portal in brushToPortals[b])
                 {
-                    for (int f = 0; f < brush.faces.Length; f++)
+                    for (int f = 0; f < brush.Faces.Length; f++)
                     {
-                        var face = brush.faces[f];
+                        var face = brush.Faces[f];
                         bool skip = false;
-                        foreach (var i in face.indices)
+                        foreach (var i in face.Indices)
                         {
-                            var vertex = brush.vertices[i] + brush.position;
+                            var vertex = brush.Vertices[i] + brush.Position;
 
                             const float FACE_MATCH_EPSILON = 0.05f;
                             float d = portal.Plane.DotCoordinate(vertex);
@@ -1035,8 +1035,8 @@ namespace MapCompiler
 
                         Vector2 To2D(Vector3 p) => new Vector2(Vector3.Dot(p, vupProj), Vector3.Dot(p, vright));
 
-                        var faceVerts3D = face.indices
-                            .Select(i => brush.vertices[i] + brush.position)
+                        var faceVerts3D = face.Indices
+                            .Select(i => brush.Vertices[i] + brush.Position)
                             .ToArray();
                         var face2D = faceVerts3D.Select(To2D).ToArray();
                         var portal2D = portal.Vertices.Select(To2D).ToArray();
@@ -1100,7 +1100,7 @@ namespace MapCompiler
         {
             Console.WriteLine("--- CutNodePortals ---");
             progressBar = new ProgressBar();
-            progressTarget = BSPRoot.nodes.Length;
+            progressTarget = BSPRoot.Nodes.Length;
             CutNodePortals_r(0);
             progressBar.Dispose();
         }
@@ -1110,13 +1110,13 @@ namespace MapCompiler
             progressBar.Report(progress / progressTarget);
 
             var visNode = visLeaves[node];
-            var bspNode = BSPRoot.nodes[node];
+            var bspNode = BSPRoot.Nodes[node];
 
             // If this BSP node is a leaf (no split) -> nothing to do
             if (!bspNode.split)
                 return;
 
-            Plane plane = bspNode.splittingPlane;
+            Plane plane = bspNode.SplittingPlane;
             FindPlane(ref plane, out _);
             uint f = bspNode.front;
             uint b = bspNode.back;
@@ -1196,8 +1196,8 @@ namespace MapCompiler
                 TempVisLeaf childF = visLeaves[(int)f];
                 TempVisLeaf childB = visLeaves[(int)b];
 
-                childF.HasSkybox |= BSPRoot.nodes[(int)f].nodeFlag == BSPNode.SkyboxNode;
-                childB.HasSkybox |= BSPRoot.nodes[(int)b].nodeFlag == BSPNode.SkyboxNode;
+                childF.HasSkybox |= BSPRoot.Nodes[(int)f].nodeFlag == BSPNode.SkyboxNode;
+                childB.HasSkybox |= BSPRoot.Nodes[(int)b].nodeFlag == BSPNode.SkyboxNode;
 
                 if (frontWinding == null || frontWinding.Length < 3)
                 {

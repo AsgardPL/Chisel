@@ -82,14 +82,14 @@ public class HintMoveable : Transformable
     public override Vector3 GetPosition()
     {
         int i = hint;
-        return i == -1 ? Vector3.Zero : MapTools.Hints[i].position;
+        return i == -1 ? Vector3.Zero : MapTools.Hints[i].Position;
     }
 
     public override void Move(Vector3 delta)
     {
         int i = hint;
         if (i == -1) return;
-        MapTools.Hints[i].position += delta;
+        MapTools.Hints[i].Position += delta;
     }
 
     public override void Rotate(Vector3 axis, float radians)
@@ -139,7 +139,7 @@ public class AllHintSnapshot : TransformableSnapshot
 
     public override void Restore()
     {
-        MapTools.ActiveMap.hints = savedHints;
+        MapTools.ActiveMap.Hints = savedHints;
         MapTools.RebuildGuidMapper();
     }
 }
@@ -163,8 +163,8 @@ public class BrushVertexMoveable : Transformable
     public override Vector3 GetPosition()
     {
         if (brush >= MapTools.Brushes.Length) return Vector3.Zero;
-        if (vert >= MapTools.Brushes[brush].vertices.Length) return Vector3.Zero;
-        return MapTools.Brushes[brush].vertices[vert] + MapTools.Brushes[brush].position;
+        if (vert >= MapTools.Brushes[brush].Vertices.Length) return Vector3.Zero;
+        return MapTools.Brushes[brush].Vertices[vert] + MapTools.Brushes[brush].Position;
     }
 
     public override void BeforeMove()
@@ -172,36 +172,36 @@ public class BrushVertexMoveable : Transformable
         originalWorldPos = GetPosition();
 
         if (brush < 0 || brush >= MapTools.Brushes.Length) return;
-        preEditVertices = (Vector3[])MapTools.Brushes[brush].vertices.Clone();
-        preEditFaces = (Face[])MapTools.Brushes[brush].faces.Clone();
+        preEditVertices = (Vector3[])MapTools.Brushes[brush].Vertices.Clone();
+        preEditFaces = (Face[])MapTools.Brushes[brush].Faces.Clone();
         terrainSync = BrushOperations.CaptureTerrainSync(brush, new[] { originalWorldPos });
     }
 
     public override void Move(Vector3 delta)
     {
         if (brush >= MapTools.Brushes.Length) return;
-        if (vert >= MapTools.Brushes[brush].vertices.Length) return;
+        if (vert >= MapTools.Brushes[brush].Vertices.Length) return;
 
         Vector3 vertPos = GetPosition();
 
         List<int> viableVerts = new List<int> { vert };
-        for (int v = 0; v < MapTools.Brushes[brush].vertices.Length; v++)
+        for (int v = 0; v < MapTools.Brushes[brush].Vertices.Length; v++)
         {
-            Vector3 testPos = MapTools.Brushes[brush].vertices[v] + MapTools.Brushes[brush].position;
+            Vector3 testPos = MapTools.Brushes[brush].Vertices[v] + MapTools.Brushes[brush].Position;
             if (Vector3.Distance(vertPos, testPos) < float.Epsilon)
                 viableVerts.Add(v);
         }
 
-        Vector3 newPos = vertPos + delta - MapTools.Brushes[brush].position;
+        Vector3 newPos = vertPos + delta - MapTools.Brushes[brush].Position;
 
         foreach (int v in viableVerts)
-            MapTools.Brushes[brush].vertices[v] = newPos;
+            MapTools.Brushes[brush].Vertices[v] = newPos;
     }
 
     public override void PostMove()
     {
         if (brush >= MapTools.Brushes.Length) return;
-        if (vert >= MapTools.Brushes[brush].vertices.Length) return;
+        if (vert >= MapTools.Brushes[brush].Vertices.Length) return;
 
         Vector3 totalDelta = GetPosition() - originalWorldPos;
 
@@ -212,8 +212,8 @@ public class BrushVertexMoveable : Transformable
         if (terrainSync != null && terrainSync.Count > 0 &&
             !BrushOperations.ApplyTerrainSync(brush, terrainSync, totalDelta, out _))
         {
-            MapTools.Brushes[brush].vertices = preEditVertices;
-            MapTools.Brushes[brush].faces = preEditFaces;
+            MapTools.Brushes[brush].Vertices = preEditVertices;
+            MapTools.Brushes[brush].Faces = preEditFaces;
             MapTools.RecomputeBrushBounds(brush);
             Toolbelt.ShowTerrainQuadError();
         }
@@ -251,7 +251,7 @@ public class BrushVertexMoveable : Transformable
         }
         public override void Restore()
         {
-            MapTools.ActiveMap.brushes = original;
+            MapTools.ActiveMap.Brushes = original;
             MapTools.RecomputeAllBrushBounds();
             MapTools.RebuildGuidMapper();
         }
@@ -281,17 +281,17 @@ public class BrushEdgeMoveable : Transformable
     {
         if (brush >= MapTools.Brushes.Length) return Vector3.Zero;
 
-        return (MapTools.Brushes[brush].vertices[vertA] + MapTools.Brushes[brush].vertices[vertB]) * 0.5f + MapTools.Brushes[brush].position;
+        return (MapTools.Brushes[brush].Vertices[vertA] + MapTools.Brushes[brush].Vertices[vertB]) * 0.5f + MapTools.Brushes[brush].Position;
     }
 
     public override void BeforeMove()
     {
         if (brush < 0 || brush >= MapTools.Brushes.Length) return;
-        preEditVertices = (Vector3[])MapTools.Brushes[brush].vertices.Clone();
-        preEditFaces = (Face[])MapTools.Brushes[brush].faces.Clone();
+        preEditVertices = (Vector3[])MapTools.Brushes[brush].Vertices.Clone();
+        preEditFaces = (Face[])MapTools.Brushes[brush].Faces.Clone();
 
-        originalAPosWorld = MapTools.Brushes[brush].vertices[vertA] + MapTools.Brushes[brush].position;
-        originalBPosWorld = MapTools.Brushes[brush].vertices[vertB] + MapTools.Brushes[brush].position;
+        originalAPosWorld = MapTools.Brushes[brush].Vertices[vertA] + MapTools.Brushes[brush].Position;
+        originalBPosWorld = MapTools.Brushes[brush].Vertices[vertB] + MapTools.Brushes[brush].Position;
 
         terrainSync = BrushOperations.CaptureTerrainSync(brush, new[] { originalAPosWorld, originalBPosWorld });
     }
@@ -300,33 +300,33 @@ public class BrushEdgeMoveable : Transformable
     {
         if (brush >= MapTools.Brushes.Length) return;
 
-        var vertPosA = MapTools.Brushes[brush].vertices[vertA] + MapTools.Brushes[brush].position;
+        var vertPosA = MapTools.Brushes[brush].Vertices[vertA] + MapTools.Brushes[brush].Position;
 
         List<int> viableVertsA = new List<int> { vertA };
         List<int> viableVertsB = new List<int> { vertB };
-        for (int v = 0; v < MapTools.Brushes[brush].vertices.Length; v++)
+        for (int v = 0; v < MapTools.Brushes[brush].Vertices.Length; v++)
         {
-            Vector3 testPos = MapTools.Brushes[brush].vertices[v] + MapTools.Brushes[brush].position;
+            Vector3 testPos = MapTools.Brushes[brush].Vertices[v] + MapTools.Brushes[brush].Position;
             if (Vector3.Distance(vertPosA, testPos) < float.Epsilon)
                 viableVertsA.Add(v);
         }
 
-        var vertPosB = MapTools.Brushes[brush].vertices[vertB] + MapTools.Brushes[brush].position;
+        var vertPosB = MapTools.Brushes[brush].Vertices[vertB] + MapTools.Brushes[brush].Position;
 
-        for (int v = 0; v < MapTools.Brushes[brush].vertices.Length; v++)
+        for (int v = 0; v < MapTools.Brushes[brush].Vertices.Length; v++)
         {
-            Vector3 testPos = MapTools.Brushes[brush].vertices[v] + MapTools.Brushes[brush].position;
+            Vector3 testPos = MapTools.Brushes[brush].Vertices[v] + MapTools.Brushes[brush].Position;
             if (Vector3.Distance(vertPosB, testPos) < float.Epsilon)
                 viableVertsB.Add(v);
         }
 
-        Vector3 newPosA = vertPosA + delta - MapTools.Brushes[brush].position;
-        Vector3 newPosB = vertPosB + delta - MapTools.Brushes[brush].position;
+        Vector3 newPosA = vertPosA + delta - MapTools.Brushes[brush].Position;
+        Vector3 newPosB = vertPosB + delta - MapTools.Brushes[brush].Position;
 
         foreach (int v in viableVertsA)
-            MapTools.Brushes[brush].vertices[v] = newPosA;
+            MapTools.Brushes[brush].Vertices[v] = newPosA;
         foreach (int v in viableVertsB)
-            MapTools.Brushes[brush].vertices[v] = newPosB;
+            MapTools.Brushes[brush].Vertices[v] = newPosB;
 
         finalAPos = newPosA;
         finalBPos = newPosB;
@@ -336,7 +336,7 @@ public class BrushEdgeMoveable : Transformable
     {
         if (brush >= MapTools.Brushes.Length) return;
 
-        Vector3 totalDelta = (finalAPos + MapTools.Brushes[brush].position) - originalAPosWorld;
+        Vector3 totalDelta = (finalAPos + MapTools.Brushes[brush].Position) - originalAPosWorld;
 
         BrushOperations.RecalculateBrushPlanes(ref MapTools.Brushes[brush]);
         BrushOperations.RebuildBrush(ref MapTools.Brushes[brush]);
@@ -345,8 +345,8 @@ public class BrushEdgeMoveable : Transformable
         if (terrainSync != null && terrainSync.Count > 0 &&
             !BrushOperations.ApplyTerrainSync(brush, terrainSync, totalDelta, out _))
         {
-            MapTools.Brushes[brush].vertices = preEditVertices;
-            MapTools.Brushes[brush].faces = preEditFaces;
+            MapTools.Brushes[brush].Vertices = preEditVertices;
+            MapTools.Brushes[brush].Faces = preEditFaces;
             MapTools.RecomputeBrushBounds(brush);
             Toolbelt.ShowTerrainQuadError();
             return;
@@ -411,7 +411,7 @@ public class BrushEdgeMoveable : Transformable
         }
         public override void Restore()
         {
-            MapTools.ActiveMap.brushes = original;
+            MapTools.ActiveMap.Brushes = original;
             MapTools.RecomputeAllBrushBounds();
             MapTools.RebuildGuidMapper();
         }
@@ -434,22 +434,22 @@ public class FaceMoveable : Transformable
     public override Vector3 GetPosition()
     {
         if (brush == -1 || brush > MapTools.Brushes.Length) return Vector3.Zero;
-        if (face == -1 || face > MapTools.Brushes[brush].faces.Length) return Vector3.Zero;
+        if (face == -1 || face > MapTools.Brushes[brush].Faces.Length) return Vector3.Zero;
 
         var b = MapTools.Brushes[brush];
-        var f = b.faces[face];
-        return f.indices.Select(i => b.vertices[i]).Aggregate((s, v) => s + v) / f.indices.Length + b.position;
+        var f = b.Faces[face];
+        return f.Indices.Select(i => b.Vertices[i]).Aggregate((s, v) => s + v) / f.Indices.Length + b.Position;
     }
 
     public override void Move(Vector3 delta)
     {
         if (brush >= MapTools.Brushes.Length) return;
-        if (face >= MapTools.Brushes[brush].faces.Length) return;
+        if (face >= MapTools.Brushes[brush].Faces.Length) return;
         if (brush < 0) return;
 
         if (delta.LengthSquared() < 0.001f) return;
 
-        var norm = (MapTools.Brushes[brush].faces[face].normal);
+        var norm = (MapTools.Brushes[brush].Faces[face].Normal);
         var move = Vector3.Dot(norm, delta);
 
         BrushOperations.MoveFace(brush, face, move);
@@ -475,7 +475,7 @@ public class FaceMoveable : Transformable
     public override Transformable Duplicate()
     {
         if (brush >= MapTools.Brushes.Length) return null;
-        if (face >= MapTools.Brushes[brush].faces.Length) return null;
+        if (face >= MapTools.Brushes[brush].Faces.Length) return null;
 
         MapTools.AddBrush(MapTools.Brushes[brush].Clone());
         BrushOperations.RebuildBrush(ref MapTools.Brushes[MapTools.Brushes.Length - 1]);
@@ -503,11 +503,11 @@ public class BrushMoveable : Transformable
     {
         if (brush >= MapTools.Brushes.Length) return Vector3.Zero;
         if (brush < 0) return Vector3.Zero;
-        if (MapTools.Brushes[brush].faces == null) return Vector3.Zero;
-        if (MapTools.Brushes[brush].vertices == null) return Vector3.Zero;
+        if (MapTools.Brushes[brush].Faces == null) return Vector3.Zero;
+        if (MapTools.Brushes[brush].Vertices == null) return Vector3.Zero;
 
-        return MapTools.Brushes[brush].vertices.Aggregate((s, v) => s + v) / MapTools.Brushes[brush].vertices.Length
-               + MapTools.Brushes[brush].position;
+        return MapTools.Brushes[brush].Vertices.Aggregate((s, v) => s + v) / MapTools.Brushes[brush].Vertices.Length
+               + MapTools.Brushes[brush].Position;
     }
 
     public override void Move(Vector3 delta)
@@ -515,13 +515,13 @@ public class BrushMoveable : Transformable
         if (brush >= MapTools.Brushes.Length) return;
         if (brush < 0) return;
 
-        MapTools.Brushes[brush].position += delta;
+        MapTools.Brushes[brush].Position += delta;
         BrushOperations.RebuildBrush(ref MapTools.Brushes[brush]);
         MapTools.RecomputeBrushBounds(brush);
 
         for (int i = 0; i < MapTools.Terrains.Length; i++)
         {
-            if (MapTools.Terrains[i].brushSource != brush) continue;
+            if (MapTools.Terrains[i].BrushSource != brush) continue;
             var terrain = MapTools.Terrains[i];
             BrushOperations.MoveTerrain(ref terrain, delta);
             MapTools.Terrains[i] = terrain;
@@ -536,23 +536,23 @@ public class BrushMoveable : Transformable
         ref Brush b = ref MapTools.Brushes[brush];
         Vector3 center = GetPosition();
 
-        for (int f = 0; f < b.faces.Length; f++)
+        for (int f = 0; f < b.Faces.Length; f++)
         {
-            if (!b.faces[f].plane.HasValue) continue;
+            if (!b.Faces[f].Plane.HasValue) continue;
 
-            Plane oldPlane = b.faces[f].plane.Value;
+            Plane oldPlane = b.Faces[f].Plane.Value;
             Vector3 n = oldPlane.Normal;
             float nDotN = Vector3.Dot(n, n);
             if (nDotN < 1e-12f) continue;
 
             Vector3 anchorLocal = -oldPlane.D * n / nDotN;
-            Vector3 anchorWorld = anchorLocal + b.position;
+            Vector3 anchorWorld = anchorLocal + b.Position;
 
             Vector3 newAnchorWorld = center + Vector3.Transform(anchorWorld - center, q);
             Vector3 newNormal = Vector3.Normalize(Vector3.Transform(n, q));
-            Vector3 newAnchorLocal = newAnchorWorld - b.position;
+            Vector3 newAnchorLocal = newAnchorWorld - b.Position;
 
-            b.faces[f].plane = new Plane(newNormal, -Vector3.Dot(newNormal, newAnchorLocal));
+            b.Faces[f].Plane = new Plane(newNormal, -Vector3.Dot(newNormal, newAnchorLocal));
         }
 
         BrushOperations.RebuildBrush(ref b);
@@ -560,10 +560,10 @@ public class BrushMoveable : Transformable
 
         for (int i = 0; i < MapTools.Terrains.Length; i++)
         {
-            if (MapTools.Terrains[i].brushSource != brush) continue;
+            if (MapTools.Terrains[i].BrushSource != brush) continue;
             var terrain = MapTools.Terrains[i];
-            for (int v = 0; v < terrain.vertices.Length; v++)
-                terrain.vertices[v].Position = center + Vector3.Transform(terrain.vertices[v].Position - center, q);
+            for (int v = 0; v < terrain.Vertices.Length; v++)
+                terrain.Vertices[v].Position = center + Vector3.Transform(terrain.Vertices[v].Position - center, q);
             BrushOperations.UpdateTerrain(ref terrain);
             MapTools.Terrains[i] = terrain;
         }
@@ -607,17 +607,17 @@ public class BrushMoveable : Transformable
         }
 
         // If this brush is a terrain source, duplicate its terrain onto the new brush too.
-        int terrainIndex = Array.FindIndex(MapTools.Terrains, t => t.brushSource == sourceBrushIndex);
+        int terrainIndex = Array.FindIndex(MapTools.Terrains, t => t.BrushSource == sourceBrushIndex);
         if (terrainIndex != -1)
         {
             var dupTerrain = MapTools.Terrains[terrainIndex];
 
-            dupTerrain.vertices = (TerrainVertex[])dupTerrain.vertices?.Clone();
-            dupTerrain.triangles = (short[])dupTerrain.triangles?.Clone();
+            dupTerrain.Vertices = (TerrainVertex[])dupTerrain.Vertices?.Clone();
+            dupTerrain.Triangles = (short[])dupTerrain.Triangles?.Clone();
             dupTerrain.editor_cheat_flipalphavert = (TerrainVertex[])dupTerrain.editor_cheat_flipalphavert?.Clone();
 
             // AddTerrain resolves GroupingID/BrushOwnerGUID from brushSource itself.
-            dupTerrain.brushSource = newIndex;
+            dupTerrain.BrushSource = newIndex;
             MapTools.AddTerrain(dupTerrain);
         }
 
@@ -628,15 +628,15 @@ public class BrushMoveable : Transformable
     {
         return new EntityReference
         {
-            entityName = source.entityName,
-            name = source.name,
-            position = source.position,
-            spawnRotation = source.spawnRotation,
-            rotation = source.rotation,
-            scale = source.scale,
-            entityOutputs = source.entityOutputs == null ? null : new List<(string, EntityOutput)>(source.entityOutputs),
-            properties = (EntityProperty[])(source.properties?.Clone() ?? Array.Empty<EntityProperty>()),
-            brushIndices = new List<int>(),
+            EntityName = source.EntityName,
+            Name = source.Name,
+            Position = source.Position,
+            SpawnRotation = source.SpawnRotation,
+            Rotation = source.Rotation,
+            Scale = source.Scale,
+            EntityOutputs = source.EntityOutputs == null ? null : new List<(string, EntityOutput)>(source.EntityOutputs),
+            Properties = (EntityProperty[])(source.Properties?.Clone() ?? Array.Empty<EntityProperty>()),
+            BrushIndices = new List<int>(),
             brushOwnerGUIDs = new List<Guid>(),
         };
     }
@@ -667,8 +667,8 @@ public class BrushWithOwnershipSnapshot : TransformableSnapshot
 
     public override void Restore()
     {
-        MapTools.ActiveMap.brushes = originalBrushes;
-        MapTools.ActiveMap.entityReferences = originalEntities;
+        MapTools.ActiveMap.Brushes = originalBrushes;
+        MapTools.ActiveMap.EntityReferences = originalEntities;
         foreach (var entity in originalEntities)
         {
             if (entity?.GroupingID is { } id && originalOwnership.TryGetValue(id, out var guids))
@@ -691,26 +691,26 @@ public class EntityMoveable : Transformable
 
     public override Vector3 GetPosition()
     {
-        return MapTools.Entities[entity].position;
+        return MapTools.Entities[entity].Position;
     }
 
     public override void Move(Vector3 delta)
     {
-        MapTools.Entities[entity].position += delta;
+        MapTools.Entities[entity].Position += delta;
     }
     public override void Rotate(Vector3 axis, float radians)
     {
         ref var ent = ref MapTools.Entities[entity];
 
         Quaternion current = Quaternion.CreateFromYawPitchRoll(
-            MathHelper.ToRadians(ent.spawnRotation.X),
-            MathHelper.ToRadians(ent.spawnRotation.Y),
-            MathHelper.ToRadians(ent.spawnRotation.Z));
+            MathHelper.ToRadians(ent.SpawnRotation.X),
+            MathHelper.ToRadians(ent.SpawnRotation.Y),
+            MathHelper.ToRadians(ent.SpawnRotation.Z));
 
         Quaternion delta = Quaternion.CreateFromAxisAngle(axis, radians);
         Quaternion result = delta * current;
 
-        ent.spawnRotation = QuaternionToYawPitchRollDegrees(result);
+        ent.SpawnRotation = QuaternionToYawPitchRollDegrees(result);
     }
 
     static Vector3 QuaternionToYawPitchRollDegrees(Quaternion q)
@@ -749,20 +749,20 @@ public class EntityMoveable : Transformable
         var source = MapTools.Entities[entity];
         var duplicate = new EntityReference
         {
-            entityName = source.entityName,
-            name = source.name,
-            scale = source.scale,
-            spawnRotation = source.spawnRotation,
-            entityOutputs = source.entityOutputs.ToArray().ToList(),
-            position = source.position,
-            properties = (EntityProperty[])(source.properties?.Clone() ?? Array.Empty<EntityProperty>()),
+            EntityName = source.EntityName,
+            Name = source.Name,
+            Scale = source.Scale,
+            SpawnRotation = source.SpawnRotation,
+            EntityOutputs = source.EntityOutputs.ToArray().ToList(),
+            Position = source.Position,
+            Properties = (EntityProperty[])(source.Properties?.Clone() ?? Array.Empty<EntityProperty>()),
         };
 
-        if (GlobalEditorData.RegisteredEntityMeta.TryGetValue(source.entityName, out var meta) && meta.link is { } link)
+        if (GlobalEditorData.RegisteredEntityMeta.TryGetValue(source.EntityName, out var meta) && meta.Link is { } link)
         {
-            duplicate.name = MapTools.GenerateUniqueName(source.name);
-            SetPropertyValue(source, link.next, duplicate.name);
-            if (link.previous != null) SetPropertyValue(duplicate, link.previous, source.name);
+            duplicate.Name = MapTools.GenerateUniqueName(source.Name);
+            SetPropertyValue(source, link.Next, duplicate.Name);
+            if (link.Previous != null) SetPropertyValue(duplicate, link.Previous, source.Name);
         }
 
         MapTools.AddEntity(duplicate);
@@ -770,9 +770,9 @@ public class EntityMoveable : Transformable
     }
     static void SetPropertyValue(EntityReference target, string propertyName, string value)
     {
-        int i = Array.FindIndex(target.properties ?? Array.Empty<EntityProperty>(), p => p.Name == propertyName);
-        if (i != -1) { target.properties[i].Value = value; return; }
-        target.properties = (target.properties ?? Array.Empty<EntityProperty>()).Append(new EntityProperty { Name = propertyName, Value = value }).ToArray();
+        int i = Array.FindIndex(target.Properties ?? Array.Empty<EntityProperty>(), p => p.Name == propertyName);
+        if (i != -1) { target.Properties[i].Value = value; return; }
+        target.Properties = (target.Properties ?? Array.Empty<EntityProperty>()).Append(new EntityProperty { Name = propertyName, Value = value }).ToArray();
     }
 
     public override TransformableSnapshot SnapshotForUndo()
@@ -781,14 +781,14 @@ public class EntityMoveable : Transformable
         var e = MapTools.Entities[entity];
         var copy = new EntityReference
         {
-            entityName = e.entityName,
-            name = e.name,
-            scale = e.scale,
-            position = e.position,
-            spawnRotation = e.spawnRotation,
-            rotation = e.rotation,
-            entityOutputs = e.entityOutputs?.ToArray().ToList() ?? new List<(string, EntityOutput)>(),
-            properties = e.properties != null ? (EntityProperty[])e.properties.Clone() : null,
+            EntityName = e.EntityName,
+            Name = e.Name,
+            Scale = e.Scale,
+            Position = e.Position,
+            SpawnRotation = e.SpawnRotation,
+            Rotation = e.Rotation,
+            EntityOutputs = e.EntityOutputs?.ToArray().ToList() ?? new List<(string, EntityOutput)>(),
+            Properties = e.Properties != null ? (EntityProperty[])e.Properties.Clone() : null,
         };
         return new AllEntitySnapshot(MapTools.Entities);
     }
@@ -811,9 +811,9 @@ public class TerrainMoveable : Transformable
 
         var t = MapTools.Terrains[terrain];
         var center = Vector3.Zero;
-        foreach (var vert in t.vertices) center += vert.Position;
+        foreach (var vert in t.Vertices) center += vert.Position;
 
-        center /= t.vertices.Length;
+        center /= t.Vertices.Length;
 
         return center;
     }
@@ -865,7 +865,7 @@ public class AllBrushSnapshot : TransformableSnapshot
 
     public override void Restore()
     {
-        MapTools.ActiveMap.brushes = savedBrushes;
+        MapTools.ActiveMap.Brushes = savedBrushes;
         MapTools.RecomputeAllBrushBounds();
         MapTools.RebuildGuidMapper();
     }
@@ -886,7 +886,7 @@ public class AllEntitySnapshot : TransformableSnapshot
 
     public override void Restore()
     {
-        MapTools.ActiveMap.entityReferences = savedEntities;
+        MapTools.ActiveMap.EntityReferences = savedEntities;
         MapTools.RebuildGuidMapper();
     }
 }
@@ -909,8 +909,8 @@ public class AllTerrainSnapshot : TransformableSnapshot
 
     public override void Restore()
     {
-        MapTools.ActiveMap.terrains = savedTerrains;
-        MapTools.ActiveMap.brushes = savedBrushes;
+        MapTools.ActiveMap.Terrains = savedTerrains;
+        MapTools.ActiveMap.Brushes = savedBrushes;
         MapTools.RebuildGuidMapper();
     }
 }

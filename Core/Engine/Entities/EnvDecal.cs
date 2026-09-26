@@ -58,11 +58,11 @@ public class EnvDecal : WorldEntity
             obb.Transformation = Matrix.CreateFromQuaternion(entity.Rotation) * Matrix.CreateTranslation(center);
 
             string materialName = (string)entity.ReadProperty("Decal Material", Rockwall.EntityPropertyType.Material);
-            if (string.IsNullOrEmpty(materialName) || !GlobalMapData.materialNameToIndex.TryGetValue(materialName, out int materialIndex)) return;
+            if (string.IsNullOrEmpty(materialName) || !GlobalMapData.MaterialNameToIndex.TryGetValue(materialName, out int materialIndex)) return;
 
             TextureMipGenerator.ReserveMaterial(materialIndex);
 
-            Texture2D texture = GlobalMapData.loadedMaterials[materialIndex].Texture;
+            Texture2D texture = GlobalMapData.LoadedMaterials[materialIndex].Texture;
 
             if (texture == null) return;
 

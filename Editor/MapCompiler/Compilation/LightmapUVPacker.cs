@@ -31,34 +31,34 @@ namespace MapCompiler
             // Generate brush rects
             for (int b = 0; b < brushes.Length; b++)
             {
-                var lightmapUvs = new List<Vector2>(brushes[b].lightmapUvs);
-                var triangles = brushes[b].faces.SelectMany(f => f.indices.Select(i => (short)i)).ToArray();
+                var lightmapUvs = new List<Vector2>(brushes[b].LightmapUVs);
+                var triangles = brushes[b].Faces.SelectMany(f => f.Indices.Select(i => (short)i)).ToArray();
 
-                for (int f = 0; f < brushes[b].faces.Length; f++)
+                for (int f = 0; f < brushes[b].Faces.Length; f++)
                 {
-                    var face = brushes[b].faces[f];
-                    if (!face.drawn) continue;
-                    foreach (int idx in face.indices)
+                    var face = brushes[b].Faces[f];
+                    if (!face.Drawn) continue;
+                    foreach (int idx in face.Indices)
                     {
-                        var uv = brushes[b].lightmapUvs[idx];
-                        uv *= new Vector2(MathF.Max(face.luxelScale, 1));
+                        var uv = brushes[b].LightmapUVs[idx];
+                        uv *= new Vector2(MathF.Max(face.LuxelScale, 1));
                         lightmapUvs[idx] = uv * res;
                     }
                 }
-                brushes[b].lightmapUvs = lightmapUvs.ToArray();
+                brushes[b].LightmapUVs = lightmapUvs.ToArray();
 
-                if (brushes[b].isSkybox) continue;
+                if (brushes[b].IsSkybox) continue;
 
-                for (int f = 0; f < brushes[b].faces.Length; f++)
+                for (int f = 0; f < brushes[b].Faces.Length; f++)
                 {
-                    var face = brushes[b].faces[f];
-                    if (!face.drawn) continue;
+                    var face = brushes[b].Faces[f];
+                    if (!face.Drawn) continue;
 
                     Vector2 min = new Vector2(float.MaxValue), max = new Vector2(float.MinValue);
-                    foreach (int idx in face.indices)
+                    foreach (int idx in face.Indices)
                     {
-                        min = Vector2.Min(brushes[b].lightmapUvs[idx], min);
-                        max = Vector2.Max(brushes[b].lightmapUvs[idx], max);
+                        min = Vector2.Min(brushes[b].LightmapUVs[idx], min);
+                        max = Vector2.Max(brushes[b].LightmapUVs[idx], max);
                     }
                     Vector2 size = Vector2.Max(max - min, Vector2.One);
                     packBounds.Add(new PackingRectangle(
@@ -95,18 +95,18 @@ namespace MapCompiler
 
             for (int b = 0; b < brushes.Length; b++)
             {
-                if (brushes[b].isSkybox) continue;
+                if (brushes[b].IsSkybox) continue;
 
-                for (int f = 0; f < brushes[b].faces.Length; f++)
+                for (int f = 0; f < brushes[b].Faces.Length; f++)
                 {
-                    var face = brushes[b].faces[f];
-                    if (!face.drawn) continue;
+                    var face = brushes[b].Faces[f];
+                    if (!face.Drawn) continue;
 
                     Vector2 min = new Vector2(float.MaxValue), max = new Vector2(float.MinValue);
-                    foreach (int idx in face.indices)
+                    foreach (int idx in face.Indices)
                     {
-                        min = Vector2.Min(brushes[b].lightmapUvs[idx], min);
-                        max = Vector2.Max(brushes[b].lightmapUvs[idx], max);
+                        min = Vector2.Min(brushes[b].LightmapUVs[idx], min);
+                        max = Vector2.Max(brushes[b].LightmapUVs[idx], max);
                     }
 
                     int id = Array.FindIndex(finalRects, r => r.Id == ((ushort)b << 16 | (ushort)f));
@@ -116,15 +116,15 @@ namespace MapCompiler
                     var difMin = new Vector2(rect.X, rect.Y);
 
                     var offlimits = new HashSet<int>();
-                    foreach (int idx in face.indices)
+                    foreach (int idx in face.Indices)
                     {
                         if (!offlimits.Add(idx)) continue;
-                        brushes[b].lightmapUvs[idx] -= min;
-                        brushes[b].lightmapUvs[idx] += difMin;
+                        brushes[b].LightmapUVs[idx] -= min;
+                        brushes[b].LightmapUVs[idx] += difMin;
                     }
 
-                    foreach (int idx in face.indices)
-                        totalMaxV = Vector2.Max(brushes[b].lightmapUvs[idx], totalMaxV);
+                    foreach (int idx in face.Indices)
+                        totalMaxV = Vector2.Max(brushes[b].LightmapUVs[idx], totalMaxV);
                 }
             }
 
@@ -151,15 +151,15 @@ namespace MapCompiler
             totalMax = Math.Max(totalMaxV.X, totalMaxV.Y);
 
             for (int b = 0; b < brushes.Length; b++)
-                for (int i = 0; i < brushes[b].lightmapUvs.Length; i++)
-                    brushes[b].lightmapUvs[i] /= totalMax;
+                for (int i = 0; i < brushes[b].LightmapUVs.Length; i++)
+                    brushes[b].LightmapUVs[i] /= totalMax;
 
             for (int t = 0; t < terrains.Length; t++)
             {
                 for (int v = 0; v < terrains[t].lightmapUvs.Length; v++)
                 {
                     terrains[t].lightmapUvs[v] /= totalMax;
-                    terrains[t].vertices[v].LightmapCoordinate = terrains[t].lightmapUvs[v];
+                    terrains[t].Vertices[v].LightmapCoordinate = terrains[t].lightmapUvs[v];
                 }
             }
 

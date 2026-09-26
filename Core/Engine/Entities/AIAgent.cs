@@ -120,14 +120,14 @@ namespace Engine.Entities
         {
             Vector3 targetPoint = _targetPoint;
             var hit = BSPRoot.TraceRay(new Ray(_targetPoint, Vector3.Down), 100f, false);
-            if (hit.hit)
+            if (hit.Hit)
             {
-                targetPoint = hit.point;
+                targetPoint = hit.Point;
             }
-            else if (GlobalMapData.activeMap.nodegraph.nodes.Length > 0)
+            else if (GlobalMapData.ActiveMap.Nodegraph.Nodes.Length > 0)
             {
                 int nearestNode = AINodeUtils.FindClosestNode(_targetPoint);
-                targetPoint = GlobalMapData.activeMap.nodegraph.nodes[nearestNode].position;
+                targetPoint = GlobalMapData.ActiveMap.Nodegraph.Nodes[nearestNode].Position;
             }
 
             if (Vector3.DistanceSquared(targetPoint, lastSearchTarget) < RepathThresholdSq && !pathCompleted)
@@ -166,11 +166,11 @@ namespace Engine.Entities
             bool targetOnFloor = projectedTarget != currentTarget;
             bool directPathClear = targetOnFloor && AINodeUtils.IsPathWalkable(projectedSelf, projectedTarget, out _);
 
-            if (!directPathClear && currentNodePath != null && currentNodePath.Length > 0 && GlobalMapData.activeMap.nodegraph.nodes.Length > 0)
+            if (!directPathClear && currentNodePath != null && currentNodePath.Length > 0 && GlobalMapData.ActiveMap.Nodegraph.Nodes.Length > 0)
             {
                 for (int i = 0; i < currentNodePath.Length; i++)
                 {
-                    waypoints.Add(new Waypoint { position = GlobalMapData.activeMap.nodegraph.nodes[currentNodePath[i]].position });
+                    waypoints.Add(new Waypoint { position = GlobalMapData.ActiveMap.Nodegraph.Nodes[currentNodePath[i]].Position });
                 }
             }
 

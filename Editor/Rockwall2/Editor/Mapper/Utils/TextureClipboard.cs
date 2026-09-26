@@ -28,16 +28,16 @@ public static class TextureClipboard
         SourceBrush = brushIndex;
         SourceFace = faceIndex;
 
-        var face = MapTools.ActiveMap.brushes[brushIndex].faces[faceIndex];
-        MaterialName = face.materialName;
-        Surface = face.surface;
-        TOffX = face.tOffX;
-        TOffY = face.tOffY;
-        TScaleX = face.tScaleX;
-        TScaleY = face.tScaleY;
-        UvRotation = face.uvRotation;
-        LuxelScale = face.luxelScale;
-        UvProjectionMode = face.uvProjectionMode;
+        var face = MapTools.ActiveMap.Brushes[brushIndex].Faces[faceIndex];
+        MaterialName = face.MaterialName;
+        Surface = face.Surface;
+        TOffX = face.TOffX;
+        TOffY = face.TOffY;
+        TScaleX = face.TScaleX;
+        TScaleY = face.TScaleY;
+        UvRotation = face.UvRotation;
+        LuxelScale = face.LuxelScale;
+        UvProjectionMode = face.UvProjectionMode;
 
         TextureSettingsWindow.Instance?.SyncFromClipboard();
     }
@@ -46,19 +46,19 @@ public static class TextureClipboard
     {
         if (!HasSource) return;
 
-        ref var face = ref MapTools.ActiveMap.brushes[brushIndex].faces[faceIndex];
+        ref var face = ref MapTools.ActiveMap.Brushes[brushIndex].Faces[faceIndex];
         if (includeMaterial)
         {
-            face.materialName = MaterialName;
-            face.surface = Surface;
+            face.MaterialName = MaterialName;
+            face.Surface = Surface;
         }
-        face.tOffX = TOffX;
-        face.tOffY = TOffY;
-        face.tScaleX = TScaleX;
-        face.tScaleY = TScaleY;
-        face.uvRotation = UvRotation;
-        face.luxelScale = LuxelScale;
-        face.uvProjectionMode = UvProjectionMode;
+        face.TOffX = TOffX;
+        face.TOffY = TOffY;
+        face.TScaleX = TScaleX;
+        face.TScaleY = TScaleY;
+        face.UvRotation = UvRotation;
+        face.LuxelScale = LuxelScale;
+        face.UvProjectionMode = UvProjectionMode;
     }
 
     public static void SyncFromWindow(

@@ -18,7 +18,7 @@ public static class MaterialLoader
     public static void MountMaterials(string pathToRoot)
     {
         List<Material> materials = new List<Material>();
-        Dictionary<string, int> matNames = GlobalMapData.materialNameToIndex?.ToDictionary() ?? [];
+        Dictionary<string, int> matNames = GlobalMapData.MaterialNameToIndex?.ToDictionary() ?? [];
 
         int count = 0;
         foreach(var file in Directory.EnumerateFiles(pathToRoot,"*.cmt",SearchOption.AllDirectories))
@@ -26,14 +26,14 @@ public static class MaterialLoader
             var mat = JsonConvert.DeserializeObject<Material>(File.ReadAllText(file));
             materials.Add(mat);
 
-            matNames.Add(mat.name,GlobalMapData.loadedMaterials?.Length ?? 0 + count);
+            matNames.Add(mat.Name,GlobalMapData.LoadedMaterials?.Length ?? 0 + count);
             count++;
         }
 
-        if (GlobalMapData.loadedMaterials == null) GlobalMapData.loadedMaterials = [.. materials];
-        else                                       GlobalMapData.loadedMaterials = [.. GlobalMapData.loadedMaterials, .. materials];
+        if (GlobalMapData.LoadedMaterials == null) GlobalMapData.LoadedMaterials = [.. materials];
+        else                                       GlobalMapData.LoadedMaterials = [.. GlobalMapData.LoadedMaterials, .. materials];
 
-        GlobalMapData.materialNameToIndex = matNames.ToImmutableDictionary();
+        GlobalMapData.MaterialNameToIndex = matNames.ToImmutableDictionary();
     }
 }
 
@@ -41,13 +41,13 @@ public static class MaterialExtensions
 {
     public static bool GetFlag(this Material mat, string key, bool defaultValue = false)
     {
-        if (mat.shaderFlags != null && mat.shaderFlags.TryGetValue(key, out bool val))
+        if (mat.ShaderFlags != null && mat.ShaderFlags.TryGetValue(key, out bool val))
             return val;
         return defaultValue;
     }
     public static void SetFlag(this ref Material mat, string key, bool value)
     {
-        mat.shaderFlags ??= new Dictionary<string, bool>();
-        mat.shaderFlags[key] = value;
+        mat.ShaderFlags ??= new Dictionary<string, bool>();
+        mat.ShaderFlags[key] = value;
     }
 }

@@ -130,7 +130,7 @@ public class TextureApplicationTool : Tool
     List<int> FindConnectedSameMaterialFaces(int brushIdx, int startFace, float epsilon = 0.01f)
     {
         var brush = MapTools.Brushes[brushIdx];
-        string targetMaterial = brush.faces[startFace].materialName;
+        string targetMaterial = brush.Faces[startFace].MaterialName;
 
         var result = new List<int>();
         var visited = new HashSet<int> { startFace };
@@ -141,12 +141,12 @@ public class TextureApplicationTool : Tool
         bool FacesShareEdge(Face a, Face b)
         {
             int shared = 0;
-            foreach (var ai in a.indices.Distinct())
+            foreach (var ai in a.Indices.Distinct())
             {
-                Vector3 av = brush.vertices[ai];
-                foreach (var bi in b.indices.Distinct())
+                Vector3 av = brush.Vertices[ai];
+                foreach (var bi in b.Indices.Distinct())
                 {
-                    if (Vector3.DistanceSquared(av, brush.vertices[bi]) < epsilon * epsilon)
+                    if (Vector3.DistanceSquared(av, brush.Vertices[bi]) < epsilon * epsilon)
                     {
                         shared++;
                         break;
@@ -160,14 +160,14 @@ public class TextureApplicationTool : Tool
         while (queue.Count > 0)
         {
             int current = queue.Dequeue();
-            var currentFace = brush.faces[current];
+            var currentFace = brush.Faces[current];
 
-            for (int f = 0; f < brush.faces.Length; f++)
+            for (int f = 0; f < brush.Faces.Length; f++)
             {
                 if (visited.Contains(f)) continue;
-                if (brush.faces[f].materialName != targetMaterial) continue;
-                if (brush.faces[f].indices == null || brush.faces[f].indices.Length == 0) continue;
-                if (!FacesShareEdge(currentFace, brush.faces[f])) continue;
+                if (brush.Faces[f].MaterialName != targetMaterial) continue;
+                if (brush.Faces[f].Indices == null || brush.Faces[f].Indices.Length == 0) continue;
+                if (!FacesShareEdge(currentFace, brush.Faces[f])) continue;
 
                 visited.Add(f);
                 result.Add(f);
@@ -183,13 +183,13 @@ public class TextureApplicationTool : Tool
         {
             if(sourceFace >= 0)
             {
-                Toolbelt.ActiveTexture = MapTools.Brushes[sourceBrush].faces[sourceFace].materialName;
+                Toolbelt.ActiveTexture = MapTools.Brushes[sourceBrush].Faces[sourceFace].MaterialName;
                 Dispatcher.UIThread.Post(()=> MainWindow.Instance.mapEditor.RefreshViews());
             }
 
             if(MouseManager.IsDown(MouseButton.Right))
             {
-                MapTools.Brushes[mapHit.brush].faces[mapHit.face].materialName = Toolbelt.ActiveTexture;
+                MapTools.Brushes[mapHit.brush].Faces[mapHit.face].MaterialName = Toolbelt.ActiveTexture;
 
                 BrushOperations.RebuildBrush(ref MapTools.Brushes[mapHit.brush]);
             }
@@ -273,7 +273,7 @@ public class TextureApplicationTool : Tool
 
             var move = TextureSettingsWindow.Instance?.MoveMode ?? TextureSettingsWindow.TerainMoveMode.Normal;
 
-            var normal = MapTools.Terrains[hoveredPinTerrain].sourceNormal;
+            var normal = MapTools.Terrains[hoveredPinTerrain].SourceNormal;
 
             switch (move)
             {
@@ -296,7 +296,7 @@ public class TextureApplicationTool : Tool
             foreach (var (terrainIdx, vertexIdx) in pinnedVertices)
             {
                 if (terrainIdx < 0 || terrainIdx >= MapTools.Terrains.Length) continue;
-                var verts = MapTools.Terrains[terrainIdx].vertices;
+                var verts = MapTools.Terrains[terrainIdx].Vertices;
                 if (vertexIdx < 0 || vertexIdx >= verts.Length) continue;
 
                 basicEffect.World = Matrix.CreateScale(0.15f) * Matrix.CreateTranslation(verts[vertexIdx].Position);
@@ -314,27 +314,27 @@ public class TextureApplicationTool : Tool
     }
     void SnapshotFaceForUndo(int bi, int fi, out System.Action restore)
     {
-        var face = MapTools.Brushes[bi].faces[fi];
-        string n = face.materialName;
-        int s = face.surface;
-        float ox = face.tOffX, oy = face.tOffY;
-        float sx = face.tScaleX, sy = face.tScaleY;
-        float r = face.uvRotation;
-        float lx = face.luxelScale;
-        var pm = face.uvProjectionMode;
+        var face = MapTools.Brushes[bi].Faces[fi];
+        string n = face.MaterialName;
+        int s = face.Surface;
+        float ox = face.TOffX, oy = face.TOffY;
+        float sx = face.TScaleX, sy = face.TScaleY;
+        float r = face.UvRotation;
+        float lx = face.LuxelScale;
+        var pm = face.UvProjectionMode;
 
         restore = () =>
         {
-            ref var f = ref MapTools.Brushes[bi].faces[fi];
-            f.materialName = n;
-            f.surface = s;
-            f.tOffX = ox;
-            f.tOffY = oy;
-            f.tScaleX = sx;
-            f.tScaleY = sy;
-            f.uvRotation = r;
-            f.luxelScale = lx;
-            f.uvProjectionMode = pm;
+            ref var f = ref MapTools.Brushes[bi].Faces[fi];
+            f.MaterialName = n;
+            f.Surface = s;
+            f.TOffX = ox;
+            f.TOffY = oy;
+            f.TScaleX = sx;
+            f.TScaleY = sy;
+            f.UvRotation = r;
+            f.LuxelScale = lx;
+            f.UvProjectionMode = pm;
             BrushOperations.RebuildBrush(ref MapTools.Brushes[bi]);
         };
     }
@@ -369,13 +369,13 @@ public class TextureApplicationTool : Tool
             {
                 var terrain = MapTools.Terrains[t.terrain];
 
-                for (int vi = 0; vi < terrain.vertices.Length; vi++)
+                for (int vi = 0; vi < terrain.Vertices.Length; vi++)
                 {
-                    float dist = Vector3.DistanceSquared(ray.Position + ray.Direction * terrainHit.distance, terrain.vertices[vi].Position);
+                    float dist = Vector3.DistanceSquared(ray.Position + ray.Direction * terrainHit.distance, terrain.Vertices[vi].Position);
                     if (dist < maxDist)
                     {
                         maxDist = dist;
-                        terrainEditPoint = terrain.vertices[vi].Position;
+                        terrainEditPoint = terrain.Vertices[vi].Position;
                         hoveredPinTerrain = t.terrain;
                         hoveredPinVertex = vi;
                     }
@@ -384,7 +384,7 @@ public class TextureApplicationTool : Tool
 
             if (hoveredPinTerrain == -1) return;
 
-            var normal = MapTools.Terrains[hoveredPinTerrain].sourceNormal;
+            var normal = MapTools.Terrains[hoveredPinTerrain].SourceNormal;
 
             switch(move)
             {
@@ -404,11 +404,11 @@ public class TextureApplicationTool : Tool
                 {
                     var terrain = MapTools.Terrains[t.terrain];
 
-                    for (int i = 0; i < terrain.vertices.Length; i++)
+                    for (int i = 0; i < terrain.Vertices.Length; i++)
                     {
                         if (pinnedVertices.Contains((t.terrain, i))) { continue; }
 
-                        var vertex = terrain.vertices[i];
+                        var vertex = terrain.Vertices[i];
                         float dist = Vector3.DistanceSquared(terrainEditPoint, vertex.Position);
                         if (dist < radius * radius)
                         {
@@ -448,7 +448,7 @@ public class TextureApplicationTool : Tool
                             }
                         }
 
-                        terrain.vertices[i] = vertex;
+                        terrain.Vertices[i] = vertex;
                     }
 
                     BrushOperations.UpdateTerrain(ref terrain);
@@ -483,7 +483,7 @@ public class TextureApplicationTool : Tool
 
         foreach (var ti in terrainIds)
         {
-            var verts = MapTools.Terrains[ti].vertices;
+            var verts = MapTools.Terrains[ti].Vertices;
             for (int vi = 0; vi < verts.Length; vi++)
             {
                 var p = verts[vi].Position;
@@ -565,9 +565,9 @@ public class TextureApplicationTool : Tool
         {
             foreach (var (ti, vi) in members[g])
             {
-                var v = MapTools.Terrains[ti].vertices[vi];
+                var v = MapTools.Terrains[ti].Vertices[vi];
                 v.Position = pos;
-                MapTools.Terrains[ti].vertices[vi] = v;
+                MapTools.Terrains[ti].Vertices[vi] = v;
                 touched.Add(ti);
             }
         }
@@ -581,11 +581,11 @@ public class TextureApplicationTool : Tool
     }
     static List<Vector3> GetTerrainSourceCorners(Brush brush, Face face)
     {
-        if (face.indices == null) return new List<Vector3>();
+        if (face.Indices == null) return new List<Vector3>();
 
         HashSet<Vector3> uniqueVertices = new HashSet<Vector3>();
-        for (int i = 0; i < face.indices.Length; i++)
-            uniqueVertices.Add(brush.vertices[face.indices[i]] + brush.position);
+        for (int i = 0; i < face.Indices.Length; i++)
+            uniqueVertices.Add(brush.Vertices[face.Indices[i]] + brush.Position);
 
         if (uniqueVertices.Count != 4) return new List<Vector3>();
 
@@ -603,8 +603,8 @@ public class TextureApplicationTool : Tool
 
     static int GetGridResolution(Terrain terrain)
     {
-        int res = (int)MathF.Round(MathF.Sqrt(terrain.vertices.Length));
-        return (res >= 2 && res * res == terrain.vertices.Length) ? res : -1;
+        int res = (int)MathF.Round(MathF.Sqrt(terrain.Vertices.Length));
+        return (res >= 2 && res * res == terrain.Vertices.Length) ? res : -1;
     }
 
     static int[] GetGridCornerIndices(int res) => new[] { 0, res - 1, res * res - 1, (res - 1) * res };
@@ -655,16 +655,16 @@ public class TextureApplicationTool : Tool
         var results = new List<(int, List<int>, List<int>)>();
 
         var srcTerrain = MapTools.Terrains[terrainIdx];
-        int srcBrushIdx = srcTerrain.brushSource;
+        int srcBrushIdx = srcTerrain.BrushSource;
         if (srcBrushIdx < 0 || srcBrushIdx >= MapTools.Brushes.Length) return results;
 
         var srcBrush = MapTools.Brushes[srcBrushIdx];
-        if (srcTerrain.faceSource < 0 || srcTerrain.faceSource >= srcBrush.faces.Length) return results;
+        if (srcTerrain.FaceSource < 0 || srcTerrain.FaceSource >= srcBrush.Faces.Length) return results;
 
         int srcRes = GetGridResolution(srcTerrain);
         if (srcRes < 2) return results;
 
-        var srcCorners = GetTerrainSourceCorners(srcBrush, srcBrush.faces[srcTerrain.faceSource]);
+        var srcCorners = GetTerrainSourceCorners(srcBrush, srcBrush.Faces[srcTerrain.FaceSource]);
         if (srcCorners.Count != 4) return results;
         var srcEdges = GetCanonicalEdges(srcCorners, srcRes);
 
@@ -672,21 +672,21 @@ public class TextureApplicationTool : Tool
         {
             var otherBrush = MapTools.Brushes[bi];
 
-            for (int ofi = 0; ofi < otherBrush.faces.Length; ofi++)
+            for (int ofi = 0; ofi < otherBrush.Faces.Length; ofi++)
             {
-                if (bi == srcBrushIdx && ofi == srcTerrain.faceSource) continue;
+                if (bi == srcBrushIdx && ofi == srcTerrain.FaceSource) continue;
 
                 for (int ti = 0; ti < MapTools.Terrains.Length; ti++)
                 {
                     if (ti == terrainIdx) continue;
-                    if (MapTools.Terrains[ti].brushSource != bi) continue;
-                    if (MapTools.Terrains[ti].faceSource != ofi) continue;
+                    if (MapTools.Terrains[ti].BrushSource != bi) continue;
+                    if (MapTools.Terrains[ti].FaceSource != ofi) continue;
 
                     var otherTerrain = MapTools.Terrains[ti];
                     int otherRes = GetGridResolution(otherTerrain);
                     if (otherRes != srcRes) continue;
 
-                    var otherCorners = GetTerrainSourceCorners(otherBrush, otherBrush.faces[ofi]);
+                    var otherCorners = GetTerrainSourceCorners(otherBrush, otherBrush.Faces[ofi]);
                     if (otherCorners.Count != 4) continue;
                     var otherEdges = GetCanonicalEdges(otherCorners, otherRes);
 
@@ -742,11 +742,11 @@ public class TextureApplicationTool : Tool
             if (pinnedVertices.Contains((terrainAIdx, i))) continue;
             if (pinnedVertices.Contains((terrainBIdx, j))) continue;
 
-            Vector3 mid = a.vertices[i].Position;
-            float alphaMid = a.vertices[i].TextureCoordinate.Z;
+            Vector3 mid = a.Vertices[i].Position;
+            float alphaMid = a.Vertices[i].TextureCoordinate.Z;
 
-            var va = a.vertices[i]; va.Position = mid; va.TextureCoordinate.Z = alphaMid; a.vertices[i] = va;
-            var vb = b.vertices[j]; vb.Position = mid; vb.TextureCoordinate.Z = alphaMid; b.vertices[j] = vb;
+            var va = a.Vertices[i]; va.Position = mid; va.TextureCoordinate.Z = alphaMid; a.Vertices[i] = va;
+            var vb = b.Vertices[j]; vb.Position = mid; vb.TextureCoordinate.Z = alphaMid; b.Vertices[j] = vb;
 
             touchedA = true;
             touchedB = true;
@@ -761,7 +761,7 @@ public class TextureApplicationTool : Tool
         var terrains = Toolbelt.SelectedObjects.OfType<TerrainMoveable>().Select(t => t.terrain).ToList();
         if (terrains.Count == 0) return;
 
-        var snapshots = terrains.Select(ti => (ti, original: (TerrainVertex[])MapTools.Terrains[ti].vertices.Clone())).ToList();
+        var snapshots = terrains.Select(ti => (ti, original: (TerrainVertex[])MapTools.Terrains[ti].Vertices.Clone())).ToList();
 
         foreach (var ti in terrains)
             SewSeamsForTerrain(ti, SewEpsilon);
@@ -771,7 +771,7 @@ public class TextureApplicationTool : Tool
             foreach (var (ti, original) in snapshots)
             {
                 var t = MapTools.Terrains[ti];
-                t.vertices = original;
+                t.Vertices = original;
                 BrushOperations.UpdateTerrain(ref t);
                 MapTools.Terrains[ti] = t;
             }

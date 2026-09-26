@@ -62,16 +62,16 @@ public static class AcousticSampler
         float totalDistance = 0f;
         int openRays = 0;
 
-        if (BSPRoot.nodes == null) return AcousticPresets.Outdoor;
+        if (BSPRoot.Nodes == null) return AcousticPresets.Outdoor;
 
-        for (int i = 0; i < Octree.searchDirections.Length; i++)
+        for (int i = 0; i < Octree.SearchDirections.Length; i++)
         {
-            Ray ray = new Ray(position, Octree.searchDirections[i]);
+            Ray ray = new Ray(position, Octree.SearchDirections[i]);
             BSPHit hit = BSPRoot.TraceRay(ray, maxTraceDistance);
 
-            if (hit.hit && BSPRoot.nodes[hit.node].nodeFlag != BSPNode.SkyboxNode)
+            if (hit.Hit && BSPRoot.Nodes[hit.Node].nodeFlag != BSPNode.SkyboxNode)
             {
-                totalDistance += Vector3.Distance(position, hit.point);
+                totalDistance += Vector3.Distance(position, hit.Point);
             }
             else
             {
@@ -80,13 +80,13 @@ public static class AcousticSampler
             }
         }
 
-        float openFraction = openRays / (float)Octree.searchDirections.Length;
+        float openFraction = openRays / (float)Octree.SearchDirections.Length;
         if (openFraction >= outdoorRayFraction)
         {
             return AcousticPresets.Outdoor;
         }
 
-        float avgDistance = totalDistance / Octree.searchDirections.Length;
+        float avgDistance = totalDistance / Octree.SearchDirections.Length;
         return BlendBySize(avgDistance);
     }
 
@@ -211,16 +211,16 @@ public class AcousticZoneCache
 
     static Vector3 ComputeLeafCentroid(VisLeaf leaf)
     {
-        if (leaf.portals == null) return Vector3.Zero;
+        if (leaf.Portals == null) return Vector3.Zero;
 
         Vector3 sum = Vector3.Zero;
         int count = 0;
 
-        foreach (int portalId in leaf.portals)
+        foreach (int portalId in leaf.Portals)
         {
             if (portalId == -1) continue;
 
-            Portal portal = VisRoot.visPortals[portalId];
+            Portal portal = VisRoot.VisPortals[portalId];
             if (portal.Vertices == null) continue;
 
             for (int v = 0; v < portal.Vertices.Length; v++)
@@ -238,22 +238,22 @@ public class AcousticZoneCache
         sampleOrigin = position;
         hasSkybox = false;
 
-        if (BSPRoot.nodes == null) return -1;
+        if (BSPRoot.Nodes == null) return -1;
 
         uint node = BSPRoot.Traverse(position);
 
-        if (!MainEngine.LoadedMapHasVis || VisRoot.visLeaves == null)
+        if (!MainEngine.LoadedMapHasVis || VisRoot.VisLeaves == null)
         {
             return (int)node;
         }
 
-        int local = Array.FindIndex(VisRoot.visLeaves, l => l.bspLeafID == node);
+        int local = Array.FindIndex(VisRoot.VisLeaves, l => l.BspLeafID == node);
         if (local == -1)
         {
             return (int)node;
         }
 
-        VisLeaf leaf = VisRoot.visLeaves[local];
+        VisLeaf leaf = VisRoot.VisLeaves[local];
         hasSkybox = leaf.HasSkybox;
 
         Vector3 centroid = ComputeLeafCentroid(leaf);

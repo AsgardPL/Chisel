@@ -40,7 +40,7 @@ public static class CCMDLWriter
             var bGroup = new CCMDLBodyGroup();
             bGroup.name = g.Name;
             bGroup.meshData = g.MeshData;
-            bGroup.material = GlobalMapData.loadedMaterials[g.MaterialID].name;
+            bGroup.material = GlobalMapData.LoadedMaterials[g.MaterialID].Name;
             bGroup.skinned = g.IsSkinned;
             bGroup.isEye = g.IsEye;
             bGroup.offset = g.Offset;

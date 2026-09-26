@@ -151,7 +151,7 @@ public class ParticleSpawner
             if (!(ParticleEditor.Instance?.IsSubsystemActive(v) ?? true)) return;
             var subsystem = system.particleSubsystems[v];
 
-            int matIdx = GlobalMapData.materialNameToIndex.TryGetValue(
+            int matIdx = GlobalMapData.MaterialNameToIndex.TryGetValue(
                              subsystem.behavior.material ?? "", out int m) ? m : 0;
 
             for (int i = 0; i < subsystem.particles.Length; i++)
@@ -227,9 +227,9 @@ public class ParticleSpawner
             billboard[5].TextureCoordinate = new Vector2(0, 0);
         }
 
-        effect.Texture = (GlobalMapData.loadedMaterials != null &&
-                          materialIdx < GlobalMapData.loadedMaterials.Length)
-            ? GlobalMapData.loadedMaterials[materialIdx].Texture
+        effect.Texture = (GlobalMapData.LoadedMaterials != null &&
+                          materialIdx < GlobalMapData.LoadedMaterials.Length)
+            ? GlobalMapData.LoadedMaterials[materialIdx].Texture
             : null;
 
         Matrix invView = Matrix.Invert(view);

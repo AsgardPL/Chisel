@@ -123,8 +123,8 @@ public sealed class GpuLightmapper : IDisposable
     {
         var flatPos = new List<Vector3>();
         foreach (var node in lightNodes)
-            foreach (var child in node.children)
-                flatPos.Add(child.pos);
+            foreach (var child in node.Children)
+                flatPos.Add(child.Pos);
 
         return PrepareFlatPositions(flatPos.ToArray());
     }

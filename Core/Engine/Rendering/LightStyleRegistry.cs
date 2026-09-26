@@ -15,9 +15,9 @@ public static class LightStyleRegistry
     {
         Register(new LightStyle
         {
-            name = "flicker1",
-            loop = true,
-            keyframes = new[]
+            Name = "flicker1",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 1.00f, blend: false),
                 new StyleKeyframe(0.05f, 1.00f, blend: false),
@@ -33,9 +33,9 @@ public static class LightStyleRegistry
         // Stronger flicker.
         Register(new LightStyle
         {
-            name = "flicker2",
-            loop = true,
-            keyframes = new[]
+            Name = "flicker2",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 1.00f, blend: false),
                 new StyleKeyframe(0.04f, 0.20f, blend: false),
@@ -51,9 +51,9 @@ public static class LightStyleRegistry
         // Small gentle flame 
         Register(new LightStyle
         {
-            name = "candle",
-            loop = true,
-            keyframes = new[]
+            Name = "candle",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 0.90f, new Color(255, 244, 214)),
                 new StyleKeyframe(0.15f, 1.00f, new Color(255, 238, 200)),
@@ -67,9 +67,9 @@ public static class LightStyleRegistry
         // Bonfire
         Register(new LightStyle
         {
-            name = "fire",
-            loop = true,
-            keyframes = new[]
+            Name = "fire",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 1.00f, new Color(255, 160, 60),  blend: false),
                 new StyleKeyframe(0.06f, 0.70f, new Color(255, 130, 40)),
@@ -84,9 +84,9 @@ public static class LightStyleRegistry
         // Smooth symmetric breathing pulse.
         Register(new LightStyle
         {
-            name = "pulse",
-            loop = true,
-            keyframes = new[]
+            Name = "pulse",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 0.25f),
                 new StyleKeyframe(0.75f, 1.00f),
@@ -97,9 +97,9 @@ public static class LightStyleRegistry
         // Hard, fast on/off.
         Register(new LightStyle
         {
-            name = "strobe",
-            loop = true,
-            keyframes = new[]
+            Name = "strobe",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 1.00f, blend: false),
                 new StyleKeyframe(0.05f, 0.00f, blend: false),
@@ -110,9 +110,9 @@ public static class LightStyleRegistry
         // Fluorescent tube.
         Register(new LightStyle
         {
-            name = "buzz",
-            loop = true,
-            keyframes = new[]
+            Name = "buzz",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 0.00f, blend: false),
                 new StyleKeyframe(0.05f, 1.00f, blend: false),
@@ -131,9 +131,9 @@ public static class LightStyleRegistry
         // Alternating warning flash .
         Register(new LightStyle
         {
-            name = "emergency",
-            loop = true,
-            keyframes = new[]
+            Name = "emergency",
+            Loop = true,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.00f, 1.00f, new Color(255, 40, 40), blend: false),
                 new StyleKeyframe(0.15f, 0.00f, Color.White,            blend: false),
@@ -145,9 +145,9 @@ public static class LightStyleRegistry
 
         Register(new LightStyle
         {
-            name = "fadein",
-            loop = false,
-            keyframes = new[]
+            Name = "fadein",
+            Loop = false,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.0f, 0.0f),
                 new StyleKeyframe(1.0f, 1.0f),
@@ -156,9 +156,9 @@ public static class LightStyleRegistry
 
         Register(new LightStyle
         {
-            name = "fadeout",
-            loop = false,
-            keyframes = new[]
+            Name = "fadeout",
+            Loop = false,
+            Keyframes = new[]
             {
                 new StyleKeyframe(0.0f, 1.0f),
                 new StyleKeyframe(1.0f, 0.0f),
@@ -166,7 +166,7 @@ public static class LightStyleRegistry
         });
     }
 
-    public static void Register(LightStyle style) => styles[style.name] = style;
+    public static void Register(LightStyle style) => styles[style.Name] = style;
 
     public static bool TryGet(string name, out LightStyle style)
     {

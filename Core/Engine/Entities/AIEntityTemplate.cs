@@ -76,9 +76,9 @@ namespace Engine.Entities
                 Vector3 targPos = entity1.Position;
                 var hit = BSPRoot.TraceRay(new Ray(targPos, Vector3.Down), 100f, false);
 
-                if (hit.hit)
+                if (hit.Hit)
                 {
-                    targPos = hit.point;
+                    targPos = hit.Point;
                 }
 
                 if(Vector3.Distance(targPos,currentTarget) > 0.8f)FindNewPath(targPos);

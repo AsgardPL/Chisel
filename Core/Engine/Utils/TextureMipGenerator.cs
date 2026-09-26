@@ -36,7 +36,7 @@ namespace Engine.Utils
 
         public static void Retain(int index)
         {
-            if (index < 0 || index >= GlobalMapData.loadedMaterials.Length) return;
+            if (index < 0 || index >= GlobalMapData.LoadedMaterials.Length) return;
 
             if (refCounts.TryGetValue(index, out int count))
             {
@@ -54,7 +54,7 @@ namespace Engine.Utils
 
         public static void Release(int index)
         {
-            if (index < 0 || index >= GlobalMapData.loadedMaterials.Length) return;
+            if (index < 0 || index >= GlobalMapData.LoadedMaterials.Length) return;
             if (permanentIndices.Contains(index)) return;
             if (!refCounts.TryGetValue(index, out int count)) return;
 
@@ -72,7 +72,7 @@ namespace Engine.Utils
 
         public static void ReserveMaterial(int index)
         {
-            if (index < 0 || index >= GlobalMapData.loadedMaterials.Length) return;
+            if (index < 0 || index >= GlobalMapData.LoadedMaterials.Length) return;
             if (permanentIndices.Contains(index)) return;
 
             permanentIndices.Add(index);
@@ -85,7 +85,7 @@ namespace Engine.Utils
 
         public static void ReserveMaterial(string materialName)
         {
-            if (GlobalMapData.materialNameToIndex.TryGetValue(materialName, out int index))
+            if (GlobalMapData.MaterialNameToIndex.TryGetValue(materialName, out int index))
             {
                 ReserveMaterial(index);
             }
@@ -108,13 +108,13 @@ namespace Engine.Utils
 
         private static void UnloadMaterialTextures(int index)
         {
-            if (GlobalMapData.loadedMaterials[index].textures != null)
+            if (GlobalMapData.LoadedMaterials[index].Textures != null)
             {
-                foreach (var val in GlobalMapData.loadedMaterials[index].textures)
+                foreach (var val in GlobalMapData.LoadedMaterials[index].Textures)
                 {
                     val.Value?.Dispose();
                 }
-                GlobalMapData.loadedMaterials[index].textures.Clear();
+                GlobalMapData.LoadedMaterials[index].Textures.Clear();
             }
         }
 
@@ -122,10 +122,10 @@ namespace Engine.Utils
         {
             UnloadMaterialTextures(index);
 
-            foreach (var (mapName, path) in GlobalMapData.loadedMaterials[index].texturePaths)
+            foreach (var (mapName, path) in GlobalMapData.LoadedMaterials[index].TexturePaths)
             {
                 if (string.IsNullOrEmpty(path)) continue;
-                GlobalMapData.loadedMaterials[index].SetTexture(mapName, GenerateSingleChain(Instance.Content.Load<Texture2D>($"{path}")));
+                GlobalMapData.LoadedMaterials[index].SetTexture(mapName, GenerateSingleChain(Instance.Content.Load<Texture2D>($"{path}")));
             }
         }
 

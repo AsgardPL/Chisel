@@ -274,11 +274,11 @@ namespace Engine.Utils
 
                 foreach (var subsystem in spawner.system.particleSubsystems)
                 {
-                    int matIdx = GlobalMapData.materialNameToIndex.TryGetValue(
+                    int matIdx = GlobalMapData.MaterialNameToIndex.TryGetValue(
                                            subsystem.behavior.material ?? "", out int m) ? m : 0;
-                    Texture2D tex = (GlobalMapData.loadedMaterials != null &&
-                                        matIdx < GlobalMapData.loadedMaterials.Length)
-                                       ? GlobalMapData.loadedMaterials[matIdx].Texture
+                    Texture2D tex = (GlobalMapData.LoadedMaterials != null &&
+                                        matIdx < GlobalMapData.LoadedMaterials.Length)
+                                       ? GlobalMapData.LoadedMaterials[matIdx].Texture
                                        : RenderEngine.WhiteTexture;
                     ParticleBlendMode blendMode = subsystem.behavior.blendMode;
 
@@ -440,22 +440,22 @@ namespace Engine.Utils
             if (bundle == null) return;
 
             var node = bundle.Traverse(position);
-            var data = node.data;
+            var data = node.Data;
             if (data == null) return;
 
-            var sun = MainEngine.ActiveStaticLights.Find(l => l.type == Light.LightType.Directional);
-            bool inDir = !Array.Find(data, v => v.lightNum == sun.id).lightBlocked;
+            var sun = MainEngine.ActiveStaticLights.Find(l => l.Type == Light.LightType.Directional);
+            bool inDir = !Array.Find(data, v => v.LightNum == sun.ID).LightBlocked;
 
             Vector3 color = Vector3.Zero;
             for (int i = 0; i < 9; i++)
-                color += node.indirectCoefficients[i] * (1f / 9f);
+                color += node.IndirectCoefficients[i] * (1f / 9f);
 
             foreach (var d in data)
             {
-                var light = MainEngine.ActiveStaticLights[d.lightNum];
-                float dst = Vector3.Distance(position, light.position);
-                if (light.range < dst) continue;
-                color += light.color.ToVector3() * light.intensity * (1f - dst / light.range);
+                var light = MainEngine.ActiveStaticLights[d.LightNum];
+                float dst = Vector3.Distance(position, light.Position);
+                if (light.Range < dst) continue;
+                color += light.Color.ToVector3() * light.Intensity * (1f - dst / light.Range);
             }
 
             if (inDir)
@@ -486,7 +486,7 @@ namespace Engine.Utils
                                 Vector3.Normalize(p.position - system.position)),
                         Vector3.Distance(p.position, system.position));
 
-                    if (!hit.hit) continue;
+                    if (!hit.Hit) continue;
 
                     float speed = p.velocity.LengthSquared();
                     if (speed < 1e-6f) continue;
@@ -494,11 +494,11 @@ namespace Engine.Utils
                     float drop = speed * dampening * dt;
                     Vector3 dampened = CMath.ProjectOnPlane(
                         p.velocity * (MathF.Max(speed - drop, 0f) / speed),
-                        hit.normal);
+                        hit.Normal);
 
-                    p.velocity = hit.normal * Vector3.Dot(p.velocity, -hit.normal) * bounce
+                    p.velocity = hit.Normal * Vector3.Dot(p.velocity, -hit.Normal) * bounce
                                   + dampened;
-                    p.position += hit.normal * 0.01f;
+                    p.position += hit.Normal * 0.01f;
                 }
             }
         }

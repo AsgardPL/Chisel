@@ -177,7 +177,7 @@ namespace MapCompiler
             foreach (var layer in groupLayers)
             {
                 lightmaps.Add(($"lightgroup-{layer.Name}.hdr", layer.Image.WriteToMemory(".hdr")));
-                groupBounds.Add(new LightGroupBounds { name = layer.Name, uvMin = layer.UvMin, uvMax = layer.UvMax });
+                groupBounds.Add(new LightGroupBounds { Name = layer.Name, UvMin = layer.UvMin, UvMax = layer.UvMax });
                 layer.Image.Dispose();
             }
 

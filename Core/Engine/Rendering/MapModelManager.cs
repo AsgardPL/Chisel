@@ -31,9 +31,9 @@ public static class MapModelManager
                 tempModels.Add(mdl.VisLeaf, list);
             }
 
-            int materialID = GlobalMapData.materialNameToIndex[mdl.Material];
+            int materialID = GlobalMapData.MaterialNameToIndex[mdl.Material];
 
-            var material = GlobalMapData.loadedMaterials[materialID];
+            var material = GlobalMapData.LoadedMaterials[materialID];
 
             var vb = new VertexBuffer(
                 graphics,
@@ -55,7 +55,7 @@ public static class MapModelManager
             {
                 VisLeaf = mdl.VisLeaf,
                 MaterialID = materialID,
-                NoCull = material.noCull,
+                NoCull = material.NoCull,
                 VertexBuffer = vb,
                 IndexBuffer = ib,
                 PrimitiveCount = mdl.Indices.Length / 3

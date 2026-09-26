@@ -108,9 +108,9 @@ public static class OtherMath
     {
         result.Clear();
 
-        foreach (var face in br.faces)
+        foreach (var face in br.Faces)
         {
-            var indices = face.indices;
+            var indices = face.Indices;
             if (indices.Length < 2) continue;
 
             polygonScratch.Clear();
@@ -125,16 +125,16 @@ public static class OtherMath
 
             Vector3 center = Vector3.Zero;
             for (int i = 0; i < count; i++)
-                center += br.vertices[polygonScratch[i]];
+                center += br.Vertices[polygonScratch[i]];
             center /= count;
 
-            Vector3 refAxis = Vector3.Cross(face.normal, Vector3.UnitZ);
+            Vector3 refAxis = Vector3.Cross(face.Normal, Vector3.UnitZ);
             if (refAxis.LengthSquared() < 1e-6f)
-                refAxis = Vector3.Cross(face.normal, Vector3.UnitX);
+                refAxis = Vector3.Cross(face.Normal, Vector3.UnitX);
             refAxis = Vector3.Normalize(refAxis);
-            Vector3 perpAxis = Vector3.Normalize(Vector3.Cross(face.normal, refAxis));
+            Vector3 perpAxis = Vector3.Normalize(Vector3.Cross(face.Normal, refAxis));
 
-            var verts = br.vertices;
+            var verts = br.Vertices;
             var rA = refAxis;
             var pA = perpAxis;
             var c = center;

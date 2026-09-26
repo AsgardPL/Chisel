@@ -68,17 +68,17 @@ namespace Rockwall2.Tools
 
                 var entity = new EntityReference
                 {
-                    position = pos,
-                    entityName = defaultClassname,
-                    entityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
-                    scale = Vector3.One,
+                    Position = pos,
+                    EntityName = defaultClassname,
+                    EntityOutputs = new System.Collections.Generic.List<(string, EntityOutput)>(),
+                    Scale = Vector3.One,
                 };
 
-                var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.entityName);
+                var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entity.EntityName);
                 if (id != -1 && GlobalEditorData.EditorOverrides.overrides[id].defaultProperties != null)
                 {
-                    entity.properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
-                    Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.properties, entity.properties.Length);
+                    entity.Properties = new EntityProperty[GlobalEditorData.EditorOverrides.overrides[id].defaultProperties.Length];
+                    Array.Copy(GlobalEditorData.EditorOverrides.overrides[id].defaultProperties, entity.Properties, entity.Properties.Length);
                 }
 
                 // Capture the entity reference itself so undo doesn't rely on a stable index

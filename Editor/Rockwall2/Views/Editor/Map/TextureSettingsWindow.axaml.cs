@@ -188,9 +188,9 @@ public partial class TextureSettingsWindow : Window
         if (!HasFaceSelection) return;
         foreach (var fm in SelectedFaces.Where(f => f.brush != -1 && f.face != -1))
         {
-            ref var face = ref MapTools.ActiveMap.brushes[fm.brush].faces[fm.face];
-            UvCalculator.Justify(ref face, MapTools.ActiveMap.brushes[fm.brush], mode);
-            BrushOperations.RebuildBrush(ref MapTools.ActiveMap.brushes[fm.brush]);
+            ref var face = ref MapTools.ActiveMap.Brushes[fm.brush].Faces[fm.face];
+            UvCalculator.Justify(ref face, MapTools.ActiveMap.Brushes[fm.brush], mode);
+            BrushOperations.RebuildBrush(ref MapTools.ActiveMap.Brushes[fm.brush]);
         }
         UpdateValues();
     }
@@ -231,13 +231,13 @@ public partial class TextureSettingsWindow : Window
         if (!HasFaceSelection) return;
         var faces = SelectedFaces.Where(f => f.brush != -1 && f.face != -1).Select(fm => (fm.brush, fm.face));
         foreach (var bm in SelectedBrushes)
-            for (int i = 0; i < MapTools.Brushes[bm.brush].faces.Length; i++)
+            for (int i = 0; i < MapTools.Brushes[bm.brush].Faces.Length; i++)
                 faces = faces.Append((bm.brush, i));
 
         foreach (var fm in faces)
         {
             TextureClipboard.StampOntoFace(fm.brush, fm.face, includeMaterial: false);
-            BrushOperations.RebuildBrush(ref MapTools.ActiveMap.brushes[fm.brush]);
+            BrushOperations.RebuildBrush(ref MapTools.ActiveMap.Brushes[fm.brush]);
         }
     }
 
@@ -271,8 +271,8 @@ public partial class TextureSettingsWindow : Window
 
         Toolbelt.UndoManager.DoOnUndo(() =>
         {
-            MapTools.ActiveMap.terrains = oldTerrains;
-            MapTools.ActiveMap.brushes = oldBrushes;
+            MapTools.ActiveMap.Terrains = oldTerrains;
+            MapTools.ActiveMap.Brushes = oldBrushes;
             MapTools.RecomputeAllBrushBounds();
         });
     }
@@ -303,8 +303,8 @@ public partial class TextureSettingsWindow : Window
 
         foreach (var t in SelectedTerrains)
         {
-            MapTools.Terrains[t.terrain].surface = mat;
-            MapTools.Terrains[t.terrain].surfaceName = GlobalMapData.loadedMaterials[mat].name;
+            MapTools.Terrains[t.terrain].Surface = mat;
+            MapTools.Terrains[t.terrain].SurfaceName = GlobalMapData.LoadedMaterials[mat].Name;
         }
     }
     private async void tSMat_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -314,8 +314,8 @@ public partial class TextureSettingsWindow : Window
 
         foreach (var t in SelectedTerrains)
         {
-            MapTools.Terrains[t.terrain].blendedSurface = mat;
-            MapTools.Terrains[t.terrain].blendedSurfaceName = GlobalMapData.loadedMaterials[mat].name;
+            MapTools.Terrains[t.terrain].BlendedSurface = mat;
+            MapTools.Terrains[t.terrain].BlendedSurfaceName = GlobalMapData.LoadedMaterials[mat].Name;
         }
     }
 
@@ -351,14 +351,14 @@ public partial class TextureSettingsWindow : Window
         var faces = SelectedFaces.Where(f => f.brush != -1 && f.face != -1).Select(fm => (fm.brush, fm.face));
         foreach (var bm in SelectedBrushes)
         {
-            for (int i = 0; i < MapTools.Brushes[bm.brush].faces.Length; i++)
+            for (int i = 0; i < MapTools.Brushes[bm.brush].Faces.Length; i++)
             {
                 faces = faces.Append((bm.brush, i));
             }
         }
         foreach (var (brush, face) in faces)
         {
-            ref var f = ref MapTools.ActiveMap.brushes[brush].faces[face];
+            ref var f = ref MapTools.ActiveMap.Brushes[brush].Faces[face];
             if (on) f.smoothGroup |= mask;
             else f.smoothGroup &= ~mask;
         }
@@ -370,7 +370,7 @@ public partial class TextureSettingsWindow : Window
 
         var first = SelectedFaces.FirstOrDefault(f => f.brush != -1 && f.face != -1);
         int group = first != null
-            ? MapTools.ActiveMap.brushes[first.brush].faces[first.face].smoothGroup
+            ? MapTools.ActiveMap.Brushes[first.brush].Faces[first.face].smoothGroup
             : 0;
 
         _suppress = true;

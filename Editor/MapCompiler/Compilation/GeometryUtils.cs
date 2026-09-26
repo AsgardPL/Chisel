@@ -178,7 +178,7 @@ namespace MapCompiler
         }
         public static int[] GetFaceUvBoundaryLoop(Brush brush, int faceIdx)
         {
-            var indices = brush.faces[faceIdx].indices;
+            var indices = brush.Faces[faceIdx].Indices;
             var edgeCounts = new Dictionary<(int, int), int>();
 
             void AddDirectedEdge(int a, int b)
@@ -223,14 +223,14 @@ namespace MapCompiler
         }
         public static Vector3 LightmapUvTo3D(Vector2 uv, Brush brush, int face, out bool inside)
         {
-            var f = brush.faces[face];
-            int[] tris = f.indices;
-            Vector2[] uvs = brush.lightmapUvs;
-            Vector3[] verts = brush.vertices;
+            var f = brush.Faces[face];
+            int[] tris = f.Indices;
+            Vector2[] uvs = brush.LightmapUVs;
+            Vector3[] verts = brush.Vertices;
             inside = false;
 
             float bestPenalty = float.MaxValue;
-            Vector3 bestWorldPos = verts[tris[0]] + brush.position;
+            Vector3 bestWorldPos = verts[tris[0]] + brush.Position;
             Vector2 bestUVOnTri = uvs[tris[0]];
 
             for (int i = 0; i < tris.Length; i += 3)
@@ -252,7 +252,7 @@ namespace MapCompiler
                     return b0 * verts[tris[i]]
                          + b1 * verts[tris[i + 1]]
                          + b2 * verts[tris[i + 2]]
-                         + brush.position;
+                         + brush.Position;
                 }
 
                 float penalty = MathF.Max(0, -b0) + MathF.Max(0, -b1) + MathF.Max(0, -b2);
@@ -269,7 +269,7 @@ namespace MapCompiler
                     bestWorldPos = cb0 * verts[tris[i]]
                                  + cb1 * verts[tris[i + 1]]
                                  + cb2 * verts[tris[i + 2]]
-                                 + brush.position;
+                                 + brush.Position;
 
                     bestUVOnTri = cb0 * u0 + cb1 * u1 + cb2 * u2;
                 }
@@ -277,10 +277,10 @@ namespace MapCompiler
 
             Vector2 uvDelta = uv - bestUVOnTri;
 
-            float luxelScale = MathF.Max(f.luxelScale, 0.01f);
+            float luxelScale = MathF.Max(f.LuxelScale, 0.01f);
 
-            Vector3 worldDelta = (f.tangent * uvDelta.X
-                                + f.binormal * uvDelta.Y) / luxelScale;
+            Vector3 worldDelta = (f.Tangent * uvDelta.X
+                                + f.Binormal * uvDelta.Y) / luxelScale;
 
             return bestWorldPos + worldDelta;
         }
@@ -312,10 +312,10 @@ namespace MapCompiler
             var candidates = grid.QueryCandidates(uv);
             if (candidates != null)
             {
-                var tris = brush.faces[face].indices;
+                var tris = brush.Faces[face].Indices;
                 for (int ci = 0; ci < candidates.Count; ci++)
                 {
-                    if (TryTriangle(uv, tris, brush.lightmapUvs, brush.vertices, brush.position, candidates[ci], out Vector3 hitPos))
+                    if (TryTriangle(uv, tris, brush.LightmapUVs, brush.Vertices, brush.Position, candidates[ci], out Vector3 hitPos))
                     {
                         inside = true;
                         return hitPos;
@@ -395,13 +395,13 @@ namespace MapCompiler
 
         public static Vector2 Vector3ToUv(Vector3 point, Brush brush, int faceIdx)
         {
-            var face = brush.faces[faceIdx];
+            var face = brush.Faces[faceIdx];
 
-            for (int i = 0; i < face.indices.Length; i += 3)
+            for (int i = 0; i < face.Indices.Length; i += 3)
             {
-                Vector3 p1 = brush.vertices[face.indices[i]]     + brush.position;
-                Vector3 p2 = brush.vertices[face.indices[i + 1]] + brush.position;
-                Vector3 p3 = brush.vertices[face.indices[i + 2]] + brush.position;
+                Vector3 p1 = brush.Vertices[face.Indices[i]]     + brush.Position;
+                Vector3 p2 = brush.Vertices[face.Indices[i + 1]] + brush.Position;
+                Vector3 p3 = brush.Vertices[face.Indices[i + 2]] + brush.Position;
 
                 float area  = Vector3.Cross(p2 - p1, p3 - p1).Length();
                 float area1 = Vector3.Cross(p2 - point, p3 - point).Length() / area;
@@ -409,9 +409,9 @@ namespace MapCompiler
                 float area3 = Vector3.Cross(p1 - point, p2 - point).Length() / area;
 
                 if (area1 >= 0 && area2 >= 0 && area3 >= 0)
-                    return brush.uvs[face.indices[i]]     * area1
-                         + brush.uvs[face.indices[i + 1]] * area2
-                         + brush.uvs[face.indices[i + 2]] * area3;
+                    return brush.UVs[face.Indices[i]]     * area1
+                         + brush.UVs[face.Indices[i + 1]] * area2
+                         + brush.UVs[face.Indices[i + 2]] * area3;
             }
 
             return Vector2.Zero;
@@ -425,7 +425,7 @@ namespace MapCompiler
             float maxEscapeDist = 0.1f,
             bool allowInPlaneFallback = true)
         {
-            if (!BSPRoot.nodes[BSPRoot.Traverse(point)].solid)
+            if (!BSPRoot.Nodes[BSPRoot.Traverse(point)].solid)
                 return point;
 
             const int NormalSteps = 16;
@@ -434,7 +434,7 @@ namespace MapCompiler
             for (int s = 1; s <= NormalSteps; s++)
             {
                 Vector3 candidate = point + faceNormal * (stepSize * s);
-                if (!BSPRoot.nodes[BSPRoot.Traverse(candidate)].solid)
+                if (!BSPRoot.Nodes[BSPRoot.Traverse(candidate)].solid)
                     return candidate;
             }
 
@@ -449,7 +449,7 @@ namespace MapCompiler
                 foreach (Vector3 dir in inPlane)
                 {
                     Vector3 candidate = point + dir * dist;
-                    if (!BSPRoot.nodes[BSPRoot.Traverse(candidate)].solid)
+                    if (!BSPRoot.Nodes[BSPRoot.Traverse(candidate)].solid)
                         return candidate;
                 }
             }
@@ -471,7 +471,7 @@ namespace MapCompiler
         }
         public static bool IsSolidForResolve(Vector3 point)
         {
-            return BSPRoot.nodes[BSPRoot.Traverse(point)].solid
+            return BSPRoot.Nodes[BSPRoot.Traverse(point)].solid
                 || IsPointEnclosedByDetail(point);
         }
 
@@ -583,15 +583,15 @@ namespace MapCompiler
         }
         public static Vector3 ClampToFace(Vector3 point, Brush brush, int faceIdx)
         {
-            var face = brush.faces[faceIdx];
+            var face = brush.Faces[faceIdx];
             Vector3 best = point;
             float bestDist = float.MaxValue;
 
-            for (int i = 0; i < face.indices.Length; i += 3)
+            for (int i = 0; i < face.Indices.Length; i += 3)
             {
-                Vector3 p1 = brush.vertices[face.indices[i]]     + brush.position;
-                Vector3 p2 = brush.vertices[face.indices[i + 1]] + brush.position;
-                Vector3 p3 = brush.vertices[face.indices[i + 2]] + brush.position;
+                Vector3 p1 = brush.Vertices[face.Indices[i]]     + brush.Position;
+                Vector3 p2 = brush.Vertices[face.Indices[i + 1]] + brush.Position;
+                Vector3 p3 = brush.Vertices[face.Indices[i + 2]] + brush.Position;
 
                 if (PointInTriangle(point, p1, p2, p3)) return point;
 

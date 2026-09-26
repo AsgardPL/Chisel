@@ -138,7 +138,7 @@ public partial class EntityInspectorWindow : Window
             BuildOutputList();
         }
 
-        ShowCombinedClassname([.. this.entityRefs.Select(e => e.entityName)]);
+        ShowCombinedClassname([.. this.entityRefs.Select(e => e.EntityName)]);
 
         propertyEditorHost.IsEnabled = false;
 
@@ -179,18 +179,18 @@ public partial class EntityInspectorWindow : Window
     private void RefreshOutput()
     {
         dontUpdateOutputs = true;
-        var outp = entityRefs[0].entityOutputs[selectedOutput];
+        var outp = entityRefs[0].EntityOutputs[selectedOutput];
         var id = selectedOutput;
 
         outputRows[selectedOutput] = new EntityOutputModel
         {
             index = id + 1,
             outputFrom = outp.Item1,
-            entityTarget = outp.Item2.entityTarget,
-            entityInputTarget = outp.Item2.entityInputTarget,
-            inputParameters = outp.Item2.inputParameters,
-            delay = outp.Item2.delay,
-            refire = outp.Item2.refire,
+            entityTarget = outp.Item2.EntityTarget,
+            entityInputTarget = outp.Item2.EntityInputTarget,
+            inputParameters = outp.Item2.InputParameters,
+            delay = outp.Item2.Delay,
+            refire = outp.Item2.Refire,
         };
 
         outputVisualizer.SelectedIndex = id;
@@ -203,37 +203,37 @@ public partial class EntityInspectorWindow : Window
         IEnumerable<EntityReference> entities = MapTools.Entities;
 
         if (!string.IsNullOrEmpty(classFilter))
-            entities = entities.Where(e => e.entityName == classFilter);
+            entities = entities.Where(e => e.EntityName == classFilter);
 
-        return entities.Select(e => e.name).Where(e => !string.IsNullOrEmpty(e)).Distinct();
+        return entities.Select(e => e.Name).Where(e => !string.IsNullOrEmpty(e)).Distinct();
     }
 
     private void BuildOutputList()
     {
-        if (entityRefs[0].entityOutputs == null) return;
+        if (entityRefs[0].EntityOutputs == null) return;
 
         outputRows.Clear();
 
-        for (int i = 0; i < entityRefs[0].entityOutputs.Count; i++)
+        for (int i = 0; i < entityRefs[0].EntityOutputs.Count; i++)
         {
-            var outp = entityRefs[0].entityOutputs[i];
+            var outp = entityRefs[0].EntityOutputs[i];
             outputRows.Add(new EntityOutputModel
             {
                 index = i + 1,
                 outputFrom = outp.Item1,
-                entityTarget = outp.Item2.entityTarget,
-                entityInputTarget = outp.Item2.entityInputTarget,
-                inputParameters = outp.Item2.inputParameters,
-                delay = outp.Item2.delay,
-                refire = outp.Item2.refire,
-                isScripted = outp.Item2.script != null,
+                entityTarget = outp.Item2.EntityTarget,
+                entityInputTarget = outp.Item2.EntityInputTarget,
+                inputParameters = outp.Item2.InputParameters,
+                delay = outp.Item2.Delay,
+                refire = outp.Item2.Refire,
+                isScripted = outp.Item2.Script != null,
             });
         }
 
-        if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(entityRefs[0].entityName, out var meta)) return;
+        if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(entityRefs[0].EntityName, out var meta)) return;
 
         outputFrom.Items.Clear();
-        foreach (var item in meta.outputs)
+        foreach (var item in meta.Outputs)
             if (!outputFrom.Items.Contains(item)) outputFrom.Items.Add(item);
 
         entityTarget.Items.Clear();
@@ -244,18 +244,18 @@ public partial class EntityInspectorWindow : Window
 
     private void BuildOutputPropertyEditors()
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
 
         dontUpdateOutputs = true;
-        outputFrom.SelectedItem = entityRefs[0].entityOutputs[selectedOutput].Item1;
-        entityTarget.SelectedItem = entityRefs[0].entityOutputs[selectedOutput].Item2.entityTarget;
+        outputFrom.SelectedItem = entityRefs[0].EntityOutputs[selectedOutput].Item1;
+        entityTarget.SelectedItem = entityRefs[0].EntityOutputs[selectedOutput].Item2.EntityTarget;
         UpdateInputs();
-        entityInput.SelectedItem = entityRefs[0].entityOutputs[selectedOutput].Item2.entityInputTarget;
-        inputParameter.Text = entityRefs[0].entityOutputs[selectedOutput].Item2.inputParameters;
-        inputDelay.Text = entityRefs[0].entityOutputs[selectedOutput].Item2.delay.ToString();
-        inputRefire.Text = entityRefs[0].entityOutputs[selectedOutput].Item2.refire.ToString();
+        entityInput.SelectedItem = entityRefs[0].EntityOutputs[selectedOutput].Item2.EntityInputTarget;
+        inputParameter.Text = entityRefs[0].EntityOutputs[selectedOutput].Item2.InputParameters;
+        inputDelay.Text = entityRefs[0].EntityOutputs[selectedOutput].Item2.Delay.ToString();
+        inputRefire.Text = entityRefs[0].EntityOutputs[selectedOutput].Item2.Refire.ToString();
 
-        isScriptedToggle.IsChecked = entityRefs[0].entityOutputs[selectedOutput].Item2.scriptSource != null;
+        isScriptedToggle.IsChecked = entityRefs[0].EntityOutputs[selectedOutput].Item2.ScriptSource != null;
 
         UpdateScriptModeEnabledState();
 
@@ -276,9 +276,9 @@ public partial class EntityInspectorWindow : Window
         }
         else
         {
-            var targetEntity = MapTools.Entities.FirstOrDefault(e => e.name == targetName);
+            var targetEntity = MapTools.Entities.FirstOrDefault(e => e.Name == targetName);
             if (targetEntity == null) return;
-            searchName = targetEntity.entityName;
+            searchName = targetEntity.EntityName;
         }
 
         if (entityInput.Items != null && entityInput.Items.Count > 0)
@@ -291,7 +291,7 @@ public partial class EntityInspectorWindow : Window
 
         if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(searchName, out var meta)) return;
 
-        foreach (var item in meta.inputs)
+        foreach (var item in meta.Inputs)
             if (!entityInput.Items.Contains(item)) entityInput.Items.Add(item);
     }
 
@@ -301,12 +301,12 @@ public partial class EntityInspectorWindow : Window
 
         foreach (var entity in entityRefs)
         {
-            if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(entity.entityName, out var meta))
+            if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(entity.EntityName, out var meta))
             {
                 commonNames.Clear();
                 break;
             }
-            var thisNames = new HashSet<string>(meta.properties.Select(p => p.name));
+            var thisNames = new HashSet<string>(meta.Properties.Select(p => p.Name));
             if (commonNames.Count == 0) commonNames = thisNames; else commonNames.IntersectWith(thisNames);
         }
 
@@ -319,23 +319,23 @@ public partial class EntityInspectorWindow : Window
 
         foreach (var entity in entityRefs)
         {
-            if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(entity.entityName, out var meta))
+            if (!GlobalEditorData.RegisteredEntityMeta.TryGetValue(entity.EntityName, out var meta))
                 continue;
 
-            foreach (var prop in meta.properties)
+            foreach (var prop in meta.Properties)
             {
-                if (commonNames.Contains(prop.name) && prop.name != "Target Name")
+                if (commonNames.Contains(prop.Name) && prop.Name != "Target Name")
                 {
-                    commonNames.Remove(prop.name);
+                    commonNames.Remove(prop.Name);
                     propertyList.Items.Add(new EntityPropertyInspector
                     {
-                        name = prop.name,
-                        hint = prop.hint,
-                        type = prop.type,
-                        options = prop.options,
-                        targetFilter = prop.targetFilter,
-                        min = prop.min,
-                        max = prop.max
+                        name = prop.Name,
+                        hint = prop.Hint,
+                        type = prop.Type,
+                        options = prop.Options,
+                        targetFilter = prop.TargetFilter,
+                        min = prop.Min,
+                        max = prop.Max
                     });
                 }
             }
@@ -356,23 +356,23 @@ public partial class EntityInspectorWindow : Window
 
         for (int i = 0; i < entityRefs.Length; i++)
         {
-            entityRefs[i].entityName = selected;
-            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entityRefs[i].entityName);
+            entityRefs[i].EntityName = selected;
+            var id = Array.FindIndex(GlobalEditorData.EditorOverrides.overrides, o => o.name == entityRefs[i].EntityName);
             var defaults = id != -1 ? GlobalEditorData.EditorOverrides.overrides[id].defaultProperties
-                : GlobalEditorData.RegisteredEntityMeta.TryGetValue(selected, out var meta) ? meta.defaultProperties : null;
+                : GlobalEditorData.RegisteredEntityMeta.TryGetValue(selected, out var meta) ? meta.DefaultProperties : null;
 
             if (defaults != null)
             {
-                var oldProperties = entityRefs[i].properties;
-                entityRefs[i].properties = new EntityProperty[defaults.Length];
-                Array.Copy(defaults, entityRefs[i].properties, entityRefs[i].properties.Length);
+                var oldProperties = entityRefs[i].Properties;
+                entityRefs[i].Properties = new EntityProperty[defaults.Length];
+                Array.Copy(defaults, entityRefs[i].Properties, entityRefs[i].Properties.Length);
 
-                for (int j = 0; j < entityRefs[i].properties.Length; j++)
+                for (int j = 0; j < entityRefs[i].Properties.Length; j++)
                 {
-                    if (oldProperties != null && oldProperties.Any(t => t.Name == entityRefs[i].properties[j].Name))
+                    if (oldProperties != null && oldProperties.Any(t => t.Name == entityRefs[i].Properties[j].Name))
                     {
-                        var old = oldProperties.First(t => t.Name == entityRefs[i].properties[j].Name);
-                        entityRefs[i].properties[j].Value = old.Value;
+                        var old = oldProperties.First(t => t.Name == entityRefs[i].Properties[j].Name);
+                        entityRefs[i].Properties[j].Value = old.Value;
                     }
                 }
             }
@@ -390,7 +390,7 @@ public partial class EntityInspectorWindow : Window
 
         if (selected.name == "Target Name")
         {
-            for (int i = 0; i < entityRefs.Length; i++) entityRefs[i].name = value ?? string.Empty;
+            for (int i = 0; i < entityRefs.Length; i++) entityRefs[i].Name = value ?? string.Empty;
             return;
         }
         if (selected.name == "Move Parent")
@@ -403,9 +403,9 @@ public partial class EntityInspectorWindow : Window
             if (!float.TryParse(value, out float d)) return;
             for (int i = 0; i < entityRefs.Length; i++)
             {
-                if (selected.name == "Spawn Pitch") entityRefs[i].spawnRotation.Y = d;
-                else if (selected.name == "Spawn Yaw") entityRefs[i].spawnRotation.X = d;
-                else entityRefs[i].spawnRotation.Z = d;
+                if (selected.name == "Spawn Pitch") entityRefs[i].SpawnRotation.Y = d;
+                else if (selected.name == "Spawn Yaw") entityRefs[i].SpawnRotation.X = d;
+                else entityRefs[i].SpawnRotation.Z = d;
             }
             return;
         }
@@ -413,17 +413,17 @@ public partial class EntityInspectorWindow : Window
         for (int i = 0; i < entityRefs.Length; i++)
         {
             int pID = -1;
-            if (entityRefs[i].properties != null)
-                pID = Array.FindIndex(entityRefs[i].properties, x => x.Name == selected.name);
+            if (entityRefs[i].Properties != null)
+                pID = Array.FindIndex(entityRefs[i].Properties, x => x.Name == selected.name);
 
             if (pID == -1)
             {
                 var property = new EntityProperty { Name = selected.name, Value = value ?? string.Empty };
-                entityRefs[i].properties = (entityRefs[i].properties ?? Array.Empty<EntityProperty>()).Append(property).ToArray();
+                entityRefs[i].Properties = (entityRefs[i].Properties ?? Array.Empty<EntityProperty>()).Append(property).ToArray();
                 continue;
             }
 
-            entityRefs[i].properties[pID].Value = value ?? string.Empty;
+            entityRefs[i].Properties[pID].Value = value ?? string.Empty;
         }
     }
 
@@ -442,14 +442,14 @@ public partial class EntityInspectorWindow : Window
 
         List<string> values = selected.name switch
         {
-            "Target Name" => entityRefs.Select(i => i.name).Distinct().ToList(),
+            "Target Name" => entityRefs.Select(i => i.Name).Distinct().ToList(),
             "Move Parent" => entityRefs.Select(i => i.entityMoveParentName).Distinct().ToList(),
-            "Spawn Pitch" => entityRefs.Select(i => i.spawnRotation.Y.ToString()).Distinct().ToList(),
-            "Spawn Yaw" => entityRefs.Select(i => i.spawnRotation.X.ToString()).Distinct().ToList(),
-            "Spawn Roll" => entityRefs.Select(i => i.spawnRotation.Z.ToString()).Distinct().ToList(),
+            "Spawn Pitch" => entityRefs.Select(i => i.SpawnRotation.Y.ToString()).Distinct().ToList(),
+            "Spawn Yaw" => entityRefs.Select(i => i.SpawnRotation.X.ToString()).Distinct().ToList(),
+            "Spawn Roll" => entityRefs.Select(i => i.SpawnRotation.Z.ToString()).Distinct().ToList(),
             _ => entityRefs.Select(i =>
             {
-                var p = i.properties != null ? Array.Find(i.properties, x => x.Name == selected.name) : default;
+                var p = i.Properties != null ? Array.Find(i.Properties, x => x.Name == selected.name) : default;
                 return p.Value ?? string.Empty;
             }).ToList()
         };
@@ -511,7 +511,7 @@ public partial class EntityInspectorWindow : Window
                 {
                     matLabel.Text = string.IsNullOrEmpty(materialName) ? "(none)" : materialName;
                     if (!string.IsNullOrEmpty(materialName)
-                        && GlobalMapData.materialNameToIndex.TryGetValue(materialName, out int idx)
+                        && GlobalMapData.MaterialNameToIndex.TryGetValue(materialName, out int idx)
                         && GlobalEditorData.TexturesAsImages != null
                         && idx < GlobalEditorData.TexturesAsImages.Length)
                     {
@@ -533,7 +533,7 @@ public partial class EntityInspectorWindow : Window
                         return;
                     }
 
-                    string name = GlobalMapData.loadedMaterials[result].name;
+                    string name = GlobalMapData.LoadedMaterials[result].Name;
                     RefreshMatPreview(name);
                     CommitPropertyValue(prop, name);
                 };
@@ -565,25 +565,25 @@ public partial class EntityInspectorWindow : Window
 
     private void outputFrom_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         if (outputFrom.SelectedItem == null || string.IsNullOrEmpty(outputFrom.SelectedItem as string)) return;
         if (dontUpdateOutputs) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
         item.Item1 = outputFrom.SelectedItem as string;
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
         RefreshOutput();
     }
 
     private void entityTarget_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         if (entityTarget.SelectedItem == null || string.IsNullOrEmpty(entityTarget.SelectedItem as string)) return;
         if (dontUpdateOutputs) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
-        item.Item2.entityTarget = entityTarget.SelectedItem as string;
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
+        item.Item2.EntityTarget = entityTarget.SelectedItem as string;
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
         UpdateInputs();
         RefreshOutput();
     }
@@ -591,60 +591,60 @@ public partial class EntityInspectorWindow : Window
     private void entityInput_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (dontRunCallbacks) return;
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         if (entityInput.SelectedItem == null || string.IsNullOrEmpty(entityInput.SelectedItem as string)) return;
         if (dontUpdateOutputs) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
-        item.Item2.entityInputTarget = entityInput.SelectedItem as string;
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
+        item.Item2.EntityInputTarget = entityInput.SelectedItem as string;
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
         RefreshOutput();
     }
 
     private void inputParameter_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (dontRunCallbacks) return;
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
-        if (entityRefs[0].entityOutputs[selectedOutput].Item2.inputParameters == inputParameter.Text) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
+        if (entityRefs[0].EntityOutputs[selectedOutput].Item2.InputParameters == inputParameter.Text) return;
         if (dontUpdateOutputs) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
-        item.Item2.inputParameters = inputParameter.Text ?? string.Empty;
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
+        item.Item2.InputParameters = inputParameter.Text ?? string.Empty;
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
         RefreshOutput();
     }
     private void inputDelay_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         if (dontUpdateOutputs) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
-        item.Item2.delay = (float)(inputDelay.Value ?? 0);
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
+        item.Item2.Delay = (float)(inputDelay.Value ?? 0);
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
         RefreshOutput();
     }
 
     private void inputRefire_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         if (dontUpdateOutputs) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
-        item.Item2.refire = (int)(inputRefire.Value ?? -1);
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
+        item.Item2.Refire = (int)(inputRefire.Value ?? -1);
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
         RefreshOutput();
     }
 
     private void Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        entityRefs[0].entityOutputs ??= new List<(string, EntityOutput)>();
-        entityRefs[0].entityOutputs.Add(new("", new EntityOutput()));
+        entityRefs[0].EntityOutputs ??= new List<(string, EntityOutput)>();
+        entityRefs[0].EntityOutputs.Add(new("", new EntityOutput()));
         BuildOutputList();
     }
 
     private void Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
 
         if (openScriptWindow != null)
         {
@@ -654,35 +654,35 @@ public partial class EntityInspectorWindow : Window
                 openScriptWindow.Retarget(openScriptWindow.OutputIndex - 1);
         }
 
-        entityRefs[0].entityOutputs.RemoveAt(selectedOutput);
+        entityRefs[0].EntityOutputs.RemoveAt(selectedOutput);
         BuildOutputList();
     }
 
     private void Copy_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         copyFromOutput = selectedOutput;
     }
 
     private void Paste_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (copyFromOutput == -1 || copyFromOutput >= entityRefs[0].entityOutputs.Count) return;
-        var from = entityRefs[0].entityOutputs[copyFromOutput];
-        entityRefs[0].entityOutputs.Add(new(from.Item1, from.Item2));
+        if (copyFromOutput == -1 || copyFromOutput >= entityRefs[0].EntityOutputs.Count) return;
+        var from = entityRefs[0].EntityOutputs[copyFromOutput];
+        entityRefs[0].EntityOutputs.Add(new(from.Item1, from.Item2));
         BuildOutputList();
     }
 
     private void UpdateMoveButtonStates()
     {
-        int count = entityRefs[0].entityOutputs?.Count ?? 0;
+        int count = entityRefs[0].EntityOutputs?.Count ?? 0;
         btnMoveUp.IsEnabled = selectedOutput > 0 && selectedOutput < count;
         btnMoveDown.IsEnabled = selectedOutput >= 0 && selectedOutput < count - 1;
     }
 
     private void SwapOutputs(int a, int b)
     {
-        (entityRefs[0].entityOutputs[a], entityRefs[0].entityOutputs[b]) =
-            (entityRefs[0].entityOutputs[b], entityRefs[0].entityOutputs[a]);
+        (entityRefs[0].EntityOutputs[a], entityRefs[0].EntityOutputs[b]) =
+            (entityRefs[0].EntityOutputs[b], entityRefs[0].EntityOutputs[a]);
 
         copyFromOutput = -1; // shuffle invalidates prev copy
 
@@ -700,13 +700,13 @@ public partial class EntityInspectorWindow : Window
 
     private void MoveUp_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (selectedOutput <= 0 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput <= 0 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
         SwapOutputs(selectedOutput, selectedOutput - 1);
     }
 
     private void MoveDown_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count - 1) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count - 1) return;
         SwapOutputs(selectedOutput, selectedOutput + 1);
     }
 
@@ -714,19 +714,19 @@ public partial class EntityInspectorWindow : Window
     private void isScriptedToggle_IsCheckedChanged(object? sender, RoutedEventArgs e)
     {
         if (dontUpdateOutputs) return;
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
 
-        var item = entityRefs[0].entityOutputs[selectedOutput];
-        if (!isScriptedToggle.IsChecked == true) item.Item2.scriptSource = null;
-        if (isScriptedToggle.IsChecked == true) item.Item2.scriptSource = string.Empty;
-        entityRefs[0].entityOutputs[selectedOutput] = item;
+        var item = entityRefs[0].EntityOutputs[selectedOutput];
+        if (!isScriptedToggle.IsChecked == true) item.Item2.ScriptSource = null;
+        if (isScriptedToggle.IsChecked == true) item.Item2.ScriptSource = string.Empty;
+        entityRefs[0].EntityOutputs[selectedOutput] = item;
 
         UpdateScriptModeEnabledState();
         RefreshOutput();
     }
     private void OpenScript_Click(object? sender, RoutedEventArgs e)
     {
-        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].entityOutputs.Count) return;
+        if (selectedOutput == -1 || selectedOutput >= entityRefs[0].EntityOutputs.Count) return;
 
         if (openScriptWindow != null)
         {
@@ -752,16 +752,16 @@ public partial class EntityInspectorWindow : Window
         btnOpenScript.IsEnabled = scripted;
     }
 
-    public string GetScriptSource(int outputIndex) => outputIndex >= 0 && outputIndex < entityRefs[0].entityOutputs.Count
-                                                        ? entityRefs[0].entityOutputs[outputIndex].Item2.scriptSource ?? string.Empty
+    public string GetScriptSource(int outputIndex) => outputIndex >= 0 && outputIndex < entityRefs[0].EntityOutputs.Count
+                                                        ? entityRefs[0].EntityOutputs[outputIndex].Item2.ScriptSource ?? string.Empty
                                                         : string.Empty;
 
     public void SetScriptSource(int outputIndex, string source)
     {
-        if (outputIndex < 0 || outputIndex >= entityRefs[0].entityOutputs.Count) return;
-        var item = entityRefs[0].entityOutputs[outputIndex];
-        item.Item2.scriptSource = source;
-        entityRefs[0].entityOutputs[outputIndex] = item;
+        if (outputIndex < 0 || outputIndex >= entityRefs[0].EntityOutputs.Count) return;
+        var item = entityRefs[0].EntityOutputs[outputIndex];
+        item.Item2.ScriptSource = source;
+        entityRefs[0].EntityOutputs[outputIndex] = item;
     }
     public void OnScriptWindowDragEnded(ScriptEditorWindow scriptWindow)
     {
