@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "MapCompiler": {
+      "commandName": "Project",
+      "commandLineArgs": "-C:\\Users\\tidwe\\source\\repos\\Cryztal\\Chisel\\FPSTemplate\\Working\\Maps\\lmp_rad_testnew.rok -C:\\Users\\tidwe\\source\\repos\\Cryztal\\Chisel\\FPSTemplate\\bin\\Release\\net8.0\\Data\\def.eds -C:\\Users\\tidwe\\source\\repos\\Cryztal\\Chisel\\FPSTemplate\\Working",
+      "environmentVariables": {
+        "lightmapUnitSize": "2",
+        "fastVis": "true"
+      }
+    }
+  }
+}
