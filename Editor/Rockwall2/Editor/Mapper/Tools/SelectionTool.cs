@@ -206,6 +206,7 @@ namespace Rockwall2.Tools
             HandleDuplicate();
             HandleBrushEntityConvert();
             HandleMergeFaces();
+            HandleCopyPaste();
 
             if (MouseManager.IsReleased(MouseButton.Right) && !MouseManager.WasDragging(MouseButton.Right) && !waitDDown && Toolbelt.SelectedObjects.Count > 0)
             {
@@ -574,6 +575,7 @@ namespace Rockwall2.Tools
 
             HandleDelete();
             HandleDuplicate();
+            HandleCopyPaste();
         }
         void ShiftSelectionLocal(EditorViewport vp, int x, int y)
         {
@@ -1302,18 +1304,76 @@ namespace Rockwall2.Tools
                 movedAny = false;
             }
         }
+        void HandleCopyPaste()
+        {
+            if (!KeyboardManager.IsDown(Key.LeftCtrl)) return;
+
+            if (KeyboardManager.IsPressed(Key.C))
+            {
+                MapClipboard.Copy(Toolbelt.SelectedObjects);
+                return;
+            }
+
+            if (!KeyboardManager.IsPressed(Key.V) || !MapClipboard.HasContent) return;
+
+            Vector3 offset = IsUsedIn2D ? GetPasteOffset2D() : GetPasteOffset3D();
+
+            var brushSnapshot = new BrushWithOwnershipSnapshot(MapTools.Brushes, MapTools.Entities);
+            var terrainSnapshot = new AllTerrainSnapshot(MapTools.Terrains, MapTools.Brushes);
+            var hintSnapshot = new AllHintSnapshot(MapTools.Hints);
+
+            var created = MapClipboard.Paste(offset);
+
+            Toolbelt.SelectedObjects = created;
+            GizmoRotate.ResetPivot();
+            TextureSettingsWindow.Instance?.UpdateValues();
+
+            Toolbelt.UndoManager.DoOnUndo(() =>
+            {
+                hintSnapshot.Restore();
+                terrainSnapshot.Restore();
+                brushSnapshot.Restore();
+                Toolbelt.SelectedObjects.RemoveAll(o => created.Contains(o));
+            });
+        }
+        Vector3 GetPasteOffset2D()
+        {
+            var vp = ActiveViewport;
+            return MapClipboard.OffsetFor2D(LocalToWorld(vp, MouseLocalF), vp.RightAxis, vp.UpAxis);
+        }
+        Vector3 GetPasteOffset3D()
+        {
+            var ray = SceneRay;
+            float bestDist = float.MaxValue;
+            Vector3 normal = Vector3.Zero;
+
+            var mapHit = MapTools.RaycastMapGeometry(ray, true, true);
+            if (mapHit.distance > 0f && mapHit.brush != -1 && mapHit.face != -1)
+            {
+                bestDist = mapHit.distance;
+                normal = Vector3.Normalize(MapTools.Brushes[mapHit.brush].Faces[mapHit.face].Normal);
+            }
+
+            var terrainHit = MapTools.RaycastTerrains(ray);
+            if (terrainHit.distance > 0f && terrainHit.terrain != -1 && terrainHit.distance < bestDist)
+            {
+                bestDist = terrainHit.distance;
+                normal = Vector3.Up;
+            }
+
+            if (bestDist == float.MaxValue)
+            {
+                var size = MapClipboard.Bounds.Max - MapClipboard.Bounds.Min;
+                return MapClipboard.OffsetFor3D(ray.Position + ray.Direction * MathF.Max(8f, size.Length() * 1.5f), Vector3.Zero);
+            }
+
+            return MapClipboard.OffsetFor3D(ray.Position + ray.Direction * bestDist, normal);
+        }
         void HandleTextureApplication()
         {
             bool leftPressed = MouseManager.IsPressed(MouseButton.Left);
             bool altDown = KeyboardManager.IsDown(Key.LeftAlt);
             bool ctrlDown = KeyboardManager.IsDown(Key.LeftCtrl);
-
-            if (ctrlDown && KeyboardManager.IsPressed(Key.C))
-            {
-                if (Toolbelt.HighlightedObject is FaceMoveable hf && hf.brush != -1 && hf.face != -1)
-                    TextureClipboard.LiftFromFace(hf.brush, hf.face);
-                return;
-            }
 
             if (altDown && ctrlDown && leftPressed)
             {
@@ -1361,29 +1421,6 @@ namespace Rockwall2.Tools
                             Toolbelt.ActiveTexture;
                         MapTools.Brushes[b.brush].Faces[j].Surface =
                             GlobalMapData.MaterialNameToIndex[Toolbelt.ActiveTexture];
-                    }
-                    BrushOperations.RebuildBrush(ref MapTools.Brushes[b.brush]);
-                    Toolbelt.UndoManager.DoOnUndo(() => { foreach (var r in restores) r(); });
-                }
-            }
-            if (ctrlDown && KeyboardManager.IsPressed(Key.V))
-            {
-                if (Toolbelt.HighlightedObject is FaceMoveable f)
-                {
-                    SnapshotFaceForUndo(f.brush, f.face, out var restore);
-
-                    TextureClipboard.StampOntoFace(f.brush, f.face, includeMaterial: true);
-                    BrushOperations.RebuildBrush(ref MapTools.Brushes[f.brush]);
-
-                    Toolbelt.UndoManager.DoOnUndo(restore);
-                }
-                else if (Toolbelt.HighlightedObject is BrushMoveable b)
-                {
-                    var restores = new System.Action[MapTools.Brushes[b.brush].Faces.Length];
-                    for (int j = 0; j < MapTools.Brushes[b.brush].Faces.Length; j++)
-                    {
-                        SnapshotFaceForUndo(b.brush, j, out restores[j]);
-                        TextureClipboard.StampOntoFace(b.brush, j, includeMaterial: true);
                     }
                     BrushOperations.RebuildBrush(ref MapTools.Brushes[b.brush]);
                     Toolbelt.UndoManager.DoOnUndo(() => { foreach (var r in restores) r(); });

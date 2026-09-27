@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using static Rockwall2.Editor.Common.EditorOverrides;
 
 namespace Rockwall2.Editor.Mapper;
 
@@ -163,13 +164,24 @@ public class MapperView : IEditorScene
         //Yucky that this one does all of this init stuff... Moving it anywhere else somehow broke?
 
         GlobalEditorData.EDSFile = ConfigManager.currentConfig.GameEDF;
-        GlobalEditorData.EditorOverrides = JsonConvert.DeserializeObject<EditorOverrides>(File.ReadAllText($"{ConfigManager.currentConfig.EditorAssetsPath}/editor_settings.cfg"));
 
-        EditorOverrides defaultSettings = JsonConvert.DeserializeObject<EditorOverrides>(File.ReadAllText($"{host.Content.RootDirectory}/def_conf.cfg"));
+        if(File.Exists($"{ConfigManager.currentConfig.EditorAssetsPath}/editor_settings.cfg"))
+        {
+            GlobalEditorData.EditorOverrides = JsonConvert.DeserializeObject<EditorOverrides>(File.ReadAllText($"{ConfigManager.currentConfig.EditorAssetsPath}/editor_settings.cfg"));
 
-        GlobalEditorData.EditorOverrides.overrides = GlobalEditorData.EditorOverrides.overrides.Concat(defaultSettings.overrides.Where(e => !GlobalEditorData.EditorOverrides.overrides.Contains(e))).ToArray();
+            EditorOverrides defaultSettings = JsonConvert.DeserializeObject<EditorOverrides>(File.ReadAllText($"{host.Content.RootDirectory}/def_conf.cfg"));
 
-        GlobalEditorData.WorkingDirectory = Path.IsPathRooted(GlobalEditorData.EditorOverrides.workingdir) ? GlobalEditorData.EditorOverrides.workingdir : Path.GetFullPath(Path.Combine(ConfigManager.currentConfig.EditorAssetsPath, GlobalEditorData.EditorOverrides.workingdir));
+            GlobalEditorData.EditorOverrides.overrides = GlobalEditorData.EditorOverrides.overrides.Concat(defaultSettings.overrides.Where(e => !GlobalEditorData.EditorOverrides.overrides.Contains(e))).ToArray();
+
+            GlobalEditorData.WorkingDirectory = Path.IsPathRooted(GlobalEditorData.EditorOverrides.workingdir) ? GlobalEditorData.EditorOverrides.workingdir : Path.GetFullPath(Path.Combine(ConfigManager.currentConfig.EditorAssetsPath, GlobalEditorData.EditorOverrides.workingdir));
+        }
+        else
+        {
+            GlobalEditorData.EditorOverrides = default;
+            GlobalEditorData.EditorOverrides.overrides = Array.Empty<EntityOverrideAsset>();
+
+            GlobalEditorData.WorkingDirectory = ConfigManager.currentConfig.EditorAssetsPath;
+        }
 
         worldShader = host.Content.Load<Effect>("Shaders/WorldShader");
         terrainShader = host.Content.Load<Effect>("Shaders/TerrainShader");

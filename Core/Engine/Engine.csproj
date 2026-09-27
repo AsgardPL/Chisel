@@ -83,7 +83,7 @@
 	<!-- Don't worry about this below, it's just for me; it auto increments the build number on my machine. -->
 	<!-- It won't find anything on yours, and that's exactly what's supposed to happen :) -->
 	<PropertyGroup>
-		<ChiselBuildScript>$(MSBuildThisFileDirectory)..\..\ChiselBuildBump.bat</ChiselBuildScript>
+		<ChiselBuildScript>$(MSBuildThisFileDirectory)..\..\..\..\ChiselBuildBump.bat</ChiselBuildScript>
 		<ChiselBuildInfoFile>$(MSBuildThisFileDirectory)BuildInfo.g.cs</ChiselBuildInfoFile>
 	</PropertyGroup>
 

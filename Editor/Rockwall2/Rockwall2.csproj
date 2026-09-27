@@ -24,7 +24,6 @@
     <Folder Include="Assets\Decor\" />
     <Folder Include="Assets\Icons\" />
     <Folder Include="Assets\Tools\" />
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   
@@ -91,9 +90,13 @@
   <ItemGroup>
     <AvaloniaResource Remove="Assets\Fonts\**" />
     <AvaloniaXaml Remove="Assets\Fonts\**" />
+    <AvaloniaXaml Remove="Models\**" />
     <Compile Remove="Assets\Fonts\**" />
+    <Compile Remove="Models\**" />
     <EmbeddedResource Remove="Assets\Fonts\**" />
+    <EmbeddedResource Remove="Models\**" />
     <None Remove="Assets\Fonts\**" />
+    <None Remove="Models\**" />
   </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Update="Assets\Decor\header.png">

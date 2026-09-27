@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media.Imaging;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Rockwall;
 using System;
@@ -18,6 +19,8 @@ public static class GlobalEditorData
     public static TextureItem[] TexturesAsImages;
 
     private static bool texturesLoaded = false;
+
+    static readonly string[] RawExtensions = { ".png", ".jpg", ".jpeg", ".tga" };
 
     public static void LoadTex(bool forceReload = false)
     {
@@ -61,16 +64,69 @@ public static class GlobalEditorData
             var mat = GlobalMapData.LoadedMaterials[i];
             relativePaths.TryGetValue(mat.Name, out string relPath);
 
-            Bitmap bmp;
-            using (var stream = File.OpenRead($"{WorkingDirectory}/{mat.TextureName}.png"))
-            {
-                bmp = Bitmap.DecodeToWidth(stream, thumbnailSize);
-            }
+            Bitmap bmp = LoadThumbnail(mat.TextureName, thumbnailSize);
 
             TexturesAsImages[i] = new TextureItem(bmp, mat.Name, i, relPath ?? "");
         }
 
         texturesLoaded = true;
+    }
+    static Bitmap LoadThumbnail(string textureName, int thumbnailSize)
+    {
+        foreach (var ext in RawExtensions)
+        {
+            string path = Path.Combine(WorkingDirectory, textureName + ext);
+            if (File.Exists(path))
+            {
+                using var stream = File.OpenRead(path);
+                return Bitmap.DecodeToWidth(stream, thumbnailSize);
+            }
+        }
+
+        try
+        {
+            var tex = EditorHost.Instance.Content.Load<Texture2D>(textureName);
+            return TextureToThumbnail(tex, thumbnailSize);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    static Bitmap TextureToThumbnail(Texture2D tex, int thumbnailSize)
+    {
+        var pixels = new Microsoft.Xna.Framework.Color[tex.Width * tex.Height];
+        tex.GetData(pixels);
+
+        int dstW = thumbnailSize;
+        int dstH = Math.Max(1, thumbnailSize * tex.Height / tex.Width);
+
+        var bgra = new byte[dstW * dstH * 4];
+        for (int dy = 0; dy < dstH; dy++)
+        {
+            int sy = dy * tex.Height / dstH;
+            for (int dx = 0; dx < dstW; dx++)
+            {
+                int sx = dx * tex.Width / dstW;
+                var c = pixels[sy * tex.Width + sx];
+                int o = (dy * dstW + dx) * 4;
+                bgra[o + 0] = c.B;
+                bgra[o + 1] = c.G;
+                bgra[o + 2] = c.R;
+                bgra[o + 3] = c.A;
+            }
+        }
+
+        var bmp = new WriteableBitmap(
+            new Avalonia.PixelSize(dstW, dstH),
+            new Avalonia.Vector(96, 96),
+            Avalonia.Platform.PixelFormat.Bgra8888,
+            Avalonia.Platform.AlphaFormat.Unpremul);
+
+        using (var fb = bmp.Lock())
+            System.Runtime.InteropServices.Marshal.Copy(bgra, 0, fb.Address, bgra.Length);
+
+        return bmp;
     }
 }
 

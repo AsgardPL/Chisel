@@ -6,7 +6,8 @@
              xmlns:monoGame="clr-namespace:AvaloniaInside.MonoGame"
              xmlns:controls="clr-namespace:Rockwall2;assembly=Rockwall2"
              xmlns:toolbar="clr-namespace:Rockwall2.Editor.Common.Toolbar"
-             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+			 xmlns:conv="clr-namespace:Rockwall2.Controls;assembly=Rockwall2"
+			 mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              x:Class="Rockwall2.MapEditor"
              x:DataType="vm:MapEditorViewModel">
 
@@ -155,7 +156,7 @@
 					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Stretch" x:Name="RightPanelHost">
 						<Border x:Name="RightPanelContent" Background="Transparent" BorderBrush="#444444" BorderThickness="1,0,0,0" ClipToBounds="True">
 							<ScrollViewer Width="160" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-								<StackPanel Margin="10,10" Spacing="4">
+								<StackPanel Margin="4,4" Spacing="4">
 									<TextBlock Text="Selected texture" FontSize="10" Foreground="#666666"/>
 									<Border Height="100" Width="100" Background="#2a2a2a" BorderBrush="#333333" BorderThickness="1" CornerRadius="3">
 										<Image x:Name="TexturePreview" Stretch="Uniform"/>
@@ -164,21 +165,154 @@
 
 									<Label Margin="0,65,0,0" FontSize="11">Primitive Resolution</Label>
 									<NumericUpDown ParsingNumberStyle="Integer" FormatString="N0" Value="12" ValueChanged="ChangePrimitiveRes"></NumericUpDown>
-									<!--
+
 									<TextBlock Text="Visgroups" Margin="0,65,0,0"
 											   FontSize="10" FontWeight="SemiBold"
-											   Background="#252525" Padding="4,2"/>
-									<ScrollViewer Height="140" Background="#0F0F0F">
-										<TreeView Padding="2">
-											<TreeViewItem Header="Entities">
-											</TreeViewItem>
-											<TreeViewItem Header="World">
-											</TreeViewItem>
-											<TreeViewItem Header="User">
-											</TreeViewItem>
-										</TreeView>
-									</ScrollViewer>
-									-->
+											   Padding="4,2"/>
+									<TabControl>
+										<TabItem Header="User">
+											<ScrollViewer Height="160" Background="#0F0F0F">
+												<TreeView x:Name="visGroupsUser">
+													<TreeView.Styles>
+														<Style Selector="TreeViewItem">
+															<Setter Property="FontSize" Value="10"/>
+															<Setter Property="Padding" Value="0"/>
+															<Setter Property="MinHeight" Value="18"/>
+															<Setter Property="Template">
+																<ControlTemplate TargetType="TreeViewItem">
+																	<StackPanel>
+																		<Grid ColumnDefinitions="Auto,*"
+																			  Margin="{TemplateBinding Level, Converter={x:Static conv:LevelToIndentConverter.Instance}, ConverterParameter=16}">
+
+																			<ToggleButton Name="PART_ExpandCollapseChevron"
+																						  Grid.Column="0"
+																						  Focusable="False"
+																						  IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+																						  Width="12" Height="12"
+																						  Margin="2,0"
+																						  VerticalAlignment="Center"
+																						  Background="Transparent">
+																				<ToggleButton.Template>
+																					<ControlTemplate>
+																						<Border BorderBrush="#808080" BorderThickness="1" Background="White" Width="9" Height="9">
+																							<Panel>
+																								<Rectangle Fill="#000000" Width="5" Height="1"
+																										   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+																								<Rectangle Name="PART_VertLine" Fill="#000000" Width="1" Height="5"
+																										   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+																							</Panel>
+																						</Border>
+																					</ControlTemplate>
+																				</ToggleButton.Template>
+																			</ToggleButton>
+
+																			<Border Name="PART_HeaderBorder"
+																					Grid.Column="1"
+																					Padding="2,0"
+																					Background="Transparent">
+																				<ContentPresenter Name="PART_HeaderPresenter"
+																								   Content="{TemplateBinding Header}"
+																								   ContentTemplate="{TemplateBinding HeaderTemplate}"
+																								   VerticalAlignment="Center"/>
+																			</Border>
+																		</Grid>
+
+																		<ItemsPresenter Name="PART_ItemsPresenter"
+																						 IsVisible="{TemplateBinding IsExpanded}"/>
+																	</StackPanel>
+																</ControlTemplate>
+															</Setter>
+														</Style>
+
+														<!-- flips the box from + to - when expanded, by hiding the vertical bar -->
+														<Style Selector="ToggleButton#PART_ExpandCollapseChevron:checked /template/ Rectangle#PART_VertLine">
+															<Setter Property="IsVisible" Value="False"/>
+														</Style>
+
+														<!-- selection highlight only wraps the text, not the full row width -->
+														<Style Selector="TreeViewItem:selected /template/ Border#PART_HeaderBorder">
+															<Setter Property="Background" Value="#3399FF"/>
+														</Style>
+														<Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+															<Setter Property="Foreground" Value="White"/>
+														</Style>
+													</TreeView.Styles>
+												</TreeView>
+											</ScrollViewer>
+
+										</TabItem>
+										<TabItem Header="Auto">
+											<ScrollViewer Height="160" Background="#0F0F0F">
+												<TreeView x:Name="visGroupsAuto">
+													<TreeView.Styles>
+														<Style Selector="TreeViewItem">
+															<Setter Property="FontSize" Value="10"/>
+															<Setter Property="Padding" Value="0"/>
+															<Setter Property="MinHeight" Value="18"/>
+															<Setter Property="Template">
+																<ControlTemplate TargetType="TreeViewItem">
+																	<StackPanel>
+																		<Grid ColumnDefinitions="Auto,*"
+																			  Margin="{TemplateBinding Level, Converter={x:Static conv:LevelToIndentConverter.Instance}, ConverterParameter=16}">
+
+																			<ToggleButton Name="PART_ExpandCollapseChevron"
+																						  Grid.Column="0"
+																						  Focusable="False"
+																						  IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+																						  Width="12" Height="12"
+																						  Margin="2,0"
+																						  VerticalAlignment="Center"
+																						  Background="Transparent">
+																				<ToggleButton.Template>
+																					<ControlTemplate>
+																						<Border BorderBrush="#808080" BorderThickness="1" Background="White" Width="9" Height="9">
+																							<Panel>
+																								<Rectangle Fill="#000000" Width="5" Height="1"
+																										   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+																								<Rectangle Name="PART_VertLine" Fill="#000000" Width="1" Height="5"
+																										   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+																							</Panel>
+																						</Border>
+																					</ControlTemplate>
+																				</ToggleButton.Template>
+																			</ToggleButton>
+
+																			<Border Name="PART_HeaderBorder"
+																					Grid.Column="1"
+																					Padding="2,0"
+																					Background="Transparent">
+																				<ContentPresenter Name="PART_HeaderPresenter"
+																								   Content="{TemplateBinding Header}"
+																								   ContentTemplate="{TemplateBinding HeaderTemplate}"
+																								   VerticalAlignment="Center"/>
+																			</Border>
+																		</Grid>
+
+																		<ItemsPresenter Name="PART_ItemsPresenter"
+																						 IsVisible="{TemplateBinding IsExpanded}"/>
+																	</StackPanel>
+																</ControlTemplate>
+															</Setter>
+														</Style>
+
+														<!-- flips the box from + to - when expanded, by hiding the vertical bar -->
+														<Style Selector="ToggleButton#PART_ExpandCollapseChevron:checked /template/ Rectangle#PART_VertLine">
+															<Setter Property="IsVisible" Value="False"/>
+														</Style>
+
+														<!-- selection highlight only wraps the text, not the full row width -->
+														<Style Selector="TreeViewItem:selected /template/ Border#PART_HeaderBorder">
+															<Setter Property="Background" Value="#3399FF"/>
+														</Style>
+														<Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+															<Setter Property="Foreground" Value="White"/>
+														</Style>
+													</TreeView.Styles>
+												</TreeView>
+											</ScrollViewer>
+
+										</TabItem>
+									</TabControl>
 								</StackPanel>
 							</ScrollViewer>
 						</Border>

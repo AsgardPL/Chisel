@@ -15,52 +15,56 @@ namespace MapCompiler
         public const int VersionPatch = 0;
 
         public static string WorkingDir;
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             PrintBanner();
 
-            if (args == null || args.Length < 1) { CompilerConsole.Error("No map file specified."); return; }
-            if (args.Length < 2) { CompilerConsole.Error("No materials file specified."); return; }
-            if (args.Length < 3) { CompilerConsole.Error("No texture path specified."); return; }
+            if (args == null || args.Length < 1) { CompilerConsole.Error("No map file specified."); return -100; }
+            if (args.Length < 2) { CompilerConsole.Error("No materials file specified."); return -100; }
+            if (args.Length < 3) { CompilerConsole.Error("No texture path specified."); return -100; }
 
             // Environment-variable overrides let build scripts tune quality without recompiling
             int lightmapUnitSize = int.Parse(Environment.GetEnvironmentVariable("lightmapUnitSize") ?? "4");
             bool fastVis = bool.Parse(Environment.GetEnvironmentVariable("fastVis") ?? "false");
 
-            CompilerConsole.Header("Loading Assets");
-
-            CompilerConsole.Step("Loading map file...");
-            var (brushes, entities, terrains) = LoadMap(File.ReadAllText(args[0][1..]));
-
-            CompilerConsole.Step("Loading EDF...");
-            LoadEDF(File.ReadAllText(args[1][1..]));
-
-            CompilerConsole.Step("Loading textures...");
-            WorkingDir = args[2][1..];
-            var (textures, matColors) = TextureLoader.Load(WorkingDir, brushes);
-
-            CompilerConsole.Stat("Lightmap unit size", lightmapUnitSize);
-            CompilerConsole.Stat("Fast vis", fastVis);
-
 #if !DEBUG
             try
             {
 #endif
+                CompilerConsole.Header("Loading Assets");
+
+                CompilerConsole.Step("Loading map file...");
+                var (brushes, entities, terrains) = LoadMap(File.ReadAllText(args[0][1..]));
+
+                CompilerConsole.Step("Loading EDF...");
+                LoadEDF(File.ReadAllText(args[1][1..]));
+
+                CompilerConsole.Step("Loading textures...");
+                WorkingDir = args[2][1..];
+                var (textures, matColors) = TextureLoader.Load(WorkingDir, brushes);
+
+                CompilerConsole.Stat("Lightmap unit size", lightmapUnitSize);
+                CompilerConsole.Stat("Fast vis", fastVis);
+
                 var mapPath = args[0][1..];
                 if (File.Exists(Path.ChangeExtension(mapPath, "leak"))) File.Delete(Path.ChangeExtension(mapPath, "leak"));
 
                 MapCompileOrchestrator.Compile(
                     brushes, entities, terrains, textures, matColors,
                     mapPath, lightmapUnitSize, fastVis);
+
+                return 0;
 #if !DEBUG
             }
             catch (Exception e)
             {
                 CompilerConsole.Error($"Compilation failed: {e}");
-                Thread.Sleep(1000);
+                Console.ReadKey();
+
+                return -100;
             }
 #endif
         }
