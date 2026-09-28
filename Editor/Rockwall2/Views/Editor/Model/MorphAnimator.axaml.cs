@@ -503,6 +503,8 @@ public partial class MorphAnimator : Window
             // It's ok these files are teeny tiny
             currentAnimData = CMorphAnimData.LoadFromFile(files[0].Path.AbsolutePath);
 
+            currentAnimData.Tracks = currentAnimData.Tracks.Where(t => morphSliders.ContainsKey(t.Name)).ToList();
+
             MarkDirty();
             Redraw();
         }

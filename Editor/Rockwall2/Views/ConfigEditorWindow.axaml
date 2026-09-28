@@ -74,7 +74,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Label Content="Editor Config Directory:"/>
+              <Label Content="Working Assets Directory:"/>
               <Grid Grid.Column="1">
                 <TextBox HorizontalAlignment="Stretch" IsEnabled="False" x:Name="editConfPath"/>
                 <Button x:Name="browseConfig" Click="BrowseConfig"  HorizontalAlignment="Right" Width="32" Height="32" Content="..."/>

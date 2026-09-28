@@ -2,5 +2,5 @@ namespace Engine;
 
 public static class BuildInfo
 {
-    public const int BuildNumber = 76;
+    public const int BuildNumber = 83;
 }
