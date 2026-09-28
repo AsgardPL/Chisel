@@ -18,7 +18,6 @@ namespace MapCompiler
         public Vector2 startUV, endUV;
         public float dr, dg, db;          // direct-light color (used as seed for bounces)
         public float r, g, b;             // current accumulated bounce color
-        public float sr, sg, sb;
         public float texr, texg, texb;    // albedo of the surface material
         public float area;
         public float luxels;
@@ -735,7 +734,6 @@ namespace MapCompiler
             {
                 clone[i].dr = clone[i].dg = clone[i].db = 0f;
                 clone[i].r = clone[i].g = clone[i].b = 0f;
-                clone[i].sr = clone[i].sg = clone[i].sb = 0f;
                 clone[i].samples = 0;
             }
             return clone;

@@ -1989,9 +1989,9 @@ namespace MapCompiler
 
             for (int p = 0; p < patches.Length; p++)
             {
-                pR[p] = MathF.Max(patches[p].r - patches[p].sr, 0f);
-                pG[p] = MathF.Max(patches[p].g - patches[p].sg, 0f);
-                pB[p] = MathF.Max(patches[p].b - patches[p].sb, 0f);
+                pR[p] = MathF.Max(patches[p].r, 0f);
+                pG[p] = MathF.Max(patches[p].g, 0f);
+                pB[p] = MathF.Max(patches[p].b, 0f);
                 patchNormals[p] = patches[p].normal;
                 patchColors[p] = new Vector3(pR[p], pG[p], pB[p]) / 255f
                     + (includeAmbient ? LightCalculator.AmbientColor.ToVector3() * LightCalculator.AmbientIntensity * patches[p].sky : Vector3.Zero);
@@ -2286,9 +2286,9 @@ namespace MapCompiler
             var colors = new Vector3[patches.Length];
             for (int p = 0; p < patches.Length; p++)
                 colors[p] = new Vector3(
-                    MathF.Max(patches[p].r - patches[p].sr, 0f),
-                    MathF.Max(patches[p].g - patches[p].sg, 0f),
-                    MathF.Max(patches[p].b - patches[p].sb, 0f)) / 255f +
+                    MathF.Max(patches[p].r, 0f),
+                    MathF.Max(patches[p].g, 0f),
+                    MathF.Max(patches[p].b, 0f)) / 255f +
                     (includeAmbient ? LightCalculator.AmbientColor.ToVector3() * LightCalculator.AmbientIntensity * patches[p].sky : Vector3.Zero);
             return colors;
         }

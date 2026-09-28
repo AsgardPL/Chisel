@@ -495,14 +495,19 @@ public partial class MorphAnimator : Window
 
         if (files.Count >= 1)
         {
-            currentAnimData = CMorphAnimData.LoadFromFile(files[0].Path.AbsolutePath);
+            var morphFile = files[0].Path.LocalPath;
+            currentAnimData = CMorphAnimData.LoadFromFile(morphFile);
 
-            LoadAudio(System.IO.Path.Combine(files[0].Path.AbsolutePath, currentAnimData.AudioPath));
-            
+            var audio = CMorphAnimData.ResolveAudioPath(morphFile, currentAnimData.AudioPath);
+            LoadAudio(audio);
+
             // Just to make sure....
             // It's ok these files are teeny tiny
-            currentAnimData = CMorphAnimData.LoadFromFile(files[0].Path.AbsolutePath);
 
+            // EDIT from however long later... wtf am I making sure of? I mean obviously there was a reason so i guess ill leave it,
+            // ...but huh? Frame start/end times maybe?
+            currentAnimData = CMorphAnimData.LoadFromFile(morphFile);
+            currentAnimData.AudioPath = audio;
             currentAnimData.Tracks = currentAnimData.Tracks.Where(t => morphSliders.ContainsKey(t.Name)).ToList();
 
             MarkDirty();
@@ -531,12 +536,11 @@ public partial class MorphAnimator : Window
 
         if (files != null)
         {
+            var dir = System.IO.Path.GetDirectoryName(files.Path.LocalPath);
             if (System.IO.Path.IsPathFullyQualified(currentAnimData.AudioPath))
-            {
-                currentAnimData.AudioPath = System.IO.Path.GetRelativePath(files.Path.AbsolutePath, currentAnimData.AudioPath);
-            }
+                currentAnimData.AudioPath = System.IO.Path.GetRelativePath(dir, currentAnimData.AudioPath).Replace('\\', '/');
 
-            CMorphAnimData.WriteToFile(currentAnimData, files.Path.AbsolutePath);
+            CMorphAnimData.WriteToFile(currentAnimData, files.Path.LocalPath);
         }
     }
 

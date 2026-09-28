@@ -37,13 +37,13 @@ public static class SoundScriptManager
         {
             if (!definitions.TryGetValue(name, out var entry))
             {
-                if (File.Exists(Path.Combine(MainEngine.FullPath, name)))
+                string fullpath = Path.IsPathRooted(name) ? name : Path.Combine(MainEngine.FullPath, name);
+
+                if (File.Exists(fullpath))
                 {
                     Logger.AppendInfo($"Soundscript name was an audio path; playing audio from path.");
 
-                    string filePath = Path.Combine(MainEngine.FullPath, name);
-
-                    var rID = SoundDevice.Device.PlaySound(filePath, position ?? Vector3.Zero, false, overrideVolume ?? 1, overridePitch ?? 1, !(is3DOverride ?? true), category: SoundCategory.SFX);
+                    var rID = SoundDevice.Device.PlaySound(fullpath, position ?? Vector3.Zero, false, overrideVolume ?? 1, overridePitch ?? 1, !(is3DOverride ?? true), category: SoundCategory.SFX);
 
                     return new SoundInstance(rID, position ?? Vector3.Zero, velocity ?? Vector3.Zero, overrideVolume ?? 1);
                 }
@@ -93,7 +93,7 @@ public static class SoundScriptManager
             var id = SoundDevice.Device.PlaySound(wavePath, position ?? Vector3.Zero, loop, volume, pitch, !is3D, category: channel,
                                                   minDist:minDist, maxDist:maxDist);
 
-            return new SoundInstance(id, position ?? Vector3.Zero, velocity ?? Vector3.Zero, volume);
+            return new SoundInstance(id, position ?? Vector3.Zero, velocity ?? Vector3.Zero, volume, wavePath);
         }
         catch (Exception e)
         {

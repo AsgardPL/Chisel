@@ -8,11 +8,6 @@ using System.Text;
 
 namespace Chisel.Models.Data;
 
-/// <summary>
-/// A tuneable recipe for the procedural baked eyes.
-/// </summary>
-
-
 public record struct EyeTextureRecipe(
     int Seed,
     Color ScleraColor,
@@ -90,9 +85,9 @@ public static class EyeTextureGenerator
     private static SpriteBatch mipSpriteBatch;
 
 #if CHISEL_GLSL
-    public static EyeTextureSet Generate(GraphicsDevice device, Engine.ShaderHandle shader, EyeTextureRecipe recipe, int resolution = 64)
+    public static EyeTextureSet Generate(GraphicsDevice device, Engine.ShaderHandle shader, EyeTextureRecipe recipe, int resolution = 128)
 #else
-    public static EyeTextureSet Generate(GraphicsDevice device, Effect shader, EyeTextureRecipe recipe, int resolution = 64)
+    public static EyeTextureSet Generate(GraphicsDevice device, Effect shader, EyeTextureRecipe recipe, int resolution = 128)
 #endif
     {
         var colorTarget = new RenderTarget2D(device, resolution, resolution, true, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
@@ -155,7 +150,7 @@ public static class EyeTextureGenerator
         var previousDepth = device.DepthStencilState;
         var previousRasterizer = device.RasterizerState;
 
-        Texture2D sourceLevel = texture; // level 0, sampled straight from the full-res render target
+        Texture2D sourceLevel = texture;
         Texture2D disposableSource = null;
         int width = texture.Width;
         int height = texture.Height;

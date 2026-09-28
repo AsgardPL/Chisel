@@ -838,12 +838,13 @@ namespace Engine.Utils
                 meshBounds = new OrientedBoundingBox(min - Vector3.One * 0.5f, max + Vector3.One * 0.5f);
             }
         }
-        public void PlayMorphAnimation(string path, Vector3 audioOrigin)
+        public void PlayMorphAnimation(string path, Vector3 audioOrigin, bool playSound = true)
         {
             var morphPath = Path.Combine(MainEngine.FullPath, path);
             var anim = CMorphAnimData.LoadFromFile(morphPath);
+            var audioPath = CMorphAnimData.ResolveAudioPath(morphPath, anim.AudioPath);
 
-            morphSoundID = SoundScriptManager.PlaySound(Path.Combine(morphPath, anim.AudioPath), audioOrigin);
+            if (playSound) morphSoundID = SoundScriptManager.PlaySound(audioPath, audioOrigin);
 
             morphAnimator.PlayAnimation(anim);
         }

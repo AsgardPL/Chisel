@@ -49,19 +49,22 @@ public class SoundInstance
             SoundDevice.Device.UpdateSound(SourceID, sourcePosition, sourceVelocity, sourceGain);
         }
     }
+    public string SoundPath => soundPath;
 
     private Vector3 sourcePosition;
     private Vector3 sourceVelocity;
     private float sourceGain;
+    private string soundPath;
 
     public bool HasStopped => !SoundDevice.Device.IsVoicePlaying(SourceID);
 
-    public SoundInstance(uint sourceID, Vector3 sourcePosition, Vector3 sourceVelocity, float sourceGain)
+    public SoundInstance(uint sourceID, Vector3 sourcePosition, Vector3 sourceVelocity, float sourceGain, string soundPath = null)
     {
         SourceID = sourceID;
         this.sourcePosition = sourcePosition;
         this.sourceVelocity = sourceVelocity;
         this.sourceGain = sourceGain;
+        this.soundPath = soundPath;
     }
     public void Stop()
     {

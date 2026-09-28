@@ -67,7 +67,27 @@ public class CMorphAnimData
             }
         }
     }
+    public static string ResolveAudioPath(string morphFile, string audioPath)
+    {
+        audioPath = audioPath.Replace('\\', '/');
+        if (Path.IsPathFullyQualified(audioPath) && File.Exists(audioPath)) return audioPath;
 
+        var dir = Path.GetDirectoryName(morphFile);
+        var segments = audioPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        int ups = 0;
+        while (ups < segments.Length && segments[ups] == "..") ups++;
+
+        // Somehow the editor can read the file itself as a directory, which means
+        // it can somehow save files with one too many "../"
+        for (int drop = 0; drop <= ups; drop++)
+        {
+            var candidate = Path.GetFullPath(Path.Combine(dir, string.Join('/', segments.Skip(drop))));
+            if (File.Exists(candidate)) return candidate;
+        }
+
+        return Path.GetFullPath(Path.Combine(dir, audioPath));
+    }
     public static CMorphAnimData LoadFromFile(string filePath)
     {
         using var fstream = File.OpenRead(filePath);
@@ -109,6 +129,9 @@ public class CMorphAnimator(CMorphState state)
     private record ActiveAnim(CMorphAnimData Data, float Start, float End, float StartTime);
     private readonly List<ActiveAnim> active = new();
 
+    private readonly HashSet<string> driven = new();
+    private readonly Dictionary<string, float> workbuf = new();
+
     public void PlayAnimation(CMorphAnimData data)
     {
         float start = data.StartFrame / 30f;
@@ -118,24 +141,33 @@ public class CMorphAnimator(CMorphState state)
 
     public void Update(float dt)
     {
-        if (active.Count == 0) return;
+        if (active.Count == 0 && driven.Count == 0) return;
+
+        workbuf.Clear();
 
         for (int i = active.Count - 1; i >= 0; i--)
         {
             var anim = active[i];
+            float t = anim.Start + dt;
 
-            // Accumulate into state rather than overwriting
             foreach (var track in anim.Data.Tracks)
             {
-                float current = state.GetWeight(track.Name);
-                float contribution = track.Evaluate(anim.Start + dt);
-                state.SetWeight(track.Name, Math.Clamp(current + contribution, 0f, 1f));
+                workbuf.TryGetValue(track.Name, out float sum);
+                workbuf[track.Name] = sum + track.Evaluate(t);
             }
 
-            active[i] = anim with { Start = anim.Start + dt };
+            if (t >= anim.End) active.RemoveAt(i);
+            else active[i] = anim with { Start = t };
+        }
 
-            if (anim.Start + dt >= anim.End)
-                active.RemoveAt(i);
+        foreach (var name in driven)
+            if (!workbuf.ContainsKey(name)) state.SetWeight(name, 0f);
+
+        driven.Clear();
+        foreach (var (name, w) in workbuf)
+        {
+            state.SetWeight(name, w);
+            driven.Add(name);
         }
     }
 
