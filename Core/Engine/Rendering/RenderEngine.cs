@@ -58,6 +58,11 @@ namespace Engine.Rendering
         //public readonly static CVarBool DrawOctBounds = new CVarBool("ssportal_debug", false);
         //public readonly static CVarBool UsePortalCulling = new CVarBool("ssportal_enable", false);
         public readonly static CVarBool ShowMultiDrawBatches = new CVarBool("r_showmultidrawbatches", false);
+        public static CommandBinding cBuildCubemaps = new CommandBinding("r_buildcubemaps", (string[] arg) =>
+        {
+            cubemapsNeedCapture = true;
+            cubemapCaptureDelay = 0;
+        });
 
         public static int CurrentWireframeDisplayMode = 0;
 
@@ -173,6 +178,23 @@ namespace Engine.Rendering
         private static RenderTarget2D refractionRenderTexture;
         private static BasicEffect basicShader;
         private static RasterizerState worldRasterizer;
+
+        private const int CubemapCaptureDelayFrames = 5;
+        private static int cubemapCaptureDelay;
+
+        private const int CubemapCaptureSize = 128;
+        private static RenderTargetCube cubemapCaptureTarget;
+        private static bool cubemapsNeedCapture;
+
+        private static readonly Vector2[] cubeFaceYawPitch =
+        {
+            new Vector2(90, 0),
+            new Vector2(-90, 0),
+            new Vector2(180, 90),
+            new Vector2(180, -90),
+            new Vector2(180, 0),
+            new Vector2(0, 0),
+        };
 
         //private static RasterizerState cullClockwiseSkyScissor = new RasterizerState
         //{
@@ -293,13 +315,21 @@ namespace Engine.Rendering
 
         public static void GenRuntimeCubemapAssociation()
         {
+            cubemapsNeedCapture = true;
+            cubemapCaptureDelay = CubemapCaptureDelayFrames;
+
             var polys = GlobalMapData.ActiveMap.LeafPolygons;
             var verts = GlobalMapData.ActiveMap.StaticGeomVertices;
             if (polys == null || verts == null) return;
 
             for (int i = 0; i < polys.Length; i++)
             {
-                var poly = polys[i];
+                ref var poly = ref polys[i];
+                if (poly.VertexCount == 0)
+                {
+                    continue;
+                }
+
                 Vector3 centroid = Vector3.Zero;
 
                 for (int v = poly.VertexStart; v < poly.VertexStart + poly.VertexCount; v++)
@@ -310,6 +340,103 @@ namespace Engine.Rendering
 
                 poly.RuntimeCubemapID = CubemapHandler.GetNearestCubemapIndex(centroid);
             }
+
+            ClearLeafGeometryCaches();
+        }
+        private static void CaptureCubemaps(GameTime time)
+        {
+            cubemapsNeedCapture = false;
+            if (EnvCubemap.Cubemaps.Count == 0) return;
+
+            var gd = Instance.GraphicsDevice;
+            cubemapCaptureTarget ??= new RenderTargetCube(gd, CubemapCaptureSize, false, SurfaceFormat.Color, DepthFormat.Depth24);
+
+            var savedView = ViewMatrix;
+            var savedProjection = ProjectionMatrix;
+            var savedWorld = WorldMatrix;
+            var savedFrustum = CameraBoundingFrustum;
+            var savedSkyboxWasVisible = skyboxWasVisible;
+
+            float near = CameraNear > 0 ? CameraNear : 0.01f;
+            float far = CameraFar > near ? CameraFar : 1000f;
+
+            EnvCubemap.cubeRendering = true;
+
+            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2, 1f, near, far);
+            WorldMatrix = Matrix.Identity;
+
+            gd.SamplerStates[0] = WorldTextureSamplerState;
+            gd.SamplerStates[1] = WorldTextureSamplerState;
+            gd.SamplerStates[2] = WorldTextureSamplerState;
+            gd.SamplerStates[3] = LightmapTextureSamplerState;
+            gd.SamplerStates[4] = LightmapTextureSamplerState;
+            gd.SamplerStates[5] = LightmapTextureSamplerState;
+            gd.SamplerStates[6] = LightmapTextureSamplerState;
+
+            foreach (var cube in EnvCubemap.Cubemaps)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    float yaw = MathHelper.ToRadians(cubeFaceYawPitch[i].X);
+                    float pitch = MathHelper.ToRadians(cubeFaceYawPitch[i].Y);
+
+                    ViewMatrix = Matrix.CreateTranslation(-cube.Position) * Matrix.CreateScale(-1, 1, 1) * Matrix.Invert(Matrix.CreateFromYawPitchRoll(yaw, pitch, 0));
+
+                    gd.SetRenderTarget(cubemapCaptureTarget, CubeMapFace.PositiveX + i);
+                    gd.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.Black, gd.Viewport.MaxDepth, 0);
+
+                    PrepareWorldShaders();
+
+                    bool captureSkyboxVisible = true;
+                    skyboxWasVisible = true;
+
+                    gd.BlendState = nonPremultiplied;
+                    gd.DepthStencilState = DepthStencilState.Default;
+                    gd.RasterizerState = RasterizerState.CullCounterClockwise;
+
+                    RenderWorld(time, cube.Position, renderDecalsAndParticles: false, flipWinding: true,
+                                drawSkybox: true, allow3DSkybox: true,
+                                ref captureSkyboxVisible,
+                                renderEntities: false, skyboxFlipWinding: false);
+                }
+
+                gd.SetRenderTarget(null);
+
+                if (cube.diffusionMaps != null)
+                {
+                    foreach (var map in cube.diffusionMaps)
+                    {
+                        map?.Dispose();
+                    }
+                }
+
+                cube.diffusionMaps = new TextureCube[6];
+                for (int m = 0; m < 6; m++)
+                {
+                    cube.diffusionMaps[m] = CubemapMipmapGenerator.ScaleCube(cubemapCaptureTarget, cubemapCaptureTarget.Size >> m);
+                }
+            }
+
+            foreach (var cube in EnvCubemap.Cubemaps)
+            {
+                if (!cube.IsDespawned)
+                {
+                    EntityManager.DespawnEntity(cube);
+                }
+            }
+
+            EnvCubemap.cubeRendering = false;
+            Displayable.FlipWinding = false;
+            isWindingFlipped = false;
+
+            ViewMatrix = savedView;
+            ProjectionMatrix = savedProjection;
+            WorldMatrix = savedWorld;
+            CameraBoundingFrustum = savedFrustum;
+            skyboxWasVisible = savedSkyboxWasVisible;
+
+            gd.SetRenderTarget(null);
+            PrepareWorldShaders();
         }
 
         /// <summary>
@@ -363,6 +490,7 @@ namespace Engine.Rendering
             ShadowQuality = QualityLevel.High;
             TextureQuality = QualityLevel.High;
             ReflectionQuality = QualityLevel.High;
+            LODQuality = QualityLevel.High;
         }
         public static void CreateListedOptions()
         {
@@ -1067,6 +1195,18 @@ namespace Engine.Rendering
 
             if (Instance.IsMapLoaded)
             {
+                if (cubemapsNeedCapture)
+                {
+                    if (cubemapCaptureDelay > 0)
+                    {
+                        cubemapCaptureDelay--;
+                    }
+                    else
+                    {
+                        CaptureCubemaps(time);
+                    }
+                }
+
                 using (RenderTimings.Section(TimingSection.PlanarReflections))
                 {
                     RenderPlanarReflections(time);
@@ -1352,17 +1492,19 @@ namespace Engine.Rendering
                 Instance.SpriteBatch.End();
             }
         }
-        private static void RenderWorld(GameTime time, Vector3 pvsOrigin, bool renderDecalsAndParticles, bool flipWinding, bool drawSkybox, bool allow3DSkybox, ref bool cachedSkyboxWasVisible, Matrix? skyboxProjection = null)
+        private static void RenderWorld(GameTime time, Vector3 pvsOrigin, bool renderDecalsAndParticles, bool flipWinding, bool drawSkybox, bool allow3DSkybox, ref bool cachedSkyboxWasVisible, Matrix? skyboxProjection = null, bool renderEntities = true, bool? skyboxFlipWinding = null)
         {
             const float skyboxSize = 1 / 16f;
+            bool skyFlip = skyboxFlipWinding ?? flipWinding;
+
             Displayable.FlipWinding = flipWinding;
             isWindingFlipped = flipWinding;
 
-            Matrix skyCameraMatrix = Matrix.CreateTranslation(-SkyCamera.activeSkyCamera?.Position ?? Vector3.Zero) * 
+            Matrix skyCameraMatrix = Matrix.CreateTranslation(-SkyCamera.activeSkyCamera?.Position ?? Vector3.Zero) *
                                      Matrix.CreateWorld(ViewMatrix.Translation * skyboxSize, ViewMatrix.Forward, ViewMatrix.Up);
 
             BuildPVSLookups(pvsOrigin, false);
-            if(allow3DSkybox) BuildPVSLookups(Matrix.Invert(skyCameraMatrix).Translation, true);
+            if (allow3DSkybox) BuildPVSLookups(Matrix.Invert(skyCameraMatrix).Translation, true);
 
             cachedSkyboxWasVisible = skyboxWasVisible;
 
@@ -1394,6 +1536,9 @@ namespace Engine.Rendering
 
                     if (allow3DSkybox && SkyCamera.activeSkyCamera != null && Show3DSky)
                     {
+                        Displayable.FlipWinding = skyFlip;
+                        isWindingFlipped = skyFlip;
+
                         foreach (var shader in LoadedWorldShaders)
                         {
                             shader.Param("Skybox3DView").SetValue(true);
@@ -1409,6 +1554,9 @@ namespace Engine.Rendering
                             shader.Param("View").SetValue(skyCameraMatrix);
                         }
 
+                        Instance.GraphicsDevice.RasterizerState = skyFlip ? cullCounterClockwiseSky : cullClockwiseSky;
+                        Instance.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
                         // Pre-pass the depth so that we can render with depthequals
                         RenderMapDepth(true, Matrix.Invert(skyCameraMatrix).Translation);
 
@@ -1420,7 +1568,7 @@ namespace Engine.Rendering
                         var oldview = ViewMatrix;
                         ViewMatrix = skyCameraMatrix;
 
-                        Instance.GraphicsDevice.RasterizerState = flipWinding ? cullCounterClockwiseSky : cullClockwiseSky;
+                        Instance.GraphicsDevice.RasterizerState = skyFlip ? cullCounterClockwiseSky : cullClockwiseSky;
                         Instance.GraphicsDevice.DepthStencilState = brushDepthEquals;
                         if (GlobalMapData.ActiveMap.Brushes?.Length > 0)
                         {
@@ -1440,8 +1588,12 @@ namespace Engine.Rendering
                         TransparentRenderQueue.BuildLeafOrder(previousSkyLeaf);
 
                         Instance.GraphicsDevice.BlendState = nonPremultiplied;
-                        Instance.GraphicsDevice.RasterizerState = flipWinding ? cullClockwiseSky : cullCounterClockwiseSky;
-                        EntityManager.RenderEntities(time, false, flipWinding, useSkyboxVisibility: true);
+                        Instance.GraphicsDevice.RasterizerState = skyFlip ? cullClockwiseSky : cullCounterClockwiseSky;
+
+                        if (renderEntities)
+                        {
+                            EntityManager.RenderEntities(time, false, skyFlip, useSkyboxVisibility: true);
+                        }
 
                         TransparentRenderQueue.RenderAll();
 
@@ -1453,9 +1605,12 @@ namespace Engine.Rendering
                             ParticleManager.RenderSystems();
                         }
 
-                        Instance.GraphicsDevice.RasterizerState = isWindingFlipped ? cullCounterClockwiseSky : cullClockwiseSky;
-
                         ViewMatrix = oldview;
+
+                        Displayable.FlipWinding = flipWinding;
+                        isWindingFlipped = flipWinding;
+
+                        Instance.GraphicsDevice.RasterizerState = flipWinding ? cullCounterClockwiseSky : cullClockwiseSky;
                     }
                 }
             }
@@ -1472,6 +1627,8 @@ namespace Engine.Rendering
                 shader.Param("Projection").SetValue(ProjectionMatrix);
                 shader.Param("Skybox3DView").SetValue(false);
             }
+
+            Instance.GraphicsDevice.RasterizerState = flipWinding ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
 
             // Pre-pass the depth so that we can render with depthequals
             using (RenderTimings.Section(TimingSection.RenderMapDepth))
@@ -1510,9 +1667,13 @@ namespace Engine.Rendering
 
             Instance.GraphicsDevice.BlendState = nonPremultiplied;
             Instance.GraphicsDevice.RasterizerState = flipWinding ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
-            using (RenderTimings.Section(TimingSection.Entities))
+
+            if (renderEntities)
             {
-                EntityManager.RenderEntities(time, false, flipWinding);
+                using (RenderTimings.Section(TimingSection.Entities))
+                {
+                    EntityManager.RenderEntities(time, false, flipWinding);
+                }
             }
 
             using (RenderTimings.Section(TimingSection.TransparentModels))
@@ -2198,7 +2359,7 @@ namespace Engine.Rendering
 
             shader.Param("DisableLighting").SetValue(false);
 
-            var cubemapTexture = (cubemapIndex >= 0 && cubemapIndex < EnvCubemap.Cubemaps.Count && EnvCubemap.Cubemaps[cubemapIndex].diffusionMaps != null)
+            var cubemapTexture = (!EnvCubemap.cubeRendering && cubemapIndex >= 0 && cubemapIndex < EnvCubemap.Cubemaps.Count && EnvCubemap.Cubemaps[cubemapIndex].diffusionMaps != null)
                 ? EnvCubemap.Cubemaps[cubemapIndex].diffusionMaps[ShowMaterialShine ? 0 : 3]
                 : Skybox.GetSkyTexture();
 
