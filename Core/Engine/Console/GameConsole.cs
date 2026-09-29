@@ -19,6 +19,7 @@ namespace Engine.Console
         public bool IsInputActive { get; set; }
 
         private Dictionary<string, Action<string[]>> registeredCommands = new Dictionary<string, Action<string[]>>();
+        private Dictionary<string, Func<string[], int, IEnumerable<string>>> completers = new();
         private StringBuilder log = new StringBuilder();
 
         private List<(string log, float time, LogLevel level)> recentLogs = [];
@@ -29,10 +30,13 @@ namespace Engine.Console
             Error,
         }
 
-        public void RegisterCommand(string name, Action<string[]> action)
+        public void RegisterCommand(string name, Action<string[]> action, Func<string[], int, IEnumerable<string>> completer = null)
         {
             if (registeredCommands.ContainsKey(name)) return;
-            registeredCommands.Add(name,action);
+            registeredCommands.Add(name, action);
+
+            if (completer != null)
+                completers.Add(name, completer);
         }
 
         internal void WriteDirect(string log, LogLevel level = LogLevel.Message, float startTime = 0f)
@@ -58,7 +62,7 @@ namespace Engine.Console
         public List<(string log, float time, LogLevel level)> GetRecentLogs() => recentLogs;
         public void Execute(string input)
         {
-            string[] args = input.Split(' ');
+            string[] args = input.Trim().Split(' ');
 
             string[] passArgs = args == null || args.Length <= 1 ? Array.Empty<string>() : input.Remove(0, args[0].Length + 1).Split(' ');
 
@@ -90,6 +94,37 @@ namespace Engine.Console
             {
                 WriteDirect(cmd);
             }
+        }
+        public List<string> GetCompletions(string input)
+        {
+            string[] tokens = input.Split(' ');
+            string partial = tokens[^1];
+            IEnumerable<string> candidates;
+
+            if (tokens.Length == 1)
+            {
+                candidates = registeredCommands.Keys;
+            }
+            else if (completers.TryGetValue(tokens[0], out var completer))
+            {
+                string[] args = tokens[1..];
+                candidates = completer(args, args.Length - 1) ?? Enumerable.Empty<string>();
+            }
+            else
+            {
+                return [];
+            }
+
+            return candidates
+                .Where(c => c.StartsWith(partial, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(c => c, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        public static string ApplyCompletion(string input, string completion)
+        {
+            int lastSpace = input.LastIndexOf(' ');
+            return input[..(lastSpace + 1)] + completion + " ";
         }
     }
 }

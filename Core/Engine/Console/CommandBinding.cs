@@ -10,13 +10,16 @@ public class CommandBinding
 {
     public string commandName;
     public Action<string[]> command;
+    public Func<string[], int, IEnumerable<string>> completer;
 
-    public CommandBinding(string commandName, Action<string[]> command)
+    public CommandBinding(string commandName, Action<string[]> command, Func<string[], int, IEnumerable<string>> completer = null)
     {
         this.commandName = commandName;
         this.command = command;
+        this.completer = completer;
         Create();
     }
+
     public void Create()
     {
         MainEngine.commands.Enqueue(this);

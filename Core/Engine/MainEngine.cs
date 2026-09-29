@@ -141,6 +141,15 @@ namespace Engine
         private Action postLoadCallback;
 
         #region Commands
+        private static IEnumerable<string> GetMapNames()
+        {
+            string dir = Path.Combine(FullPath, "Maps");
+
+            if (!Directory.Exists(dir))
+                return [];
+
+            return Directory.EnumerateFiles(dir, "*.cmap").Select(Path.GetFileNameWithoutExtension).ToArray();
+        }
 
         public readonly static CommandBinding cTimescale = new CommandBinding("timescale", (string[] arg) =>
         {
@@ -159,14 +168,14 @@ namespace Engine
             if (Path.IsPathFullyQualified(arg[0]))
             {
                 SoundscapeManager.StopSoundscape();
-                Instance.LoadMap($"{arg[0]}.crm");
+                Instance.LoadMap($"{arg[0]}");
             }
             else
             {
                 SoundscapeManager.StopSoundscape();
-                Instance.LoadMap($"{FullPath}/Maps/{arg[0]}.crm");
+                Instance.LoadMap($"{FullPath}/Maps/{arg[0]}");
             }
-        });
+        }, (args, index) => index == 0 ? GetMapNames() : null);
         public readonly static CommandBinding cQuitGame = new CommandBinding("quit", (string[] arg) =>
         {
             Instance.Exit();
@@ -847,7 +856,7 @@ namespace Engine
 
             while (commands.TryDequeue(out CommandBinding cmd))
             {
-                Console.RegisterCommand(cmd.commandName, cmd.command);
+                Console.RegisterCommand(cmd.commandName, cmd.command, cmd.completer);
             }
 
             commandsDirty = false;
