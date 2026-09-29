@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a confirmed bug in Chisel, Rockwall2, or the SDK.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+
+        Chisel is developed by one person. Reports are read when possible, but there is no guarantee of a response, a fix, or a timeline.
+
+        For questions, help, or "how do I…" topics, please use the wiki instead. This tracker is for bugs only.
+
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Before submitting
+      options:
+        - label: I understand Chisel is maintained by one person, and there is no guarantee of a response or fix.
+          required: true
+        - label: I searched existing issues and this bug hasn't been reported yet.
+          required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Engine
+        - Rockwall 2
+        - FPS template
+        - Map compiler
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The Chisel engine build you're using. (You can see this by opening the console with ~, and looking in the top right)
+      placeholder: e.g. 128
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or console output
+      description: Paste any relevant errors. This is formatted as code automatically.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, a small map or project that reproduces it, etc. You can drag files into this box.
