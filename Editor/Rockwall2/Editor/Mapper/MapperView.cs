@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using AvaloniaInside.MonoGame;
+using Chisel;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -1712,17 +1713,17 @@ public class MapperView : IEditorScene
     }
     public void LoadAllExternalGameData()
     {
-        string[] lines = File.ReadAllLines(GlobalEditorData.EDSFile);
+        var index = EntityDataIndex.Read(GlobalEditorData.EDSFile);
 
-        MaterialLoader.MountMaterials(lines[3]);
+        MaterialLoader.MountMaterials(index.MaterialsPath);
         GlobalMapData.MaterialNameToIndex = new Dictionary<string, int>();
 
-        GlobalEditorData.RegisteredClassnames = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(lines[0])).Order().ToArray();
+        GlobalEditorData.RegisteredClassnames = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(index.ClassnamesPath)).Order().ToArray();
 
-        GlobalEditorData.ContentPath = lines[2];
+        GlobalEditorData.ContentPath = index.ContentPath;
         host.Content.RootDirectory = GlobalEditorData.ContentPath;
 
-        GlobalEditorData.RegisteredEntityMeta = JsonConvert.DeserializeObject<Dictionary<string, EntityClassMetadata>>(File.ReadAllText(lines[4]));
+        GlobalEditorData.RegisteredEntityMeta = JsonConvert.DeserializeObject<Dictionary<string, EntityClassMetadata>>(File.ReadAllText(index.MetadataPath));
 
         for (int i = 0; i < GlobalMapData.LoadedMaterials.Length; i++)
         {

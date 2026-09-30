@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConvexHull3D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EntityDataIndex.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EntityOwnership.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EntityVisualizers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EXScript\EXParser.cs" />

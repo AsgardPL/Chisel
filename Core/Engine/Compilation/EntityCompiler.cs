@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Chisel;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Rockwall;
 using System;
@@ -207,8 +208,7 @@ namespace Engine.Compilation
         }
         public static void WriteDefPaths(string fullpath)
         {
-            if (File.Exists($"{fullpath}/Data/def.eds")) File.Delete($"{fullpath}/Data/def.eds");
-            File.WriteAllText($"{fullpath}/Data/def.eds", $"{fullpath}/Data/entnme.edt\n{fullpath}/Data/entlid.edt\n{fullpath}/Content\n{fullpath}/Content/Materials\n{fullpath}/Data/entMETA.gff");
+            EntityDataIndex.Write($"{fullpath}/Data");
         }
         public static void ReadAllEntities(string path)
         {

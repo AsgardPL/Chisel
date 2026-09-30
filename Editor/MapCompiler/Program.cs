@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Chisel;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Rockwall;
 using System;
@@ -40,7 +41,7 @@ namespace MapCompiler
                 var (brushes, entities, terrains) = LoadMap(File.ReadAllText(args[0][1..]));
 
                 CompilerConsole.Step("Loading EDF...");
-                LoadEDF(File.ReadAllText(args[1][1..]));
+                LoadEDF(args[1][1..]);
 
                 CompilerConsole.Step("Loading textures...");
                 WorkingDir = args[2][1..];
@@ -101,10 +102,9 @@ namespace MapCompiler
             return (map.Brushes, map.EntityReferences, map.Terrains);
         }
 
-        static void LoadEDF(string fileContent)
+        static void LoadEDF(string edsPath)
         {
-            string[] lines = fileContent.Split('\n');
-            MaterialLoader.MountMaterials(lines[3]);
+            MaterialLoader.MountMaterials(EntityDataIndex.Read(edsPath).MaterialsPath);
         }
     }
 }
