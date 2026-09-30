@@ -40,6 +40,7 @@ public partial class MapEditor : UserControl
     {
         if (!Design.IsDesignMode)
             DataContext = new MapEditorViewModel();
+
         InitializeComponent();
         gameControl.Host = App.Host;
         GameView.PointerEntered += (a, b) => GameView.Focus();
