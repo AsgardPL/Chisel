@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ToolsUtilities;
 
 namespace Engine.Compilation
 {
@@ -199,11 +200,14 @@ namespace Engine.Compilation
             if (File.Exists($"{fullpath}/Data/entMETA.gff")) File.Delete($"{fullpath}/Data/entMETA.gff");
             if (File.Exists($"{fullpath}/Data/entnme.edt")) File.Delete($"{fullpath}/Data/entnme.edt");
             if (File.Exists($"{fullpath}/Data/entlid.edt")) File.Delete($"{fullpath}/Data/entlid.edt");
-            if (File.Exists($"{fullpath}/Data/def.eds")) File.Delete($"{fullpath}/Data/def.eds");
 
             File.WriteAllText($"{fullpath}/Data/entMETA.gff", JsonConvert.SerializeObject(classMetadata, Formatting.None));
             File.WriteAllText($"{fullpath}/Data/entlid.edt", JsonConvert.SerializeObject(EntityLookupTable, Formatting.None));
             File.WriteAllText($"{fullpath}/Data/entnme.edt", JsonConvert.SerializeObject(entityNames.ToArray(), Formatting.None));
+        }
+        public static void WriteDefPaths(string fullpath)
+        {
+            if (File.Exists($"{fullpath}/Data/def.eds")) File.Delete($"{fullpath}/Data/def.eds");
             File.WriteAllText($"{fullpath}/Data/def.eds", $"{fullpath}/Data/entnme.edt\n{fullpath}/Data/entlid.edt\n{fullpath}/Content\n{fullpath}/Content/Materials\n{fullpath}/Data/entMETA.gff");
         }
         public static void ReadAllEntities(string path)
